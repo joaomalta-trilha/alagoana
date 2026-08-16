@@ -9,15 +9,43 @@ Ambiente já instalado nesta máquina:
 ```bash
 npm install          # uma vez
 npm run db:migrar    # cria o schema e as categorias de custo da §3.7
-npm run db:semear    # carrega catálogos, sócios, contas, 16 veículos e 195 lançamentos
-npm run db:conferir  # roda a tabela de conferência da §9 e confere os catálogos
-npm run teste        # 128 testes com os exemplos numéricos da especificação
+npm run db:semear    # carrega catálogos, sócios, contas, 20 veículos e 239 lançamentos
+npm run db:conferir  # confere a carga contra os números da planilha e os catálogos
+npm run teste        # 191 testes com os exemplos numéricos da especificação
 npm run db:zerar     # derruba tudo (só local) — depois migrar e semear de novo
 ```
 
-`npm run carga:extrair` regenera `frota.json` e `catalogo.json` a partir de
-`~/Downloads/patio-prototipo.html` e reroda a conferência em Python. Serve
-para provar a carga sem depender de banco nenhum.
+## De onde vem a carga
+
+A frota sai de `referencia/planilha-2026.xlsx` — a planilha que a loja mantém,
+e que é a fonte da verdade até o sistema entrar em uso. `npm run carga:frota`
+relê a planilha, regrava `frota.json` e reroda a conferência em Python, sem
+depender de banco nenhum: confere os 21 totais por categoria contra os totais
+que a própria planilha declara no rodapé.
+
+`npm run carga:catalogo` regrava `catalogo.json` (marcas, modelos e cores) a
+partir do protótipo. Ele sabe reconstruir a frota antiga de 16 veículos, mas
+não faz isso sem `--frota-do-prototipo` — do contrário uma rodada distraída
+devolveria o banco ao retrato de antes da planilha.
+
+## Quando a planilha muda
+
+`db:semear` só serve para banco vazio: se já houver veículos, ele recusa. Para
+trocar a frota de um banco que já está no ar — o de produção, por exemplo —:
+
+```bash
+npm run carga:frota                    # relê a planilha
+npm run db:recarregar                  # mostra o que mudaria, não grava
+npm run db:recarregar -- --confirmo    # grava
+```
+
+A recarga troca veículos, custos, saldos das contas e capital de implantação.
+Não toca em usuários, senhas nem sessões: ninguém é deslogado.
+
+E ela **se recusa** a rodar se já houver movimento de caixa ou aporte lançado
+pela loja. A partir daí a planilha deixou de ser a fonte da verdade, e
+recarregar apagaria trabalho de verdade — nesse caso as mudanças entram pela
+tela, uma a uma. Não há como forçar.
 
 ## Entrar no sistema
 

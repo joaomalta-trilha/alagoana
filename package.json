@@ -13,10 +13,12 @@
     "usuario": "npm run -w @alagoana/api usuario --",
     "icones": "node ferramentas/gerar-icones.mjs",
     "tipos": "npm run -w @alagoana/api tipos && npm run -w @alagoana/web tipos",
-    "carga:extrair": "python3 ferramentas/extrair-carga.py",
+    "carga:frota": "python3 ferramentas/extrair-planilha.py",
+    "carga:catalogo": "python3 ferramentas/extrair-carga.py",
     "db:migrar": "npm run -w @alagoana/api migrar",
     "db:semear": "npm run -w @alagoana/api semear",
     "db:conferir": "npm run -w @alagoana/api conferir",
+    "db:recarregar": "npm run -w @alagoana/api recarregar --",
     "db:zerar": "npm run -w @alagoana/api zerar",
     "teste": "npm run -w @alagoana/api teste"
   }

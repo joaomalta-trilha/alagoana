@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Extrai a carga inicial do protótipo (patio-prototipo.html, array `frota`)
-e grava apps/api/src/db/seed/frota.json.
+Extrai do protótipo (patio-prototipo.html) os catálogos de marca, modelo e
+cor, e grava apps/api/src/db/seed/catalogo.json.
+
+Também sabe reconstruir a frota de 16 veículos que o protótipo carrega — foi
+a carga inicial até 16/08/2026, quando a loja mandou a planilha atualizada.
+Hoje a frota vem de `extrair-planilha.py`, e este script **não** grava
+frota.json a menos que se peça `--frota-do-prototipo`. Sem essa trava, uma
+rodada distraída devolveria o banco ao retrato antigo.
 
 Valores monetários saem em CENTAVOS INTEIROS. Nenhum float sobrevive à extração.
 
@@ -16,7 +22,7 @@ Deliberadamente NÃO aplicadas:
     conferências da especificação continuem verdadeiras. Ficam registrados
     na observação do veículo.
 
-Uso:  python3 ferramentas/extrair-carga.py [--verificar]
+Uso:  python3 ferramentas/extrair-carga.py [--verificar] [--frota-do-prototipo]
 """
 
 import ast
@@ -344,6 +350,9 @@ def main() -> int:
         DESTINO.parent.mkdir(parents=True, exist_ok=True)
         DESTINO_CATALOGO.write_text(
             json.dumps(catalogo, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"\n  gravado: {DESTINO_CATALOGO.relative_to(RAIZ)}")
+
+    if "--verificar" not in sys.argv and "--frota-do-prototipo" in sys.argv:
         DESTINO.write_text(
             json.dumps({
                 "gerado_de": PROTOTIPO.name,
@@ -354,8 +363,9 @@ def main() -> int:
             }, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
-        print(f"\n  gravado: {DESTINO_CATALOGO.relative_to(RAIZ)}")
-        print(f"  gravado: {DESTINO.relative_to(RAIZ)}")
+        print(f"  gravado: {DESTINO.relative_to(RAIZ)}  (frota do protótipo, não da planilha)")
+    elif "--verificar" not in sys.argv:
+        print(f"  {DESTINO.relative_to(RAIZ)} intacto — a frota vem da planilha.")
 
     print(f"\n  {'TUDO CONFERE' if ok else 'HÁ DIVERGÊNCIA — não avance'}\n")
     return 0 if ok else 1

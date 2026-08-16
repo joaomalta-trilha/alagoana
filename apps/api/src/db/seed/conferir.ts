@@ -1,5 +1,11 @@
 /**
- * Conferência da carga inicial — seção 9 da especificação.
+ * Conferência da carga — a rede de segurança do projeto.
+ *
+ * A linha de base foi a tabela da §9 até 16/08/2026, quando a loja mandou a
+ * planilha atualizada: 20 veículos, uma venda a mais (Tracker), o repasse do
+ * Ford Ka e três veículos novos, um deles moto. Os números abaixo descrevem
+ * esse retrato, e foram conferidos contra os totais que a própria planilha
+ * declara, categoria por categoria.
  *
  * Lê do Postgres e recalcula com as funções de domínio. Se qualquer número
  * divergir, a importação está errada e o processo sai com código 1.
@@ -15,18 +21,18 @@ import { custoTotal, lucro, retornoPct, cicloDias, patrimonio } from "../../domi
 import { CATEGORIAS_CUSTO } from "../../dominio/categorias.js";
 
 const ESPERADO = {
-  "veículos": 16,
-  "lançamentos": 195,
-  "vendidos": 11,
-  "em estoque": 5,
-  "total faturado": 66_146_724,
-  "lucro total": 6_419_553,
-  "investido nos vendidos": 59_727_171,
-  "retorno sobre o investido": "10,7%",
-  "ciclo médio": 75,
-  "estoque ao custo": 26_908_608,
-  "caixa total": 9_716_338,
-  "patrimônio total": 36_624_946,
+  "veículos": 20,
+  "lançamentos": 239,
+  "vendidos": 13,
+  "em estoque": 7,
+  "total faturado": 75_446_724,
+  "lucro total": 7_578_061,
+  "investido nos vendidos": 67_868_663,
+  "retorno sobre o investido": "11,2%",
+  "ciclo médio": 67,
+  "estoque ao custo": 29_530_262,
+  "caixa total": 8_387_192,
+  "patrimônio total": 37_917_454,
 } as const;
 
 const MONETARIOS = new Set([
@@ -124,16 +130,21 @@ for (const v of calculado) {
     `${(v.lucro === null ? "—" : reais(v.lucro)).padStart(14)}`);
 }
 
-// Os exemplos numéricos que a especificação escreve por extenso.
-console.log("\n  EXEMPLOS DA ESPECIFICAÇÃO\n");
+// Os dois veículos que a especificação usa como exemplo por extenso. Os
+// valores mudaram com a planilha de 16/08: o City levou uma multa de R$ 131,46
+// depois da venda, e o Tracker deixou de estar em estoque — foi vendido por
+// 83.000 em 10/08. A §4 continua valendo; o que mudou foi o dado.
+console.log("\n  OS DOIS EXEMPLOS DA ESPECIFICAÇÃO, HOJE\n");
 const city = calculado.find((v) => v.codigo === "V-07")!;
+const tracker = calculado.find((v) => v.codigo === "V-13")!;
 const pct = retornoPct(city.lucro!, city.total);
 const exemplos: [string, string, string][] = [
-  ["Honda City · custo total", reais(city.total), "93.853,20"],
-  ["Honda City · lucro", reais(city.lucro!), "3.146,80"],
-  ["Honda City · retorno", `${pct.toFixed(2).replace(".", ",")}%`, "3,35%"],
+  ["Honda City · custo total", reais(city.total), "93.984,66"],
+  ["Honda City · lucro", reais(city.lucro!), "3.015,34"],
+  ["Honda City · retorno", `${pct.toFixed(2).replace(".", ",")}%`, "3,21%"],
   ["Honda City · ciclo", `${city.ciclo} dias`, "170 dias"],
-  ["Tracker · custo total", reais(calculado.find((v) => v.codigo === "V-13")!.total), "71.183,46"],
+  ["Tracker · custo total", reais(tracker.total), "71.283,46"],
+  ["Tracker · lucro", reais(tracker.lucro!), "11.716,54"],
 ];
 for (const [rotulo, obtidoTxt, esperadoTxt] of exemplos) {
   const bate = obtidoTxt === esperadoTxt;
@@ -164,12 +175,18 @@ const CONTAGENS_ESPERADAS: Record<string, number> = {
   usuarios: 3, contas: 4, movimentos: 0,
 };
 
+// Duas contagens crescem com o uso legítimo e não podem ser exatas: a loja
+// cria usuários (`npm run usuario`) e lança caixa. Aqui o que interessa é o
+// piso — nenhum sumiu — e não o número redondo da carga.
+const MINIMOS = new Set(["usuarios", "movimentos"]);
+
 console.log("\n  CATÁLOGOS E ACESSO\n");
 for (const [chave, esperado] of Object.entries(CONTAGENS_ESPERADAS)) {
   const valor = Number(contagens[0]![chave]);
-  const bate = valor === esperado;
+  const bate = MINIMOS.has(chave) ? valor >= esperado : valor === esperado;
   ok &&= bate;
-  console.log(`  ${chave.padEnd(28)}${String(esperado).padStart(16)}  ` +
+  const rotulo = MINIMOS.has(chave) ? `no mínimo ${esperado}` : String(esperado);
+  console.log(`  ${chave.padEnd(28)}${rotulo.padStart(16)}  ` +
               `${String(valor).padStart(16)}   ${bate ? "ok" : "DIVERGE"}`);
 }
 

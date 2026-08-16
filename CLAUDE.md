@@ -71,11 +71,35 @@ npm run tipos      # tsc nos dois workspaces
 npm run build      # checa tipos e constrói a interface
 ```
 
-`npm run db:conferir` recalcula os dez números da §9 a partir do banco e sai
-com erro se algum divergir. **É a ferramenta de conferência do projeto** — rode
-depois de qualquer mexida em cálculo, carga ou migração.
+`npm run db:conferir` recalcula a carga inteira a partir do banco e sai com
+erro se algum número divergir. **É a ferramenta de conferência do projeto** —
+rode depois de qualquer mexida em cálculo, carga ou migração.
 
 Usuários e senhas: `npm run usuario` e `npm run senha -- <e-mail>`.
+
+## De onde vem a carga
+
+`referencia/planilha-2026.xlsx` é a planilha que a loja mantém, e é a fonte da
+verdade enquanto o sistema não entra em uso de verdade. `npm run carga:frota`
+relê a planilha e regrava `frota.json`, conferindo os 21 totais por categoria
+contra os totais que a própria planilha declara.
+
+A versão de 16/08/2026 trouxe 20 veículos e 239 lançamentos — quatro a mais
+que a §9, entre eles a venda do Tracker, um repasse (Ford Ka comprado e
+passado adiante pelo mesmo valor no dia seguinte) e a primeira moto. A tabela
+da §9 na especificação descreve o retrato **anterior**; a linha de base de
+hoje é o topo de `conferir.ts`.
+
+Duas coisas na própria planilha estão erradas e ficaram como estão, porque
+corrigi-las seria inventar dado: a linha de rodapé do Tracker tem fórmula
+quebrada (mostra venda negativa), e o `TOTAL` do rodapé declara 219.522,01
+enquanto suas categorias somam 96.536,53. As transações, que é o que importa,
+batem à vírgula.
+
+Para trocar a frota de um banco que já está no ar: `npm run db:recarregar`
+(ensaio) e `-- --confirmo` (grava). Preserva usuários, senhas e sessões, e
+recusa se a loja já tiver usado o caixa — a partir daí a planilha deixou de
+ser a fonte da verdade.
 
 ## Publicar
 
@@ -90,9 +114,12 @@ por ali.
 ## Como se verifica trabalho aqui
 
 Teste automatizado para regra e cálculo; navegador para layout. Os exemplos
-numéricos da especificação são casos de teste nomeados: Honda City fechando em
-93.853,20 / 3.146,80 / 3,35% / 170 dias, e o Tracker com troca dando 17.816,54
-pela avaliação e 13.816,54 pelo mercado, com 45.000 no caixa nos dois.
+numéricos da especificação são casos de teste nomeados: o Tracker com troca
+dando 17.816,54 pela avaliação e 13.816,54 pelo mercado, com 45.000 no caixa
+nos dois. Os números do Honda City mudaram com a planilha de 16/08 (uma multa
+de 131,46 depois da venda): hoje fecha em 93.984,66 / 3.015,34 / 3,21% / 170
+dias, e é assim que `conferir.ts` o cobra. A fórmula é a mesma; o dado é que
+andou.
 
 Quando mexer em algo visual, meça no navegador em vez de olhar: estilo
 computado, largura de texto contra largura da coluna, altura de alvo de toque.

@@ -11,6 +11,7 @@
     "migrar": "tsx src/db/migrar.ts",
     "semear": "tsx src/db/seed/semear.ts",
     "conferir": "tsx src/db/seed/conferir.ts",
+    "recarregar": "tsx src/db/seed/recarregar.ts",
     "zerar": "tsx src/db/zerar.ts",
     "teste": "vitest run",
     "tipos": "tsc --noEmit"
