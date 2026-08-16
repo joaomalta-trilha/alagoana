@@ -17,10 +17,13 @@ import {
   CATEGORIA_COMISSAO, lerComissoes, marcarComissoesPorPadrao, type Comissao,
 } from "../dominio/comissao.js";
 import { garantirCatalogo } from "./catalogos.js";
+import { lerTipo, type TipoVeiculo } from "../dominio/tipo-veiculo.js";
 import { registrarEvento } from "./eventos.js";
 import { registrarMovimento, registrarMovimentoOpcional, refazerMovimentoDoVeiculo } from "./caixa.js";
 
 export interface EntradaVeiculo {
+  /** Ausente vira `carro`: é o caso comum e ninguém deve pensar nele. */
+  tipo?: TipoVeiculo;
   marca: string;
   modelo: string;
   versao?: string | null;
@@ -39,6 +42,8 @@ export interface EntradaVeiculo {
 }
 
 export interface EntradaTroca {
+  /** Moto na troca de um carro é o caso mais comum de todos. */
+  tipo?: TipoVeiculo;
   marca: string;
   modelo: string;
   versao?: string | null;
@@ -128,23 +133,24 @@ export async function criarVeiculo(
   c: PoolClient, e: EntradaVeiculo, usuarioId: string | null,
 ): Promise<{ id: string; codigo: string }> {
   validarObrigatorios(e);
-  await garantirCatalogo(c, e.marca, e.modelo, e.cor);
+  const tipo = lerTipo(e.tipo);
+  await garantirCatalogo(c, tipo, e.marca, e.modelo, e.cor);
 
   const codigo = await proximoCodigo(c);
   const placa = texto(e.placa).toUpperCase();
 
   const { rows } = await c.query<{ id: string }>(
-    `insert into veiculo (codigo, marca, modelo, versao, ano, cor, placa, km,
+    `insert into veiculo (codigo, tipo, marca, modelo, versao, ano, cor, placa, km,
                           data_compra, valor_compra, valor_anuncio,
                           fipe_compra, fipe_hoje, origem, observacao)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'compra',$14)
+     values ($1,$15,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'compra',$14)
      returning id`,
     [codigo, texto(e.marca), texto(e.modelo), e.versao ?? null, e.ano ?? null,
      texto(e.cor), placa, e.km ?? null, e.dataCompra, paraNumeric(e.valorCompra),
      e.valorAnuncio == null ? null : paraNumeric(e.valorAnuncio),
      e.fipeCompra == null ? null : paraNumeric(e.fipeCompra),
      e.fipeHoje == null ? null : paraNumeric(e.fipeHoje),
-     e.observacao ?? null],
+     e.observacao ?? null, tipo],
   );
   const id = rows[0]!.id;
 
@@ -180,6 +186,7 @@ export async function editarVeiculo(
   if (!atual) throw new NaoEncontrado("Veículo não encontrado.");
 
   const novo = {
+    tipo: lerTipo(e.tipo ?? atual["tipo"]),
     marca: e.marca ?? String(atual["marca"]),
     modelo: e.modelo ?? String(atual["modelo"]),
     cor: e.cor ?? String(atual["cor"]),
@@ -199,10 +206,10 @@ export async function editarVeiculo(
     throw new ErroDeValidacao("Data e valor da venda precisam ser preenchidos juntos.");
   }
 
-  await garantirCatalogo(c, novo.marca, novo.modelo, novo.cor);
+  await garantirCatalogo(c, novo.tipo, novo.marca, novo.modelo, novo.cor);
 
   await c.query(
-    `update veiculo set marca = $2, modelo = $3, versao = $4, ano = $5, cor = $6,
+    `update veiculo set tipo = $17, marca = $2, modelo = $3, versao = $4, ano = $5, cor = $6,
             placa = $7, km = $8, data_compra = $9, valor_compra = $10,
             valor_anuncio = $11, fipe_compra = $12, fipe_hoje = $13,
             data_venda = $14, valor_venda = $15, observacao = $16,
@@ -224,7 +231,8 @@ export async function editarVeiculo(
        ? (e.fipeHoje == null ? null : paraNumeric(e.fipeHoje))
        : atual["fipe_hoje"],
      novo.dataVenda, novo.valorVenda === null ? null : paraNumeric(novo.valorVenda),
-     e.observacao !== undefined ? e.observacao : atual["observacao"]],
+     e.observacao !== undefined ? e.observacao : atual["observacao"],
+     novo.tipo],
   );
 
   await sincronizarMovimentos(c, id, novo, e.contaId);
@@ -409,21 +417,22 @@ export async function venderVeiculo(
       marca: t.marca, modelo: t.modelo, placa: t.placa,
       dataCompra: e.dataVenda, valorCompra: calculo.valorCompraEntrada,
     });
-    await garantirCatalogo(c, t.marca, t.modelo, t.cor);
+    const tipoQueEntrou = lerTipo(t.tipo);
+    await garantirCatalogo(c, tipoQueEntrou, t.marca, t.modelo, t.cor);
 
     const codigo = await proximoCodigo(c);
     const { rows } = await c.query<{ id: string }>(
-      `insert into veiculo (codigo, marca, modelo, versao, ano, cor, placa, km,
+      `insert into veiculo (codigo, tipo, marca, modelo, versao, ano, cor, placa, km,
                             data_compra, valor_compra, valor_anuncio,
                             origem, troca_de_id, avaliacao_troca, mercado_troca)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'troca',$12,$13,$14)
+       values ($1,$15,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'troca',$12,$13,$14)
        returning id`,
       [codigo, texto(t.marca), texto(t.modelo), t.versao ?? null, t.ano ?? null,
        texto(t.cor), texto(t.placa).toUpperCase(), t.km ?? null,
        e.dataVenda, paraNumeric(calculo.valorCompraEntrada),
        t.valorAnuncio == null ? null : paraNumeric(t.valorAnuncio),
        id, paraNumeric(t.avaliacao),
-       t.mercado == null ? null : paraNumeric(t.mercado)],
+       t.mercado == null ? null : paraNumeric(t.mercado), tipoQueEntrou],
     );
     veiculoQueEntrou = { id: rows[0]!.id, codigo };
 

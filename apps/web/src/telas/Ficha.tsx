@@ -12,6 +12,7 @@ import { Carregando, Placa, Pilula, Vazio } from "../componentes/basicos.js";
 import { Grafico, eixoRotulo, eixoValor, opcoesBase } from "../componentes/Grafico.js";
 import { useDados } from "../dados.js";
 import { brl, dataBr, pct } from "../formato.js";
+import { rotuloDoTipo } from "../tipos.js";
 
 interface Props {
   id: string;
@@ -83,6 +84,7 @@ export function Ficha(p: Props) {
 
         {/* 2. linha do tempo, no grid de especificações */}
         <div className="spec">
+          <div><span>Tipo</span><b>{rotuloDoTipo(v.tipo)}</b></div>
           <div><span>Ano</span><b>{v.ano ?? "—"}</b></div>
           <div><span>Cor</span><b>{v.cor}</b></div>
           <div><span>Km</span><b className="num">{v.km ? v.km.toLocaleString("pt-BR") : "—"}</b></div>

@@ -17,11 +17,15 @@ import {
   type DataISO, type FaixaIdade, type Garantia,
 } from "../dominio/veiculo.js";
 import { NaoEncontrado } from "../dominio/mensagens.js";
+import { etiquetaDe, type TipoVeiculo } from "../dominio/tipo-veiculo.js";
 import { algumFiltroAtivo, passaNosFiltros, SEM_FILTRO, type Filtros } from "../dominio/filtros.js";
 
 export interface VeiculoCalculado {
   id: string;
   codigo: string;
+  tipo: TipoVeiculo;
+  /** "moto", "outro" — nulo em carro, que é o caso comum e dispensa etiqueta. */
+  etiqueta: string | null;
   marca: string;
   modelo: string;
   versao: string | null;
@@ -66,7 +70,8 @@ export interface VeiculoCalculado {
 }
 
 interface Linha {
-  id: string; codigo: string; marca: string; modelo: string; versao: string | null;
+  id: string; codigo: string; tipo: TipoVeiculo;
+  marca: string; modelo: string; versao: string | null;
   ano: number | null; cor: string; placa: string; km: number | null;
   origem: "compra" | "troca"; observacao: string | null;
   data_compra: DataISO; valor_compra: string; valor_anuncio: string | null;
@@ -76,7 +81,7 @@ interface Linha {
 }
 
 const SELECT_VEICULO = `
-  select v.id, v.codigo, v.marca, v.modelo, v.versao, v.ano, v.cor, v.placa, v.km,
+  select v.id, v.codigo, v.tipo, v.marca, v.modelo, v.versao, v.ano, v.cor, v.placa, v.km,
          v.origem, v.observacao, v.data_compra, v.valor_compra, v.valor_anuncio,
          v.fipe_compra, v.fipe_hoje, v.data_venda, v.valor_venda,
          cv.custo_preparacao, cv.lancamentos
@@ -99,7 +104,8 @@ export function calcular(l: Linha, hoje: DataISO): VeiculoCalculado {
   const projetado = lucroProjetado(valorAnuncio, total);
 
   return {
-    id: l.id, codigo: l.codigo, marca: l.marca, modelo: l.modelo, versao: l.versao,
+    id: l.id, codigo: l.codigo, tipo: l.tipo, etiqueta: etiquetaDe(l.tipo),
+    marca: l.marca, modelo: l.modelo, versao: l.versao,
     ano: l.ano, cor: l.cor, placa: l.placa, km: l.km, origem: l.origem,
     observacao: l.observacao,
 

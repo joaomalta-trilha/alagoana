@@ -13,6 +13,7 @@ import { comLeitura, comTransacao } from "../db/conexao.js";
 import { hoje } from "../env.js";
 import { ErroDeValidacao } from "../dominio/mensagens.js";
 import { lerFiltros } from "../dominio/filtros.js";
+import { lerTipo, temCatalogo, type TipoComCatalogo } from "../dominio/tipo-veiculo.js";
 import { filtrarListaPorPapel, filtrarPorPapel } from "../dominio/papel.js";
 import type { Usuario } from "./autenticacao.js";
 import {
@@ -68,6 +69,8 @@ function lerVeiculo(c: Corpo): Partial<EntradaVeiculo> {
     if (campo in c) entrada[campo] = valor as EntradaVeiculo[K];
   };
 
+  // O tipo vem antes de marca porque é ele que decide qual catálogo vale.
+  if ("tipo" in c) entrada.tipo = lerTipo(texto(c, "tipo"));
   atribuir("marca", texto(c, "marca"));
   atribuir("modelo", texto(c, "modelo"));
   atribuir("versao", texto(c, "versao"));
@@ -94,6 +97,7 @@ function lerTroca(c: Corpo): EntradaTroca | null {
     throw new ErroDeValidacao("O modo da troca é 'avaliacao' ou 'mercado'.", 400);
   }
   return {
+    tipo: lerTipo(texto(t, "tipo")),
     marca: texto(t, "marca") ?? "",
     modelo: texto(t, "modelo") ?? "",
     versao: texto(t, "versao"),
@@ -108,6 +112,18 @@ function lerTroca(c: Corpo): EntradaTroca | null {
   };
 }
 
+/**
+ * O tipo de um pedido de catálogo. `outro` não tem catálogo, então tentar
+ * incluir marca ali é engano de quem chamou, não silêncio.
+ */
+function tipoDoCatalogo(c: Corpo): TipoComCatalogo {
+  const tipo = lerTipo(texto(c, "tipo"));
+  if (!temCatalogo(tipo)) {
+    throw new ErroDeValidacao("Só carro e moto têm catálogo de marca.", 400);
+  }
+  return tipo as TipoComCatalogo;
+}
+
 // -------------------------------------------------------------------- tabela
 
 const ROTAS: Rota[] = [
@@ -119,7 +135,8 @@ const ROTAS: Rota[] = [
   {
     metodo: "POST", padrao: "/api/catalogos/marcas", status: 201,
     fn: async (ctx) => {
-      await comTransacao((c) => incluirMarca(c, texto(ctx.corpo, "nome") ?? ""));
+      const tipo = tipoDoCatalogo(ctx.corpo);
+      await comTransacao((c) => incluirMarca(c, texto(ctx.corpo, "nome") ?? "", tipo));
       return { ok: true };
     },
   },
@@ -127,7 +144,8 @@ const ROTAS: Rota[] = [
     metodo: "POST", padrao: "/api/catalogos/modelos", status: 201,
     fn: async (ctx) => {
       await comTransacao((c) =>
-        incluirModelo(c, texto(ctx.corpo, "marca") ?? "", texto(ctx.corpo, "nome") ?? ""));
+        incluirModelo(c, texto(ctx.corpo, "marca") ?? "", texto(ctx.corpo, "nome") ?? "",
+                      tipoDoCatalogo(ctx.corpo)));
       return { ok: true };
     },
   },

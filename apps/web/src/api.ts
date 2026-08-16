@@ -51,8 +51,14 @@ export interface Garantia {
   fim: string; diasRestantes: number; ativa: boolean; preenchimento: number;
 }
 
+export type TipoVeiculo = "carro" | "moto" | "outro";
+
 export interface Veiculo {
-  id: string; codigo: string; marca: string; modelo: string; versao: string | null;
+  id: string; codigo: string;
+  tipo: TipoVeiculo;
+  /** "moto", "outro" — nulo em carro, que dispensa etiqueta. */
+  etiqueta: string | null;
+  marca: string; modelo: string; versao: string | null;
   ano: number | null; cor: string; placa: string; km: number | null;
   origem: "compra" | "troca"; observacao: string | null;
 
@@ -132,9 +138,11 @@ export interface Caixa {
 }
 
 export interface Catalogos {
-  marcas: { nome: string; modelos: string[] }[];
+  /** Um catálogo por tipo: a Honda de carro não vende CG 160. */
+  marcas: Record<"carro" | "moto", { nome: string; modelos: string[] }[]>;
   cores: string[];
   categorias: { nome: string; exigeVendido: boolean }[];
+  tipos: { valor: TipoVeiculo; rotulo: string; temCatalogo: boolean; etiqueta: string | null }[];
   contas: { id: string; nome: string; tipo: string }[];
   socios: { id: string; nome: string }[];
 }
@@ -167,9 +175,10 @@ export const api = {
   sair: () => pedir<{ ok: true }>("DELETE", "/api/sessao"),
 
   catalogos: () => pedir<Catalogos>("GET", "/api/catalogos"),
-  incluirMarca: (nome: string) => pedir("POST", "/api/catalogos/marcas", { nome }),
-  incluirModelo: (marca: string, nome: string) =>
-    pedir("POST", "/api/catalogos/modelos", { marca, nome }),
+  incluirMarca: (nome: string, tipo: TipoVeiculo = "carro") =>
+    pedir("POST", "/api/catalogos/marcas", { nome, tipo }),
+  incluirModelo: (marca: string, nome: string, tipo: TipoVeiculo = "carro") =>
+    pedir("POST", "/api/catalogos/modelos", { marca, nome, tipo }),
   incluirCor: (nome: string) => pedir("POST", "/api/catalogos/cores", { nome }),
 
   // `recorte` é a query string dos filtros da §6.1, já pronta. As três

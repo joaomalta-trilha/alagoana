@@ -21,7 +21,31 @@ const AQUI = dirname(fileURLToPath(import.meta.url));
 
 interface Catalogo {
   marcas: Record<string, string[]>;
+  marcasMoto: Record<string, string[]>;
   cores: string[];
+}
+
+/**
+ * Grava um catálogo de marcas e modelos.
+ *
+ * Idempotente porque o catálogo de motos chega pela migração 0004, e semear
+ * roda depois: sem o `on conflict`, a segunda passagem quebraria em cima de
+ * dado que já está certo.
+ */
+async function semearCatalogo(
+  c: PoolClient, marcas: Record<string, string[]>, tipo: "carro" | "moto",
+): Promise<void> {
+  for (const [marca, modelos] of Object.entries(marcas)) {
+    const { rows } = await c.query<{ id: string }>(
+      `insert into marca (nome, tipo) values ($1, $2)
+       on conflict (nome, tipo) do update set nome = excluded.nome
+       returning id`, [marca, tipo]);
+    for (const modelo of modelos) {
+      await c.query(
+        `insert into modelo (marca_id, nome) values ($1, $2)
+         on conflict (marca_id, nome) do nothing`, [rows[0]!.id, modelo]);
+    }
+  }
 }
 
 interface CustoJson {
@@ -80,15 +104,12 @@ async function semear(c: PoolClient, carga: Carga, catalogo: Catalogo) {
   }
 
   // --------------------------------------------------------- catálogos
-  for (const [marca, modelos] of Object.entries(catalogo.marcas)) {
-    const { rows } = await c.query<{ id: string }>(
-      "insert into marca (nome) values ($1) returning id", [marca]);
-    for (const modelo of modelos) {
-      await c.query("insert into modelo (marca_id, nome) values ($1, $2)", [rows[0]!.id, modelo]);
-    }
-  }
+  // Dois catálogos de marca: Honda e BMW existem nos dois e significam coisas
+  // diferentes. As cores são uma lista só — cor é cor.
+  await semearCatalogo(c, catalogo.marcas, "carro");
+  await semearCatalogo(c, catalogo.marcasMoto, "moto");
   for (const cor of catalogo.cores) {
-    await c.query("insert into cor (nome) values ($1)", [cor]);
+    await c.query("insert into cor (nome) values ($1) on conflict (nome) do nothing", [cor]);
   }
 
   // ---------------------------------------------------------- usuários

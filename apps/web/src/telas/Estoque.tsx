@@ -13,6 +13,7 @@ import { TabelaEstoque } from "../componentes/Tabelas.js";
 import { Carregando, Vazio } from "../componentes/basicos.js";
 import { useDados } from "../dados.js";
 import { brl } from "../formato.js";
+import { veiculos as contar } from "../tipos.js";
 import { useDesktop } from "../tela.js";
 
 export function Estoque(
@@ -37,8 +38,8 @@ export function Estoque(
             <h3>Estoque</h3>
             <p className="hint">
               {veiculos.length
-                ? `${veiculos.length} ${veiculos.length === 1 ? "carro" : "carros"} no pátio · ${brl(investido)} investidos`
-                : "Nenhum carro no recorte atual"}
+                ? `${contar(veiculos.length)} no pátio · ${brl(investido)} investidos`
+                : "Nenhum veículo no recorte atual"}
             </p>
           </div>
           <button className="btn" onClick={aoLancarCarro}>Lançar carro</button>
@@ -49,7 +50,7 @@ export function Estoque(
             <div>
               <div className="cxt">No pátio</div>
               <div className="num" style={{ fontSize: 19, fontWeight: 500 }}>
-                {veiculos.length} {veiculos.length === 1 ? "carro" : "carros"}
+                {contar(veiculos.length)}
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
@@ -66,7 +67,7 @@ export function Estoque(
       {desktop
         ? <TabelaEstoque veiculos={veiculos} aoAbrir={aoAbrirFicha} />
         : veiculos.length === 0
-          ? <Vazio>Nenhum carro no pátio.</Vazio>
+          ? <Vazio>Nenhum veículo no pátio.</Vazio>
           : veiculos.map((v) => (
               <CartaoCarro key={v.id} veiculo={v} aoTocar={() => aoAbrirFicha(v.id)} />
             ))}

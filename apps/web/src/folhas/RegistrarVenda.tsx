@@ -12,6 +12,9 @@ import { api, ErroApi, type Catalogos, type Ficha } from "../api.js";
 import {
   Acoes, CampoData, CampoMarcavel, CampoNumero, CampoSelecao, CampoTexto, CampoValor, Erro, Folha,
 } from "../componentes/Folha.js";
+import {
+  CamposDeVeiculo, ESCOLHA_VAZIA, resolver, type EscolhaDeVeiculo,
+} from "../componentes/CamposDeVeiculo.js";
 import { brl, hojeISO, paraCampo, paraCentavos } from "../formato.js";
 import { sessao } from "../preferencias.js";
 
@@ -32,8 +35,8 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
   const [comissoes, setComissoes] = useState(!jaTemComissao);
 
   const [temTroca, setTemTroca] = useState(false);
-  const [marca, setMarca] = useState("");
-  const [modelo, setModelo] = useState("");
+  // Receber moto na troca de um carro é o caso mais comum de todos.
+  const [escolha, setEscolha] = useState<EscolhaDeVeiculo>(ESCOLHA_VAZIA);
   const [cor, setCor] = useState(catalogos.cores[0] ?? "");
   const [placa, setPlaca] = useState("");
   const [ano, setAno] = useState("");
@@ -59,7 +62,8 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
       setErro("A data da venda não pode ser anterior à da compra.");
       return;
     }
-    if (temTroca && (!marca.trim() || !modelo.trim() || !placa.trim() || !avaliacaoC)) {
+    const { marca, modelo } = resolver(escolha);
+    if (temTroca && (!marca || !modelo || !placa.trim() || !avaliacaoC)) {
       setErro("Preencha marca, modelo, placa e a avaliação do carro recebido.");
       return;
     }
@@ -72,7 +76,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
         contaId: contaId || null,
         lancarComissoes: comissoes,
         troca: temTroca ? {
-          marca, modelo, cor, placa,
+          tipo: escolha.tipo, marca, modelo, cor, placa,
           ano: ano ? Number(ano.replace(/\D/g, "")) : null,
           avaliacao: avaliacaoC, mercado: mercadoC, modo,
         } : null,
@@ -119,10 +123,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
 
       {temTroca && (
         <>
-          <div className="dupla">
-            <CampoTexto rotulo="Marca" valor={marca} aoMudar={setMarca} />
-            <CampoTexto rotulo="Modelo" valor={modelo} aoMudar={setModelo} />
-          </div>
+          <CamposDeVeiculo catalogos={catalogos} escolha={escolha} aoMudar={setEscolha} />
           <div className="dupla">
             <CampoTexto rotulo="Placa" valor={placa} aoMudar={setPlaca} />
             <CampoNumero rotulo="Ano" valor={ano} aoMudar={setAno} />

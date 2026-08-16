@@ -9,6 +9,7 @@
 
 import type { Veiculo } from "../api.js";
 import { brl, dataBr, pct } from "../formato.js";
+import { veiculos as contar } from "../tipos.js";
 import { BarraGarantia, BarraIdade, Placa } from "./basicos.js";
 
 function Identificacao({ veiculo: v }: { veiculo: Veiculo }) {
@@ -18,6 +19,7 @@ function Identificacao({ veiculo: v }: { veiculo: Veiculo }) {
       <div className="car-meta">
         {v.ano ?? "—"} · {v.cor}
         {v.km ? ` · ${v.km.toLocaleString("pt-BR")} km` : ""}
+        {v.etiqueta ? ` · ${v.etiqueta}` : ""}
         {v.origem === "troca" ? " · troca" : ""}
       </div>
     </td>
@@ -145,7 +147,7 @@ export function TabelaVendas(
         <tfoot>
           <tr>
             <td colSpan={3}>
-              {veiculos.length} {veiculos.length === 1 ? "carro" : "carros"}
+              {contar(veiculos.length)}
             </td>
             <td className="dir num c-out">{brl(soma((v) => v.valorCompra))}</td>
             <td className="dir num c-out">{brl(soma((v) => v.custoPreparacao))}</td>

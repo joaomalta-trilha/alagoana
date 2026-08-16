@@ -12,6 +12,7 @@ import { TabelaVendas } from "../componentes/Tabelas.js";
 import { Carregando, Vazio } from "../componentes/basicos.js";
 import { useDados } from "../dados.js";
 import { brl, pct } from "../formato.js";
+import { veiculos as contar } from "../tipos.js";
 import { useDesktop } from "../tela.js";
 
 export function Vendas(
@@ -36,7 +37,7 @@ export function Vendas(
     return (
       <>
         <div className="kpis" style={{ marginBottom: 14 }}>
-          <div className="kpi"><span>Carros vendidos</span><b>{c.vendidos}</b></div>
+          <div className="kpi"><span>Veículos vendidos</span><b>{c.vendidos}</b></div>
           <div className="kpi"><span>Total investido</span><b>{brl(c.investido)}</b></div>
           <div className="kpi"><span>Total faturado</span><b>{brl(c.faturado)}</b></div>
           <div className="kpi">
@@ -45,7 +46,7 @@ export function Vendas(
           </div>
           <div className="kpi"><span>Retorno</span><b className="pos">{pct(c.retornoPct)}</b></div>
           <div className="kpi"><span>Ciclo médio</span><b>{c.cicloMedio}d</b><i>compra até venda</i></div>
-          <div className="kpi"><span>Lucro médio por carro</span><b>{brl(c.lucroMedio)}</b></div>
+          <div className="kpi"><span>Lucro médio por veículo</span><b>{brl(c.lucroMedio)}</b></div>
           <div className="kpi">
             <span>Custo de garantia</span><b className="neg">{brl(c.custoGarantia)}</b>
             <i>retornos lançados</i>
@@ -65,7 +66,7 @@ export function Vendas(
       <div className="card">
         <div className="bloco-t" style={{ marginTop: 0 }}>Consolidado</div>
         <div className="pat-linha">
-          <span>{c.vendidos} {c.vendidos === 1 ? "carro vendido" : "carros vendidos"}</span>
+          <span>{contar(c.vendidos)} {c.vendidos === 1 ? "vendido" : "vendidos"}</span>
           <b>{brl(c.faturado)}</b>
         </div>
         <div className="pat-linha"><span>Total investido</span><b>{brl(c.investido)}</b></div>

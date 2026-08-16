@@ -145,8 +145,12 @@ for (const [rotulo, obtidoTxt, esperadoTxt] of exemplos) {
 // A §3.7 fixa os tamanhos dos catálogos e a §9 diz que o extrato começa
 // vazio. São conferências baratas que pegam seed pela metade.
 const { rows: contagens } = await pool.query<Record<string, string>>(`
-  select (select count(*) from marca)           as marcas,
-         (select count(*) from modelo)          as modelos,
+  select (select count(*) from marca where tipo = 'carro')  as "marcas de carro",
+         (select count(*) from modelo mo join marca m on m.id = mo.marca_id
+           where m.tipo = 'carro')                          as "modelos de carro",
+         (select count(*) from marca where tipo = 'moto')   as "marcas de moto",
+         (select count(*) from modelo mo join marca m on m.id = mo.marca_id
+           where m.tipo = 'moto')                           as "modelos de moto",
          (select count(*) from cor)             as cores,
          (select count(*) from categoria_custo) as categorias,
          (select count(*) from usuario)         as usuarios,
@@ -154,7 +158,9 @@ const { rows: contagens } = await pool.query<Record<string, string>>(`
          (select count(*) from movimento_caixa) as movimentos`);
 
 const CONTAGENS_ESPERADAS: Record<string, number> = {
-  marcas: 27, modelos: 268, cores: 16, categorias: CATEGORIAS_CUSTO.length,
+  "marcas de carro": 27, "modelos de carro": 268,
+  "marcas de moto": 20, "modelos de moto": 170,
+  cores: 16, categorias: CATEGORIAS_CUSTO.length,
   usuarios: 3, contas: 4, movimentos: 0,
 };
 

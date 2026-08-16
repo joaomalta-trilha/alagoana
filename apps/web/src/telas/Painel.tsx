@@ -247,7 +247,7 @@ export function Painel({ versao, recorte }: { versao: number; recorte: string })
 
       <div className="sec-t">Operação</div>
       <div className="kpis">
-        <div className="kpi"><span>Em estoque</span><b>{i.emEstoque}</b><i>carros no pátio</i></div>
+        <div className="kpi"><span>Em estoque</span><b>{i.emEstoque}</b><i>veículos no pátio</i></div>
         <div className="kpi">
           <span>Capital imobilizado</span><b>{brl(i.capitalImobilizado)}</b><i>parado no pátio</i>
         </div>

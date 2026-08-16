@@ -28,6 +28,7 @@ export function CartaoCarro({ veiculo: v, aoTocar }: { veiculo: Veiculo; aoTocar
             {v.vendido
               ? <>{v.ano ?? "—"} · vendido {dataBr(v.dataVenda)}</>
               : <>{v.ano ?? "—"} · {v.cor}</>}
+            {v.etiqueta && <> · <Pilula tipo="troca">{v.etiqueta}</Pilula></>}
             {v.origem === "troca" && <> · <Pilula tipo="troca">troca</Pilula></>}
           </div>
         </div>

@@ -29,7 +29,11 @@ from decimal import Decimal
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-PROTOTIPO = Path.home() / "Downloads" / "patio-prototipo.html"
+_VERSIONADO = RAIZ / "referencia" / "patio-prototipo.html"
+# O protótipo é versionado em `referencia/`. A pasta de downloads fica como
+# reserva para quem estiver conferindo um arquivo recém-recebido, ainda fora
+# do repositório.
+PROTOTIPO = _VERSIONADO if _VERSIONADO.exists() else Path.home() / "Downloads" / "patio-prototipo.html"
 SEED = RAIZ / "apps" / "api" / "src" / "db" / "seed"
 DESTINO = SEED / "frota.json"
 DESTINO_CATALOGO = SEED / "catalogo.json"
@@ -60,14 +64,28 @@ def centavos(valor) -> int:
     return int((Decimal(str(valor)) * 100).to_integral_value())
 
 
+def _objeto(fonte: str, nome: str) -> dict:
+    """Lê um `const NOME = { ... };` do HTML como dicionário."""
+    ini = fonte.index(f"const {nome} = {{")
+    corpo = fonte[ini + len(f"const {nome} = "):fonte.index("\n};", ini) + 2]
+    return ast.literal_eval(corpo)
+
+
 def ler_catalogo(caminho: Path) -> dict:
-    """Lê CATALOGO (marcas -> modelos) e CORES do HTML."""
+    """Lê CATALOGO, CATALOGO_MOTO (marca -> modelos) e CORES do HTML.
+
+    São dois catálogos de marca porque Honda e BMW existem nos dois mundos e
+    significam coisas diferentes: a Honda de carro não vende CG 160. As cores
+    são uma lista só — cor é cor, independente do que ela pinta.
+    """
     fonte = caminho.read_text(encoding="utf-8")
-    ini = fonte.index("const CATALOGO = {")
-    marcas = ast.literal_eval(fonte[ini + len("const CATALOGO = "):fonte.index("\n};", ini) + 2])
     ini = fonte.index("const CORES = [")
     cores = ast.literal_eval(fonte[ini + len("const CORES = "):fonte.index("]", ini) + 1])
-    return {"marcas": marcas, "cores": cores}
+    return {
+        "marcas": _objeto(fonte, "CATALOGO"),
+        "marcasMoto": _objeto(fonte, "CATALOGO_MOTO"),
+        "cores": cores,
+    }
 
 
 # --------------------------------------------------------------------------
@@ -292,10 +310,18 @@ def conferir_catalogo(veiculos: list[dict], catalogo: dict) -> bool:
         if v["cor"] not in cores:
             faltas.append(f"{v['codigo']}: cor {v['cor']}")
 
+    motos = catalogo["marcasMoto"]
     print("\n  CATÁLOGO\n")
-    print(f"  {'marcas':32} {len(marcas):>16}")
-    print(f"  {'modelos':32} {sum(len(m) for m in marcas.values()):>16}")
-    print(f"  {'cores':32} {len(cores):>16}")
+    for rotulo, valor, esperado in (
+        ("marcas de carro", len(marcas), 27),
+        ("modelos de carro", sum(len(m) for m in marcas.values()), 268),
+        ("marcas de moto", len(motos), 20),
+        ("modelos de moto", sum(len(m) for m in motos.values()), 170),
+        ("cores", len(cores), 16),
+    ):
+        bate = valor == esperado
+        faltas.append(f"{rotulo}: {valor}, esperado {esperado}") if not bate else None
+        print(f"  {rotulo:32} {valor:>16}   {'ok' if bate else 'DIVERGE'}")
     if faltas:
         for f in faltas:
             print(f"  fora do catálogo: {f}")

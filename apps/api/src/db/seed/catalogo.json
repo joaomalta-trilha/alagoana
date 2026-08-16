@@ -323,6 +323,218 @@
       "XC90"
     ]
   },
+  "marcasMoto": {
+    "Aprilia": [
+      "RS 660",
+      "SR 150",
+      "SR 160",
+      "Tuono 660"
+    ],
+    "BMW": [
+      "C 400 X",
+      "F 750 GS",
+      "F 800 GS",
+      "F 850 GS",
+      "F 900 R",
+      "F 900 XR",
+      "G 310 GS",
+      "G 310 R",
+      "R 1200 GS",
+      "R 1250 GS",
+      "R 1250 RT",
+      "R nineT",
+      "S 1000 R",
+      "S 1000 RR",
+      "S 1000 XR"
+    ],
+    "Dafra": [
+      "Apache 150",
+      "Citycom 300",
+      "Horizon 150",
+      "Next 250",
+      "NH 190",
+      "Riva 150",
+      "Roadwin 250",
+      "Speed 150"
+    ],
+    "Ducati": [
+      "Diavel",
+      "Hypermotard",
+      "Monster",
+      "Multistrada",
+      "Panigale V2",
+      "Panigale V4",
+      "Scrambler",
+      "Streetfighter",
+      "SuperSport"
+    ],
+    "Haojue": [
+      "Chopper Road 150",
+      "DK 150",
+      "DR 160",
+      "Master Ride 150",
+      "NK 150"
+    ],
+    "Harley-Davidson": [
+      "Fat Boy",
+      "Forty-Eight",
+      "Heritage Classic",
+      "Iron 883",
+      "Pan America",
+      "Road Glide",
+      "Road King",
+      "Softail Slim",
+      "Sportster S",
+      "Street 750",
+      "Street Bob",
+      "Street Glide"
+    ],
+    "Honda": [
+      "ADV 150",
+      "Africa Twin",
+      "Biz 110i",
+      "Biz 125",
+      "CB 300F Twister",
+      "CB 500F",
+      "CB 500X",
+      "CB 650R",
+      "CB 1000R",
+      "CBR 500R",
+      "CBR 650R",
+      "CBR 1000RR",
+      "CG 160 Cargo",
+      "CG 160 Fan",
+      "CG 160 Start",
+      "CG 160 Titan",
+      "Elite 125",
+      "Forza 350",
+      "NC 750X",
+      "NXR 160 Bros",
+      "PCX 160",
+      "Pop 110i",
+      "Sahara 300",
+      "XRE 190",
+      "XRE 300"
+    ],
+    "Husqvarna": [
+      "Norden 901",
+      "Svartpilen 401",
+      "Vitpilen 401"
+    ],
+    "Kasinski": [
+      "Comet 250",
+      "Mirage 250",
+      "Prima 150",
+      "Win 110"
+    ],
+    "Kawasaki": [
+      "Ninja 300",
+      "Ninja 400",
+      "Ninja 650",
+      "Ninja ZX-6R",
+      "Ninja ZX-10R",
+      "Versys 650",
+      "Versys 1000",
+      "Vulcan S",
+      "Z400",
+      "Z650",
+      "Z900",
+      "Z1000"
+    ],
+    "KTM": [
+      "Adventure 390",
+      "Adventure 890",
+      "Duke 200",
+      "Duke 250",
+      "Duke 390",
+      "Duke 790",
+      "RC 390"
+    ],
+    "MV Agusta": [
+      "Brutale 800",
+      "Dragster 800",
+      "F3 800",
+      "Turismo Veloce"
+    ],
+    "Piaggio": [
+      "Beverly 300",
+      "Liberty 150",
+      "Medley 150",
+      "MP3 300"
+    ],
+    "Royal Enfield": [
+      "Classic 350",
+      "Continental GT 650",
+      "Himalayan",
+      "Hunter 350",
+      "Interceptor 650",
+      "Meteor 350",
+      "Scram 411"
+    ],
+    "Shineray": [
+      "Jet 50",
+      "Phoenix 50",
+      "SHI 175",
+      "XY 50Q",
+      "XY 200"
+    ],
+    "Suzuki": [
+      "Bandit 650",
+      "Burgman 125",
+      "DR 160",
+      "GSX-8S",
+      "GSX-R1000",
+      "GSX-S750",
+      "GSX-S1000",
+      "Intruder 125",
+      "V-Strom 650",
+      "V-Strom 1050",
+      "Yes 125"
+    ],
+    "Traxx": [
+      "JH 125",
+      "Star 50",
+      "Work 125"
+    ],
+    "Triumph": [
+      "Bonneville T100",
+      "Bonneville T120",
+      "Rocket 3",
+      "Scrambler 900",
+      "Speed Triple",
+      "Street Triple",
+      "Tiger 800",
+      "Tiger 900",
+      "Trident 660"
+    ],
+    "Vespa": [
+      "GTS 300",
+      "Primavera 150",
+      "Sprint 150"
+    ],
+    "Yamaha": [
+      "Crosser 150",
+      "Factor 125",
+      "Factor 150",
+      "Fazer 250",
+      "Fluo 125",
+      "Lander 250",
+      "MT-03",
+      "MT-07",
+      "MT-09",
+      "MT-15",
+      "Neo 125",
+      "NMAX 160",
+      "R3",
+      "R15",
+      "Ténéré 250",
+      "Ténéré 700",
+      "Tracer 900",
+      "XJ6",
+      "XMAX 250",
+      "YZF-R1"
+    ]
+  },
   "cores": [
     "Branco",
     "Prata",
