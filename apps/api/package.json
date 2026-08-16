@@ -7,6 +7,7 @@
     "servir": "tsx src/http/servidor.ts",
     "dev": "tsx watch src/http/servidor.ts",
     "senha": "tsx src/db/definir-senha.ts",
+    "usuario": "tsx src/db/usuarios.ts",
     "migrar": "tsx src/db/migrar.ts",
     "semear": "tsx src/db/seed/semear.ts",
     "conferir": "tsx src/db/seed/conferir.ts",

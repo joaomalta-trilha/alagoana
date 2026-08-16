@@ -10,6 +10,7 @@
     "servir": "npm run -w @alagoana/api servir",
     "start": "npm run -w @alagoana/api servir",
     "senha": "npm run -w @alagoana/api senha --",
+    "usuario": "npm run -w @alagoana/api usuario --",
     "icones": "node ferramentas/gerar-icones.mjs",
     "tipos": "npm run -w @alagoana/api tipos && npm run -w @alagoana/web tipos",
     "carga:extrair": "python3 ferramentas/extrair-carga.py",

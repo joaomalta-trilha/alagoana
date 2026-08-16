@@ -29,8 +29,38 @@ sem eco e não passa pelo histórico do shell:
 npm run senha -- joaofighera@gmail.com
 ```
 
-Sem argumento, o comando lista quem existe. Victor e Ricardo estão inativos;
-para liberar o acesso de um deles, use `npm run senha -- <e-mail> --ativar`.
+Sem argumento, o comando lista quem existe.
+
+## Quem pode entrar
+
+Só entra quem está **ativo** e **tem senha** — são duas coisas separadas, e um
+usuário recém-criado não tem nenhuma das duas resolvidas por acidente.
+
+```bash
+npm run usuario
+```
+
+Lista todos, com o estado de cada um. Os outros comandos:
+
+```bash
+npm run usuario -- criar "Marina Costa" marina@alagoana.com.br
+```
+
+```bash
+npm run usuario -- email victor@alagoana.local victor@alagoana.com.br
+```
+
+```bash
+npm run usuario -- ativar victor@alagoana.com.br
+```
+
+Criar não define senha: isso continua sendo o `npm run senha`. E `desativar`
+se recusa a derrubar o último acesso ativo com senha — sem essa trava, um
+comando distraído trancaria todo mundo para fora do próprio sistema.
+
+Victor e Ricardo já existem desde a carga inicial, inativos e com e-mail de
+espaço reservado, porque a especificação previa três sócios mas só um e-mail
+era conhecido.
 
 ## Rodar o app
 
