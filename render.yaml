@@ -9,7 +9,10 @@ services:
     runtime: node
     region: oregon
     plan: starter                    # uma instância só — ver a nota em DEPLOY.md
-    buildCommand: npm ci && npm run build
+    # `--include=dev` é explícito de propósito: com `NODE_ENV=production` no
+    # ambiente, algumas versões do npm pulam as devDependencies — e é lá que
+    # moram o `vite` e o `tsc` que este build usa.
+    buildCommand: npm ci --include=dev && npm run build
     # Roda antes de o processo novo entrar no ar. Se a migração falhar, o
     # deploy para e a versão antiga continua atendendo.
     preDeployCommand: npm run db:migrar
