@@ -36,12 +36,22 @@ sobe na primeira publicação. Faltam a carga inicial e a sua senha, e os dois
 podem sair do seu Mac, apontando para o banco da nuvem — assim não dependem de
 ter shell remoto no plano contratado.
 
+Antes de qualquer coisa, **feche o banco para o mundo**. O Render cria o
+Postgres aceitando conexão de qualquer endereço (`0.0.0.0/0`). Em *Access
+Control*, troque isso pelo seu IP atual enquanto durar a carga, e **esvazie a
+lista quando terminar** — o aplicativo fala com o banco pela rede interna e não
+precisa de acesso externo nenhum para funcionar.
+
 Pegue a **External Database URL** no painel do banco e acrescente
-`?sslmode=require` no fim. Depois, num terminal:
+`?sslmode=verify-full` no fim. Depois, num terminal:
 
 ```bash
-export DATABASE_URL='postgres://...render.com/alagoana?sslmode=require'
+export DATABASE_URL='postgres://...render.com/alagoana?sslmode=verify-full'
 ```
+
+Essa URL contém a senha do banco. Não cole em chat, e-mail ou bloco de notas;
+se escapar, o caminho mais limpo é recriar o banco enquanto ele ainda só tem a
+carga inicial, que é reproduzível.
 
 ```bash
 npm run db:semear && npm run db:conferir
