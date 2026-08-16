@@ -8,7 +8,7 @@
  */
 
 import type { Veiculo } from "../api.js";
-import { brl, dataBr, pct } from "../formato.js";
+import { dataBr, pct, reais } from "../formato.js";
 import { BarraGarantia, BarraIdade, Placa, Pilula } from "./basicos.js";
 
 export function CartaoCarro({ veiculo: v, aoTocar }: { veiculo: Veiculo; aoTocar: () => void }) {
@@ -35,22 +35,22 @@ export function CartaoCarro({ veiculo: v, aoTocar }: { veiculo: Veiculo; aoTocar
       </div>
 
       <div className="carro-nums">
-        <div><span>Custo total</span><b>{brl(v.custoTotal)}</b></div>
+        <div><span>Custo total</span><b>{reais(v.custoTotal)}</b></div>
         {v.vendido ? (
           <>
-            <div><span>Venda</span><b>{brl(v.valorVenda ?? 0)}</b></div>
+            <div><span>Venda</span><b>{reais(v.valorVenda ?? 0)}</b></div>
             <div className={(v.lucro ?? 0) > 0 ? "destaque" : "ruim"}>
-              <span>Lucro · {pct(v.retornoPct ?? 0)}</span><b>{brl(v.lucro ?? 0)}</b>
+              <span>Lucro · {pct(v.retornoPct ?? 0)}</span><b>{reais(v.lucro ?? 0)}</b>
             </div>
           </>
         ) : (
           <>
             <div className={v.anuncioAbaixoDoCusto ? "ruim" : ""}>
-              <span>Anúncio</span><b>{v.valorAnuncio ? brl(v.valorAnuncio) : "—"}</b>
+              <span>Anúncio</span><b>{v.valorAnuncio ? reais(v.valorAnuncio) : "—"}</b>
             </div>
             <div className={classeProjetado}>
               <span>Lucro proj.</span>
-              <b>{v.lucroProjetado === null ? "—" : brl(v.lucroProjetado)}</b>
+              <b>{v.lucroProjetado === null ? "—" : reais(v.lucroProjetado)}</b>
             </div>
           </>
         )}

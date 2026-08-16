@@ -7,28 +7,40 @@
 
 export type Centavos = number;
 
-/** "R$ 93.853" — sem centavos, como o protótipo mobile mostra os agregados. */
+/**
+ * "R$ 93.853,20" — o único formatador de dinheiro da interface.
+ *
+ * Sempre com centavos, em toda tela. Houve uma versão que arredondava os
+ * agregados e só mostrava centavo na ficha; os dados reais têm centavo
+ * — R$ 218,26 de lucro no Cruze, R$ 4.183,46 de preparação no Tracker — e
+ * arredondar escondia justamente o que a pessoa foi conferir.
+ *
+ * A parte inteira é montada a partir dos centavos e não de uma divisão: o
+ * projeto inteiro trata dinheiro como inteiro, e `centavos / 100` reintroduz
+ * ponto flutuante no último passo, logo antes de a pessoa ler o número.
+ *
+ * A única exceção são os eixos dos gráficos, onde "R$ 20k" é a leitura certa.
+ * Essa abreviação vive junto do gráfico que a usa, não aqui.
+ */
 export function brl(centavos: Centavos): string {
-  return `R$ ${Math.round(centavos / 100).toLocaleString("pt-BR")}`;
+  const sinal = centavos < 0 ? "-" : "";
+  return `${sinal}R$ ${reais(Math.abs(centavos))}`;
 }
 
 /**
- * "R$ 93.853,20" — com centavos.
+ * "93.853,20" — o mesmo número, sem o símbolo.
  *
- * Usado onde o número é conferido lançamento a lançamento: a lista de custos e
- * a análise financeira da ficha. Ali, arredondar esconderia justamente o que a
- * pessoa foi olhar.
+ * Existe para os três números do cartão do celular, onde cada coluna tem 97px
+ * e "R$ 269.086,08" mede 114 — quebrava em duas linhas. Diminuir a fonte
+ * resolvia por dois pixels, o que quebraria de novo no primeiro valor maior.
+ * O rótulo em cima de cada coluna já diz que é dinheiro; repetir o símbolo
+ * três vezes na mesma linha custava justamente os dígitos.
  */
-export function brlExato(centavos: Centavos): string {
+export function reais(centavos: Centavos): string {
   const sinal = centavos < 0 ? "-" : "";
   const abs = Math.abs(centavos);
   const inteira = Math.trunc(abs / 100).toLocaleString("pt-BR");
-  return `${sinal}R$ ${inteira},${String(abs % 100).padStart(2, "0")}`;
-}
-
-/** "R$ 64 mil" — para o rodapé de KPI, onde a ordem de grandeza basta. */
-export function brlCurto(centavos: Centavos): string {
-  return `R$ ${Math.round(centavos / 100_000)} mil`;
+  return `${sinal}${inteira},${String(abs % 100).padStart(2, "0")}`;
 }
 
 /**

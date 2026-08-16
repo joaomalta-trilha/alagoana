@@ -16,7 +16,7 @@ import { api, type Painel as DadosPainel } from "../api.js";
 import { Carregando, Vazio } from "../componentes/basicos.js";
 import { Grafico, eixoRotulo, eixoValor, opcoesBase } from "../componentes/Grafico.js";
 import { useDados } from "../dados.js";
-import { brl, brlCurto, pct } from "../formato.js";
+import { brl, pct } from "../formato.js";
 import { useDesktop } from "../tela.js";
 
 const emMil = (n: unknown) => `R$ ${Math.round(Number(n) / 1000)}k`;
@@ -249,7 +249,7 @@ export function Painel({ versao, recorte }: { versao: number; recorte: string })
       <div className="kpis">
         <div className="kpi"><span>Em estoque</span><b>{i.emEstoque}</b><i>carros no pátio</i></div>
         <div className="kpi">
-          <span>Capital imobilizado</span><b>{brlCurto(i.capitalImobilizado)}</b><i>parado no pátio</i>
+          <span>Capital imobilizado</span><b>{brl(i.capitalImobilizado)}</b><i>parado no pátio</i>
         </div>
         <div className="kpi"><span>Giro médio</span><b>{i.giroMedio}d</b><i>compra até venda</i></div>
         <div className="kpi">
@@ -257,7 +257,7 @@ export function Painel({ versao, recorte }: { versao: number; recorte: string })
         </div>
         <div className="kpi">
           <span>Lucro realizado</span>
-          <b className="pos">{brlCurto(i.lucroRealizado)}</b>
+          <b className="pos">{brl(i.lucroRealizado)}</b>
           <i>{dados.graficos.retornoPorCiclo.length} vendas</i>
         </div>
         <div className={`kpi${i.parados90 ? " alerta" : ""}`}>

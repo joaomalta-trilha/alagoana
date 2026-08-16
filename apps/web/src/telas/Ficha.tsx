@@ -11,7 +11,7 @@ import { api, type Ficha as DadosFicha } from "../api.js";
 import { Carregando, Placa, Pilula, Vazio } from "../componentes/basicos.js";
 import { Grafico, eixoRotulo, eixoValor, opcoesBase } from "../componentes/Grafico.js";
 import { useDados } from "../dados.js";
-import { brl, brlExato, dataBr, pct } from "../formato.js";
+import { brl, dataBr, pct } from "../formato.js";
 
 interface Props {
   id: string;
@@ -152,15 +152,15 @@ export function Ficha(p: Props) {
         <ul className="rows">
           <li>
             <span><span className="sign">−</span>Valor de compra</span>
-            <b>{brlExato(v.valorCompra)}</b>
+            <b>{brl(v.valorCompra)}</b>
           </li>
           <li>
             <span><span className="sign">−</span>Custos lançados · {v.lancamentos}</span>
-            <b>{brlExato(v.custoPreparacao)}</b>
+            <b>{brl(v.custoPreparacao)}</b>
           </li>
           <li className="sum">
             <span><span className="sign">=</span>Custo total</span>
-            <b>{brlExato(v.custoTotal)}</b>
+            <b>{brl(v.custoTotal)}</b>
           </li>
         </ul>
 
@@ -172,7 +172,7 @@ export function Ficha(p: Props) {
             <>
               <li>
                 <span><span className="sign">+</span>Valor de venda</span>
-                <b>{brlExato(v.valorVenda ?? 0)}</b>
+                <b>{brl(v.valorVenda ?? 0)}</b>
               </li>
               {v.retornoMes !== null && (
                 <li>
@@ -182,18 +182,18 @@ export function Ficha(p: Props) {
               )}
               <li className={`fim${(v.lucro ?? 0) <= 0 ? " ruim" : ""}`}>
                 <span>Lucro · {pct(v.retornoPct ?? 0)}</span>
-                <b>{brlExato(v.lucro ?? 0)}</b>
+                <b>{brl(v.lucro ?? 0)}</b>
               </li>
             </>
           ) : v.valorAnuncio !== null ? (
             <>
               <li>
                 <span><span className="sign">+</span>Valor de anúncio</span>
-                <b>{brlExato(v.valorAnuncio)}</b>
+                <b>{brl(v.valorAnuncio)}</b>
               </li>
               <li className={`fim${(v.lucroProjetado ?? 0) <= 0 ? " ruim" : ""}`}>
                 <span>Projetado · {pct(v.projetadoPct ?? 0)}</span>
-                <b>{brlExato(v.lucroProjetado ?? 0)}</b>
+                <b>{brl(v.lucroProjetado ?? 0)}</b>
               </li>
             </>
           ) : (
@@ -251,7 +251,7 @@ export function Ficha(p: Props) {
                   <div className="cm">{c.categoria} · {c.prevista ? "prevista" : dataBr(c.data)}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "flex-start" }}>
-                  <b>{brlExato(c.valor)}</b>
+                  <b>{brl(c.valor)}</b>
                   <button
                     className="remover" aria-label={`Remover ${c.descricao}`}
                     onClick={() => p.aoRemoverCusto(c.id)}
@@ -261,7 +261,7 @@ export function Ficha(p: Props) {
             ))}
             <div className="pat-linha tot" style={{ marginTop: 10 }}>
               <span>Total em {v.lancamentos} {v.lancamentos === 1 ? "lançamento" : "lançamentos"}</span>
-              <b>{brlExato(v.custoPreparacao)}</b>
+              <b>{brl(v.custoPreparacao)}</b>
             </div>
           </>
         )}
