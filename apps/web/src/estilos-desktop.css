@@ -41,7 +41,10 @@
     cursor: pointer; margin-left: 14px; width: auto;
   }
   .topbar .btn-topo:hover { background: #FFF; color: var(--azul-marca); border-color: #FFF; }
-  .topbar .sair { color: rgba(255,255,255,.72); padding: 8px 0 8px 14px; }
+  .topbar .sair { color: rgba(255,255,255,.72); padding: 8px 0 8px 14px; min-height: 0; }
+  /* Os 44px da §7.4 são regra de dedo. No desktop, mouse mira melhor. */
+  .voltar, .acao-linha { min-height: 0; }
+  .custo-li .remover { min-width: 32px; min-height: 32px; margin: 0 0 0 8px; }
   .topbar .sair:hover { color: #FFF; }
 
   /* ---------- barra de filtros ---------- */

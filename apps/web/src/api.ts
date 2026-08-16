@@ -82,6 +82,8 @@ export interface Veiculo {
 export interface Custo {
   id: string; descricao: string; categoria: string;
   data: string | null; prevista: boolean; valor: Centavos;
+  /** O que volta para o caixa se este custo for excluído. Zero se não saiu de conta. */
+  devolveAoCaixa: Centavos;
 }
 
 export interface Ficha extends Veiculo {

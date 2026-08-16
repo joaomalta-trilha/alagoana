@@ -194,6 +194,14 @@ export interface Custo {
   /** Custo previsto (§3.4): aparece na interface como "prevista". */
   prevista: boolean;
   valor: Centavos;
+  /**
+   * O que volta para o caixa se este custo for excluído — §4.8.
+   *
+   * Zero quando o custo foi lançado com "Não descontar do caixa". Vem junto da
+   * ficha para que a confirmação de exclusão mostre o número sem precisar
+   * perguntar de novo ao servidor com o dedo já sobre o botão.
+   */
+  devolveAoCaixa: Centavos;
 }
 
 export interface Ficha extends VeiculoCalculado {
@@ -216,10 +224,16 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
 
   // Em série, e não em Promise.all: um PoolClient atende uma consulta por vez,
   // e paralelizar nele só enfileira com um aviso de depreciação de brinde.
-  const custos = await c.query<
-    { id: string; descricao: string; categoria: string; data: DataISO | null; valor: string }
-  >(`select id, descricao, categoria, data, valor from custo
-      where veiculo_id = $1 order by data nulls last, criado_em`, [id]);
+  const custos = await c.query<{
+    id: string; descricao: string; categoria: string;
+    data: DataISO | null; valor: string; devolve: string;
+  }>(`select k.id, k.descricao, k.categoria, k.data, k.valor,
+             coalesce(-sum(m.valor), 0) as devolve
+        from custo k
+        left join movimento_caixa m on m.custo_id = k.id
+       where k.veiculo_id = $1
+       group by k.id
+       order by k.data nulls last, k.criado_em`, [id]);
 
   const entrou = await c.query<{ id: string; codigo: string; marca: string; modelo: string }>(
     "select id, codigo, marca, modelo from veiculo where troca_de_id = $1", [id]);
@@ -255,6 +269,7 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
     custos: custos.rows.map((k) => ({
       id: k.id, descricao: k.descricao, categoria: k.categoria,
       data: k.data, prevista: k.data === null, valor: deNumeric(k.valor)!,
+      devolveAoCaixa: deNumeric(k.devolve)!,
     })),
     custoPorCategoria: [...porCategoria.entries()]
       .map(([categoria, valor]) => ({ categoria, valor }))

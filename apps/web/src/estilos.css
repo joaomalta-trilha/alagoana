@@ -47,7 +47,9 @@ button,input,select{font-family:inherit}
 .top .tela{font-family:"Archivo",sans-serif; font-size:13px; font-weight:500; color:rgba(255,255,255,.78)}
 .top .sair{
   background:none; border:0; color:rgba(255,255,255,.78); font-family:"Archivo",sans-serif;
-  font-size:12.5px; font-weight:500; cursor:pointer; padding:6px 0 6px 10px;
+  font-size:12.5px; font-weight:500; cursor:pointer;
+  /* §7.4: alvo de toque de 44px. Era 26 — e é o botão que derruba a sessão. */
+  min-height:44px; padding:0 4px 0 14px; display:flex; align-items:center;
 }
 
 .wrap{padding:16px 16px 8px}
@@ -158,12 +160,17 @@ button,input,select{font-family:inherit}
 .custo-li .cn{font-size:14px; line-height:1.35}
 .custo-li .cm{font-size:11.5px; color:var(--ink3); margin-top:2px}
 .custo-li b{font-family:"IBM Plex Mono",monospace; font-weight:500; white-space:nowrap}
-.custo-li .remover{background:none; border:0; color:var(--ink3); font-size:18px; line-height:1; padding:2px 0 2px 12px; cursor:pointer}
+.custo-li .remover{background:none; border:0; color:var(--ink3); font-size:20px; line-height:1;
+  cursor:pointer; min-width:44px; min-height:44px; margin:-11px -12px -11px 0;
+  display:flex; align-items:center; justify-content:center}
 .custo-li .remover:active{color:var(--vermelho)}
 .link-troca{background:#EAEFFC; border:1px solid #C3D0F5; border-radius:12px; padding:13px 14px; margin-bottom:11px; font-size:13.5px; line-height:1.45}
 .link-troca button{background:none; border:0; color:var(--azul-marca); font-size:13.5px; font-weight:600; padding:6px 0 0; text-decoration:underline; cursor:pointer}
-.voltar{background:none; border:0; color:var(--ink2); font-size:14.5px; padding:0 0 12px; cursor:pointer}
-.acao-linha{background:none; border:0; color:var(--azul-marca); font-weight:600; font-size:13.5px; padding:0; cursor:pointer}
+.voltar{background:none; border:0; color:var(--ink2); font-size:14.5px; cursor:pointer;
+  /* §7.4. Estende para a esquerda para o dedo não precisar mirar. */
+  min-height:44px; padding:0 12px 0 0; margin-bottom:4px; display:flex; align-items:center}
+.acao-linha{background:none; border:0; color:var(--azul-marca); font-weight:600; font-size:13.5px;
+  cursor:pointer; min-height:44px; padding:0 0 0 12px; display:flex; align-items:center}
 .entre{display:flex; justify-content:space-between; align-items:center; gap:10px}
 .entre.base{align-items:baseline}
 
@@ -228,7 +235,9 @@ button,input,select{font-family:inherit}
   width:100%; font-size:16px; padding:13px 12px; border:1px solid var(--line2);
   border-radius:10px; background:#FFF; color:var(--ink);
 }
-.campo.caixa label{display:flex; gap:10px; align-items:center; text-transform:none; letter-spacing:0; font-size:14px; color:var(--ink2); font-weight:400; margin:0}
+.campo.caixa label{display:flex; gap:10px; align-items:center; text-transform:none; letter-spacing:0; font-size:14px; color:var(--ink2); font-weight:400; margin:0;
+  /* O quadradinho tem 13px; quem recebe o toque é o rótulo inteiro (§7.4). */
+  min-height:44px; cursor:pointer}
 .campo.caixa input{width:auto; padding:0; flex:0 0 auto}
 .dupla{display:grid; grid-template-columns:1fr 1fr; gap:11px}
 .chips{display:flex; gap:8px; overflow-x:auto; padding:2px 16px 4px; margin:0 -16px; scrollbar-width:none}

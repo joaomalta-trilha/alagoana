@@ -8,7 +8,9 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { api, ErroApi, type Catalogos, type Ficha as DadosFicha, type Usuario, type Veiculo } from "./api.js";
+import {
+  api, type Catalogos, type Custo, type Ficha as DadosFicha, type Usuario, type Veiculo,
+} from "./api.js";
 import { Navegacao, Topo, type Aba } from "./componentes/Navegacao.js";
 import {
   BarraFiltros, TopoDesktop, comoConsulta, SEM_FILTRO, type Filtros,
@@ -27,6 +29,7 @@ import { FormVeiculo } from "./folhas/FormVeiculo.js";
 import { AtualizarFipe } from "./folhas/Fipe.js";
 import { Aporte } from "./folhas/Aporte.js";
 import { ConfirmarExclusao } from "./folhas/ConfirmarExclusao.js";
+import { ConfirmarExclusaoCusto } from "./folhas/ConfirmarExclusaoCusto.js";
 
 type Folha =
   | { tipo: "custo"; veiculoId?: string }
@@ -35,6 +38,7 @@ type Folha =
   | { tipo: "fipe"; veiculo: DadosFicha }
   | { tipo: "aporte" }
   | { tipo: "exclusao"; veiculoId: string }
+  | { tipo: "exclusaoCusto"; custo: Custo }
   | null;
 
 const NOMES: Record<Aba, string> = {
@@ -97,16 +101,6 @@ export function App() {
     setFolha(null);
   }
 
-  async function removerCusto(id: string) {
-    try {
-      await api.excluirCusto(id);
-      atualizar();
-    } catch (e) {
-      // A recusa da API já vem com texto de gente; aqui só não some em silêncio.
-      alert(e instanceof ErroApi ? e.message : "Não foi possível remover o custo.");
-    }
-  }
-
   if (conferindo) return <Carregando />;
   if (!usuario) return <Login aoEntrar={setUsuario} />;
 
@@ -141,7 +135,7 @@ export function App() {
             aoVender={(v) => setFolha({ tipo: "venda", veiculo: v })}
             aoLancarCusto={(v) => setFolha({ tipo: "custo", veiculoId: v.id })}
             aoAtualizarFipe={(v) => setFolha({ tipo: "fipe", veiculo: v })}
-            aoRemoverCusto={(id) => void removerCusto(id)}
+            aoRemoverCusto={(custo) => setFolha({ tipo: "exclusaoCusto", custo })}
           />
         ) : aba === "painel" ? (
           <Painel versao={versao} recorte={recorte} />
@@ -196,6 +190,13 @@ export function App() {
       )}
       {catalogos && folha?.tipo === "aporte" && (
         <Aporte catalogos={catalogos} aoFechar={() => setFolha(null)} aoGravar={atualizar} />
+      )}
+      {folha?.tipo === "exclusaoCusto" && (
+        <ConfirmarExclusaoCusto
+          custo={folha.custo}
+          aoFechar={() => setFolha(null)}
+          aoExcluir={atualizar}
+        />
       )}
       {folha?.tipo === "exclusao" && (
         <ConfirmarExclusao

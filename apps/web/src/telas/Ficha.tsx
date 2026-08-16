@@ -24,7 +24,7 @@ interface Props {
   aoVender: (v: DadosFicha) => void;
   aoLancarCusto: (v: DadosFicha) => void;
   aoAtualizarFipe: (v: DadosFicha) => void;
-  aoRemoverCusto: (custoId: string) => void;
+  aoRemoverCusto: (custo: DadosFicha["custos"][number]) => void;
 }
 
 export function Ficha(p: Props) {
@@ -256,7 +256,7 @@ export function Ficha(p: Props) {
                   <b>{brl(c.valor)}</b>
                   <button
                     className="remover" aria-label={`Remover ${c.descricao}`}
-                    onClick={() => p.aoRemoverCusto(c.id)}
+                    onClick={() => p.aoRemoverCusto(c)}
                   >×</button>
                 </div>
               </div>
