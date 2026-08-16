@@ -28,7 +28,9 @@ export function Estoque(
   if (carregando && !dados) return <Carregando />;
 
   const veiculos = dados?.veiculos ?? [];
-  const investido = veiculos.reduce((a, v) => a + v.custoTotal, 0);
+  // Somado no backend: é o mesmo número que o painel chama de capital
+  // imobilizado, e somar nos dois lugares é como se diverge de si mesmo.
+  const investido = dados?.totais?.custoTotal ?? 0;
 
   return (
     <>

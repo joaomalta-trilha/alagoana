@@ -139,6 +139,29 @@ export function calcular(l: Linha, hoje: DataISO): VeiculoCalculado {
 
 export type Situacao = "estoque" | "vendido" | "todos";
 
+export interface TotaisDaLista {
+  quantidade: number;
+  /** O que está imobilizado: soma do custo total. */
+  custoTotal: Centavos;
+  /** O que se pede por tudo, usando o custo onde não há anúncio. */
+  valorAnuncio: Centavos;
+}
+
+/**
+ * Os totais de uma listagem, somados aqui e não na tela.
+ *
+ * O cabeçalho do estoque mostra "investido", que é o mesmo número que o painel
+ * chama de capital imobilizado. Somar nos dois lugares é como a planilha
+ * divergia de si mesma — e é o defeito que este projeto existe para não ter.
+ */
+export function totalizar(veiculos: readonly VeiculoCalculado[]): TotaisDaLista {
+  return {
+    quantidade: veiculos.length,
+    custoTotal: veiculos.reduce((a, v) => a + v.custoTotal, 0),
+    valorAnuncio: veiculos.reduce((a, v) => a + (v.valorAnuncio ?? v.custoTotal), 0),
+  };
+}
+
 /**
  * A listagem é o único lugar que aplica os filtros da §6.1 — painel e vendas
  * saem daqui e herdam o recorte, em vez de cada um filtrar do seu jeito.
@@ -255,6 +278,10 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
 
 export interface ConsolidadoVendas {
   vendidos: number;
+  /** O que se pagou pelos carros, sem a preparação. */
+  compra: Centavos;
+  /** O que se gastou preparando. `compra + preparacao = investido`. */
+  preparacao: Centavos;
   investido: Centavos;
   faturado: Centavos;
   lucro: Centavos;
@@ -284,6 +311,8 @@ export async function consolidadoVendas(
   return {
     consolidado: {
       vendidos: veiculos.length,
+      compra: veiculos.reduce((a, v) => a + v.valorCompra, 0),
+      preparacao: veiculos.reduce((a, v) => a + v.custoPreparacao, 0),
       investido,
       faturado,
       lucro: resultado,

@@ -118,7 +118,8 @@ export interface Painel {
 
 export interface Vendas {
   consolidado: {
-    vendidos: number; investido: Centavos; faturado: Centavos; lucro: Centavos;
+    vendidos: number; compra: Centavos; preparacao: Centavos;
+    investido: Centavos; faturado: Centavos; lucro: Centavos;
     retornoPct: number; cicloMedio: number; lucroMedio: Centavos;
     custoGarantia: Centavos; emGarantia: number;
   };
@@ -145,6 +146,10 @@ export interface Catalogos {
   tipos: { valor: TipoVeiculo; rotulo: string; temCatalogo: boolean; etiqueta: string | null }[];
   contas: { id: string; nome: string; tipo: string }[];
   socios: { id: string; nome: string }[];
+}
+
+export interface TotaisDaLista {
+  quantidade: number; custoTotal: Centavos; valorAnuncio: Centavos;
 }
 
 export interface Atalho {
@@ -185,7 +190,8 @@ export const api = {
   // consultas de leitura recebem o mesmo recorte, porque os filtros do desktop
   // valem em todas as telas ao mesmo tempo.
   veiculos: (situacao: "estoque" | "vendido" | "todos", recorte = "") =>
-    pedir<{ veiculos: Veiculo[] }>("GET", `/api/veiculos?situacao=${situacao}${recorte}`),
+    pedir<{ veiculos: Veiculo[]; totais?: TotaisDaLista }>(
+      "GET", `/api/veiculos?situacao=${situacao}${recorte}`),
   ficha: (id: string) => pedir<Ficha>("GET", `/api/veiculos/${id}`),
   criarVeiculo: (dados: unknown) => pedir<{ id: string; codigo: string }>("POST", "/api/veiculos", dados),
   editarVeiculo: (id: string, dados: unknown) => pedir<Ficha>("PATCH", `/api/veiculos/${id}`, dados),

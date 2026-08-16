@@ -56,7 +56,7 @@ export function Vendas(
           </div>
         </div>
 
-        <TabelaVendas veiculos={veiculos} aoAbrir={aoAbrirFicha} />
+        <TabelaVendas veiculos={veiculos} consolidado={c} aoAbrir={aoAbrirFicha} />
       </>
     );
   }

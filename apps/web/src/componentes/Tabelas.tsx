@@ -7,7 +7,7 @@
  * vermelhos — não existe negociação possível ali que não seja prejuízo.
  */
 
-import type { Veiculo } from "../api.js";
+import type { Veiculo, Vendas } from "../api.js";
 import { brl, dataBr, pct } from "../formato.js";
 import { veiculos as contar } from "../tipos.js";
 import { BarraGarantia, BarraIdade, Placa } from "./basicos.js";
@@ -89,7 +89,8 @@ export function TabelaEstoque(
 }
 
 export function TabelaVendas(
-  { veiculos, aoAbrir }: { veiculos: Veiculo[]; aoAbrir: (id: string) => void },
+  { veiculos, consolidado, aoAbrir }:
+  { veiculos: Veiculo[]; consolidado: Vendas["consolidado"]; aoAbrir: (id: string) => void },
 ) {
   if (veiculos.length === 0) {
     return (
@@ -99,10 +100,9 @@ export function TabelaVendas(
     );
   }
 
-  const soma = (f: (v: Veiculo) => number) => veiculos.reduce((a, v) => a + f(v), 0);
-  const investido = soma((v) => v.custoTotal);
-  const faturado = soma((v) => v.valorVenda ?? 0);
-  const lucro = faturado - investido;
+  // Os totais vêm calculados da API. Recalcular aqui seria manter duas contas
+  // do mesmo número, que é exatamente o que a planilha fazia de errado.
+  const { compra, preparacao, investido, faturado, lucro, retornoPct } = consolidado;
 
   return (
     <div className="tbl-wrap">
@@ -149,15 +149,13 @@ export function TabelaVendas(
             <td colSpan={3}>
               {contar(veiculos.length)}
             </td>
-            <td className="dir num c-out">{brl(soma((v) => v.valorCompra))}</td>
-            <td className="dir num c-out">{brl(soma((v) => v.custoPreparacao))}</td>
+            <td className="dir num c-out">{brl(compra)}</td>
+            <td className="dir num c-out">{brl(preparacao)}</td>
             <td className="dir num c-sum">{brl(investido)}</td>
             <td className="dir num c-in">{brl(faturado)}</td>
             <td className={`dir num c-in${lucro <= 0 ? " abaixo" : ""}`}>
               {brl(lucro)}
-              <span className="sub-cel">
-                {pct(investido ? (lucro / investido) * 100 : 0)}
-              </span>
+              <span className="sub-cel">{pct(retornoPct)}</span>
             </td>
             <td />
           </tr>

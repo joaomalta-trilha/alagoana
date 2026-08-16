@@ -69,15 +69,10 @@ export function paraCentavos(texto: string): Centavos | null {
   return negativo ? -valor : valor;
 }
 
-/** Centavos para o texto que volta ao campo: "1234.56". */
+/** Centavos para o texto que volta ao campo: "1234,56". */
 export function paraCampo(centavos: Centavos | null): string {
   if (centavos === null) return "";
   return `${Math.trunc(centavos / 100)},${String(Math.abs(centavos) % 100).padStart(2, "0")}`;
-}
-
-export function inteiroOuNulo(texto: string): number | null {
-  const limpo = texto.replace(/\D/g, "");
-  return limpo ? Number(limpo) : null;
 }
 
 /** "2026-08-03" → "03/08/2026" */

@@ -14,7 +14,7 @@ import { hoje } from "../env.js";
 import { ErroDeValidacao } from "../dominio/mensagens.js";
 import { lerFiltros } from "../dominio/filtros.js";
 import { lerTipo, temCatalogo, type TipoComCatalogo } from "../dominio/tipo-veiculo.js";
-import { filtrarListaPorPapel, filtrarPorPapel } from "../dominio/papel.js";
+import { filtrarListaPorPapel, filtrarPorPapel, veFinanceiro } from "../dominio/papel.js";
 import type { Usuario } from "./autenticacao.js";
 import {
   booleano, centavos, comoCorpo, contaOpcional, data, inteiro, listaDeTexto,
@@ -31,7 +31,7 @@ import {
 import { atalhos, excluirCusto, lancarCusto, type ModoRateio } from "../servicos/custos.js";
 import { registrarAporte } from "../servicos/caixa.js";
 import {
-  consolidadoVendas, ficha, listarVeiculos, painel, visaoCaixa, type Situacao,
+  consolidadoVendas, ficha, listarVeiculos, painel, totalizar, visaoCaixa, type Situacao,
 } from "../servicos/consultas.js";
 
 export interface Contexto {
@@ -57,7 +57,11 @@ const listar = async (ctx: Contexto) => {
   }
   const veiculos = await comLeitura((c) =>
     listarVeiculos(c, pedida as Situacao, hoje(), lerFiltros(ctx.consulta)));
-  return { veiculos: filtrarListaPorPapel(veiculos, ctx.usuario.papel) };
+  return {
+    veiculos: filtrarListaPorPapel(veiculos, ctx.usuario.papel),
+    // Totais são financeiro: quem não vê margem também não vê soma.
+    ...(veFinanceiro(ctx.usuario.papel) ? { totais: totalizar(veiculos) } : {}),
+  };
 };
 
 // ------------------------------------------------------------- leitura corpo

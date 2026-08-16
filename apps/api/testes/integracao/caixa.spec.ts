@@ -3,7 +3,9 @@ import { pool, comTransacao, comLeitura } from "../../src/db/conexao.js";
 import { registrarAporte } from "../../src/servicos/caixa.js";
 import { criarVeiculo, venderVeiculo } from "../../src/servicos/veiculos.js";
 import { lancarCusto } from "../../src/servicos/custos.js";
-import { painel, visaoCaixa } from "../../src/servicos/consultas.js";
+import {
+  consolidadoVendas, listarVeiculos, painel, totalizar, visaoCaixa,
+} from "../../src/servicos/consultas.js";
 import { base, limpar, saldo, type Base } from "./fixtura.js";
 
 const HOJE = "2026-08-09";
@@ -80,6 +82,54 @@ describe("aporte de sócio (§3.6)", () => {
     const { rows } = await pool.query<{ m: string; a: string }>(
       `select (select count(*) from movimento_caixa) m, (select count(*) from aporte_socio) a`);
     expect(rows[0]).toEqual({ m: "0", a: "0" });
+  });
+});
+
+describe("totais somados no backend, nunca na tela", () => {
+  it("o consolidado de vendas fecha em si mesmo", async () => {
+    const v = await comTransacao((c) => criarVeiculo(c, {
+      marca: "Honda", modelo: "City", cor: "Prata", placa: "CIT1A11",
+      dataCompra: "2026-02-14", valorCompra: 8_400_000,
+    }, b.usuarioId));
+    await comTransacao((c) => lancarCusto(c, {
+      veiculoIds: [v.id], descricao: "Preparação", categoria: "Peças",
+      data: "2026-03-01", valor: 985_320,
+    }, b.usuarioId));
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-03", valorVenda: 9_700_000, lancarComissoes: false,
+    }, b.usuarioId));
+
+    const { consolidado } = await comLeitura((c) => consolidadoVendas(c, HOJE));
+    expect(consolidado.compra).toBe(8_400_000);
+    expect(consolidado.preparacao).toBe(985_320);
+    // A identidade que a tela usava para recalcular, agora garantida na origem.
+    expect(consolidado.compra + consolidado.preparacao).toBe(consolidado.investido);
+    expect(consolidado.faturado - consolidado.investido).toBe(consolidado.lucro);
+  });
+
+  it("os totais da listagem batem com a soma dos itens", async () => {
+    for (const [placa, valor] of [["AAA1A11", 3_000_000], ["BBB2B22", 5_000_000]] as const) {
+      await comTransacao((c) => criarVeiculo(c, {
+        marca: "Fiat", modelo: "Mobi", cor: "Branco", placa,
+        dataCompra: "2026-06-01", valorCompra: valor, valorAnuncio: valor + 1_000_000,
+      }, b.usuarioId));
+    }
+
+    const estoque = await comLeitura((c) => listarVeiculos(c, "estoque", HOJE));
+    const totais = totalizar(estoque);
+    expect(totais.quantidade).toBe(2);
+    expect(totais.custoTotal).toBe(8_000_000);
+    expect(totais.valorAnuncio).toBe(10_000_000);
+  });
+
+  it("veículo sem anúncio entra no total pelo próprio custo", async () => {
+    await comTransacao((c) => criarVeiculo(c, {
+      marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
+      dataCompra: "2026-06-01", valorCompra: 3_000_000,
+    }, b.usuarioId));
+
+    const totais = totalizar(await comLeitura((c) => listarVeiculos(c, "estoque", HOJE)));
+    expect(totais.valorAnuncio).toBe(totais.custoTotal);
   });
 });
 

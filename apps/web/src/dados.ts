@@ -47,8 +47,3 @@ export function useDados<T>(buscar: () => Promise<T>, chave: string | number): E
 
   return { dados, erro, carregando, recarregar: () => setLocal((n) => n + 1) };
 }
-
-/** Sessão expirada no meio do uso: quem chama manda de volta para o login. */
-export function sessaoCaiu(e: unknown): boolean {
-  return e instanceof ErroApi && e.status === 401;
-}

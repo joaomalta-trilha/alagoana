@@ -47,8 +47,3 @@ export async function saldo(contaId: string): Promise<Centavos> {
     "select saldo from saldo_conta where conta_id = $1", [contaId]);
   return deNumeric(rows[0]!.saldo)!;
 }
-
-export async function contarMovimentos(): Promise<number> {
-  const { rows } = await pool.query<{ n: string }>("select count(*) n from movimento_caixa");
-  return Number(rows[0]!.n);
-}
