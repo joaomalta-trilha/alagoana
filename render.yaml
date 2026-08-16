@@ -1,0 +1,41 @@
+# Blueprint do Render — cria o serviço e o banco a partir deste arquivo.
+#
+# Nomes de plano e regiões mudam com o tempo; confira no painel antes do
+# primeiro deploy e ajuste aqui se o Render recusar algum valor.
+
+services:
+  - type: web
+    name: alagoana
+    runtime: node
+    region: oregon
+    plan: starter                    # uma instância só — ver a nota em DEPLOY.md
+    buildCommand: npm ci && npm run build
+    # Roda antes de o processo novo entrar no ar. Se a migração falhar, o
+    # deploy para e a versão antiga continua atendendo.
+    preDeployCommand: npm run db:migrar
+    startCommand: npm run servir
+    healthCheckPath: /api/saude
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      # Cookie de sessão só por HTTPS.
+      - key: COOKIE_SEGURO
+        value: "1"
+      # Há exatamente um proxy do Render na frente. Sem isto, o freio de login
+      # veria a loja inteira como um visitante só.
+      - key: CONFIAR_PROXY
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: alagoana-db
+          property: connectionString
+
+databases:
+  - name: alagoana-db
+    databaseName: alagoana
+    user: alagoana
+    region: oregon
+    plan: basic-256mb

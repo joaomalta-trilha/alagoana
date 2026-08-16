@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"frota\\\\s*=\\\\|CATEGORIAS\\\\|const contas\\\\|let contas\\\\|SALDO_INICIAL\\\\|saldoInicial\" \"/Users/Malta/Downloads/patio-prototipo.html\" | head -30)",
+      "Bash(wc -l -c \"/Users/Malta/Downloads/patio-prototipo.html\" \"/Users/Malta/Downloads/patio-mobile.html\")",
+      "Bash(python3 -)",
+      "Bash(printf '.vite/\\\\n')",
+      "Bash(sed -i '' 's|apps/api/src/db/conferir.ts|apps/api/src/db/seed/conferir.ts|' COMO-RODAR.md)",
+      "Bash(zsh \"/private/tmp/claude-502/-Users-Malta-Desktop-Gest-o-de-Estoque---Financeiro/009b058c-416b-490b-afbb-33ec165ce340/scratchpad/subir-mobile.sh\")",
+      "Bash(python3 \"/private/tmp/claude-502/-Users-Malta-Desktop-Gest-o-de-Estoque---Financeiro/009b058c-416b-490b-afbb-33ec165ce340/scratchpad/escapar2.py\")",
+      "Bash(python3 \"/private/tmp/claude-502/-Users-Malta-Desktop-Gest-o-de-Estoque---Financeiro/009b058c-416b-490b-afbb-33ec165ce340/scratchpad/provar-tty.py\")"
+    ]
+  }
+}

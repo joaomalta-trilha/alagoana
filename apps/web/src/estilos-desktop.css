@@ -1,0 +1,147 @@
+/*
+ * O desktop da §6, portado do `patio-prototipo.html`.
+ *
+ * Tudo aqui vive dentro de uma media query: os mesmos componentes mudam de
+ * arranjo, como a §6.2 manda ("mesmo componente, media query"). O que troca de
+ * estrutura — cartão vira tabela — troca no React, porque esconder uma tabela
+ * de nove colunas no celular seria pagar por DOM que ninguém vê.
+ *
+ * O corte é 900px: abaixo disso a tabela de estoque não cabe sem rolagem
+ * horizontal, que é justamente o que os cartões existem para evitar.
+ */
+
+@media (min-width: 900px) {
+  /* a navegação inferior e o flutuante são coisas de celular */
+  .nav, .fab { display: none !important; }
+  body.com-nav { padding-bottom: 0; }
+
+  /* ---------- barra superior ---------- */
+  .topbar {
+    background: var(--azul-marca); color: #FFF; padding: 13px 24px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 20;
+  }
+  .topbar .marca .selo { width: 30px; height: 30px; font-size: 17px; border-radius: 8px; }
+  .topbar .marca .nome { font-size: 17px; }
+  .topbar .lema {
+    font-family: "Archivo", sans-serif; font-weight: 500; font-size: 13.5px;
+    color: rgba(255,255,255,.72); border-left: 1px solid rgba(255,255,255,.28);
+    padding-left: 13px; letter-spacing: .01em;
+  }
+  .abas { display: flex; gap: 4px; margin-left: auto; }
+  .abas button {
+    background: none; border: 0; color: rgba(255,255,255,.72); padding: 7px 14px;
+    border-radius: 99px; font-size: 14px; font-weight: 500; cursor: pointer;
+  }
+  .abas button:hover { color: #FFF; background: rgba(255,255,255,.10); }
+  .abas button.on { background: #FFF; color: var(--azul-marca); font-weight: 600; }
+  .topbar .btn-topo {
+    background: rgba(255,255,255,.16); color: #FFF; border: 1px solid rgba(255,255,255,.34);
+    padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; margin-left: 14px; width: auto;
+  }
+  .topbar .btn-topo:hover { background: #FFF; color: var(--azul-marca); border-color: #FFF; }
+  .topbar .sair { color: rgba(255,255,255,.72); padding: 8px 0 8px 14px; }
+  .topbar .sair:hover { color: #FFF; }
+
+  /* ---------- barra de filtros ---------- */
+  .filtros {
+    background: var(--card); border-bottom: 1px solid var(--line);
+    padding: 14px 24px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .fgrupo { display: flex; flex-direction: column; gap: 5px; }
+  .fgrupo label {
+    font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 600;
+  }
+  .fgrupo select {
+    font-family: inherit; font-size: 14px; padding: 7px 10px; border: 1px solid var(--line2);
+    border-radius: 7px; background: #FFF; color: var(--ink); min-width: 145px;
+  }
+  .flimpar {
+    margin-left: auto; background: none; border: 1px solid var(--line2); color: var(--ink2);
+    padding: 8px 14px; border-radius: 7px; font-size: 13px; cursor: pointer;
+  }
+  .flimpar:hover { border-color: var(--ink2); }
+
+  .wrap { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* ---------- painel ---------- */
+  .pat-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .pat-lab { grid-column: 1 / -1; }
+  .kpis { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .chart-box { height: 260px; }
+
+  /* ---------- tabelas ---------- */
+  .tbl-wrap {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    overflow-x: auto; margin-bottom: 14px;
+  }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tbl thead th {
+    text-align: left; padding: 11px 14px; background: #FAFBF9;
+    border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--ink3); font-weight: 600; white-space: nowrap;
+  }
+  .tbl tbody td { padding: 11px 14px; border-bottom: 1px solid #EDEFEA; vertical-align: middle; }
+  .tbl tbody tr { cursor: pointer; }
+  .tbl tbody tr:hover { background: #F7F9F6; }
+  .tbl tfoot td {
+    padding: 13px 14px; border-top: 2px solid var(--ink); font-weight: 600; white-space: nowrap;
+  }
+  .tbl .dir { text-align: right; }
+  .tbl tbody td.dir { white-space: nowrap; }
+  .tbl th:first-child { min-width: 200px; }
+  .car-nome { font-weight: 500; }
+  .car-meta { font-size: 12px; color: var(--ink3); }
+
+  /* As três faixas de leitura da §6.3: cinza é o que saiu, destaque é o
+     subtotal, verde é o que pode entrar. */
+  .c-out { background: #FAFAF7; }
+  td.c-out { color: var(--ink2); }
+  .c-sum { background: #F0F3EF; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+  td.c-sum { font-weight: 600; color: var(--ink); }
+  .c-in { background: #ECF4EF; }
+  td.c-in { font-weight: 600; color: var(--verde); }
+  /* Anúncio que não cobre o custo: não há negociação ali que não seja prejuízo. */
+  td.c-in.abaixo { background: #F7EAEA; color: var(--vermelho); }
+  thead th.c-sum, thead th.c-in, thead th.c-out { color: var(--ink2); }
+  .sub-cel {
+    display: block; font-size: 11.5px; font-weight: 400; color: var(--ink3);
+    font-family: "IBM Plex Mono", monospace; margin-top: 2px;
+  }
+
+  .tbl .age { min-width: 130px; margin-top: 0; }
+  .tbl .age-track { min-width: 56px; }
+
+  .plate.sm { width: 104px; border-width: 1.5px; }
+  .plate.sm .plate-top { font-size: 7px; padding: 1px 5px; }
+  .plate.sm .plate-top i { width: 8px; height: 6px; }
+  .plate.sm .plate-num { font-size: 15px; padding: 2px 0 4px; }
+  .plate.g { width: 174px; }
+  .plate.g .plate-top { font-size: 9px; letter-spacing: .16em; padding: 2px 7px; }
+  .plate.g .plate-top i { width: 11px; height: 8px; }
+  .plate.g .plate-num { font-size: 25px; padding: 5px 0 7px; }
+
+  /* ---------- ficha e listas em duas colunas ---------- */
+  .ficha-colunas { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; align-items: start; }
+  .cabecalho-lista { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .cabecalho-lista .btn { width: auto; }
+  .acoes-ficha { grid-template-columns: auto auto; justify-content: start; }
+  .acoes-ficha .btn-sec { width: auto; padding: 9px 18px; }
+  .card .btn, .card .btn-sec { width: auto; }
+
+  /* A folha inferior vira modal centrado: no desktop não existe "inferior". */
+  .sheet-bg { align-items: center; justify-content: center; padding: 24px; }
+  .sheet { max-width: 560px; border-radius: 14px; padding: 8px 22px 22px; }
+  .grab { display: none; }
+  .acoes { flex-direction: row-reverse; justify-content: flex-start; }
+  .acoes .btn, .acoes .btn-sec { width: auto; min-width: 130px; }
+}
+
+/* Entre 900 e 1180 os seis gráficos em duas colunas ficam apertados. */
+@media (min-width: 900px) and (max-width: 1180px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+}

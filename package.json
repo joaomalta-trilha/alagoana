@@ -1,0 +1,22 @@
+{
+  "name": "alagoana",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev": "node ferramentas/dev.mjs",
+    "build": "npm run tipos && npm run -w @alagoana/web build",
+    "servir": "npm run -w @alagoana/api servir",
+    "start": "npm run -w @alagoana/api servir",
+    "senha": "npm run -w @alagoana/api senha --",
+    "icones": "node ferramentas/gerar-icones.mjs",
+    "tipos": "npm run -w @alagoana/api tipos && npm run -w @alagoana/web tipos",
+    "carga:extrair": "python3 ferramentas/extrair-carga.py",
+    "db:migrar": "npm run -w @alagoana/api migrar",
+    "db:semear": "npm run -w @alagoana/api semear",
+    "db:conferir": "npm run -w @alagoana/api conferir",
+    "db:zerar": "npm run -w @alagoana/api zerar",
+    "teste": "npm run -w @alagoana/api teste"
+  }
+}

@@ -1,0 +1,146 @@
+# API — etapa 3 da §10
+
+Todas as rotas abaixo de `/api` exigem sessão (§5). Sem cookie válido, `401`.
+
+**Dinheiro vai e volta em centavos inteiros.** `R$ 93.853,20` é `9385320`. Não
+existe valor monetário fracionário nesta API: `1000.5` é recusado com `400`. É
+a §2 levada a sério na fronteira — o lugar onde a regra ou vale ou já se
+perdeu. Datas são `AAAA-MM-DD`.
+
+Em todo lançamento que mexe em dinheiro, `contaId` é opcional: omitir ou mandar
+`null` é exatamente a opção **"Não descontar do caixa"** que a §4.7 manda pôr em
+primeiro lugar no seletor. Com conta escolhida, o `movimento_caixa` nasce junto
+e o saldo é validado antes.
+
+## Sessão
+
+| | |
+|---|---|
+| `POST /api/sessao` | `{email, senha}` → cookie de 30 dias |
+| `DELETE /api/sessao` | encerra |
+| `GET /api/eu` | quem está logado |
+
+## Catálogos
+
+| | |
+|---|---|
+| `GET /api/catalogos` | marcas com modelos, cores, categorias, contas e sócios |
+| `POST /api/catalogos/marcas` | `{nome}` — o "+ Outra…" da §3.7 |
+| `POST /api/catalogos/modelos` | `{marca, nome}` |
+| `POST /api/catalogos/cores` | `{nome}` |
+
+Gravar um veículo com marca ou modelo fora do catálogo **não é erro**: o
+catálogo aprende sozinho. `versao` é texto livre e nunca vira catálogo.
+
+## Veículos
+
+| | |
+|---|---|
+| `GET /api/veiculos?situacao=estoque\|vendido\|todos` | listagem com a §4 calculada |
+| `POST /api/veiculos` | cadastra; gera o código `V-NN` |
+| `GET /api/veiculos/:id` | ficha da §6.5: custos, categorias, troca e extrato |
+| `PATCH /api/veiculos/:id` | edita qualquer campo e **reescreve os movimentos vinculados** (§4.8) |
+| `GET /api/veiculos/:id/exclusao` | prévia com os números reais do que será apagado |
+| `DELETE /api/veiculos/:id` | exclui; o carro ligado por troca sobrevive sem o vínculo |
+| `POST /api/veiculos/:id/venda` | venda, troca e comissões numa transação só |
+
+A venda aceita:
+
+```json
+{
+  "dataVenda": "2026-08-09",
+  "valorVenda": 8900000,
+  "contaId": "…",
+  "lancarComissoes": true,
+  "troca": {
+    "marca": "Fiat", "modelo": "Argo", "cor": "Branco", "placa": "ARG2B34",
+    "avaliacao": 4400000, "mercado": 4000000, "modo": "mercado"
+  }
+}
+```
+
+`modo` decide onde o ágio aparece (§4.5). Pela **avaliação**, ele fica embutido
+no carro que entra. Pelo **mercado**, vira um custo de categoria `Troca` na
+venda — que é o modo recomendado, porque supervalorizar a troca é desconto
+disfarçado e sem esse lançamento o desconto some do histórico. O caixa recebe
+`valorVenda − avaliacao` nos dois: o modo move resultado, nunca dinheiro.
+
+`lancarComissoes` omitido segue a regra do checkbox da §4.6 — marcado, exceto
+quando o veículo já tem custo de categoria `Comissão`.
+
+## Custos
+
+| | |
+|---|---|
+| `GET /api/custos/atalhos` | os oito mais frequentes, com o valor mais comum (§6.7) |
+| `POST /api/custos` | lança em um carro ou rateia em vários |
+| `DELETE /api/custos/:id` | exclui e devolve o valor ao saldo |
+
+```json
+{
+  "veiculoIds": ["…", "…", "…"],
+  "descricao": "Tráfego pago", "categoria": "Patrocinado",
+  "data": "2026-08-01", "valor": 36946,
+  "modoRateio": "dividir",
+  "contaId": "…"
+}
+```
+
+`dividir` reparte sem perder centavo — 369,46 entre três vira 123,16 + 123,15 +
+123,15, e o centavo que sobra vai para os primeiros na ordem do código. `mesmo`
+repete o valor inteiro em cada carro. Um único veículo pode ir em `veiculoId`.
+
+`previsto: true` grava custo sem data (§3.4): entra no custo total e não toca no
+caixa, porque ainda não aconteceu.
+
+## Caixa
+
+| | |
+|---|---|
+| `GET /api/caixa` | saldos, consolidado, capital por sócio e extrato |
+| `POST /api/aportes` | `{socioId, contaId, tipo, valor, data, observacao}` |
+
+`tipo` é `aporte` ou `retirada`, e `valor` é sempre positivo — o tipo define o
+sinal. Um aporte grava duas linhas (§3.6): o movimento de caixa e a
+participação. São números diferentes e ambos importam.
+
+## Painel e vendas
+
+| | |
+|---|---|
+| `GET /api/painel` | patrimônio, indicadores e os seis gráficos da §6.2 |
+| `GET /api/vendas` | consolidado da §6.4 mais a lista de vendidos |
+
+## Filtros (§6.1)
+
+`GET /api/veiculos`, `GET /api/painel` e `GET /api/vendas` aceitam os mesmos
+três parâmetros, porque os filtros do desktop afetam todas as telas ao mesmo
+tempo:
+
+| | |
+|---|---|
+| `periodo` | janela em dias — `30`, `90`, `180`. A data que conta é a da venda, se houve; a da compra, se o carro ainda está no pátio |
+| `marca` | nome exato |
+| `faixa` | `a` até R$ 60 mil, `b` de 60 a 100 mil, `c` acima. O preço de referência é a venda, ou o anúncio, ou a compra — nessa ordem |
+
+Parâmetro ausente ou sem sentido é ignorado, não recusado: filtro é recorte de
+leitura, e um valor esquisito na URL não deve derrubar a tela.
+
+O filtro é aplicado uma vez, na listagem de veículos, e painel e vendas herdam
+o recorte. **O caixa não é filtrado** — dinheiro em conta não tem marca nem
+faixa de preço. Por isso o painel devolve `recorteAtivo: true` quando há filtro
+em vigor: o patrimônio ali mistura um caixa inteiro com um estoque parcial, e a
+tela precisa dizer isso em vez de deixar o número mentir sozinho.
+
+## Erros
+
+`422` é recusa de regra de negócio, e a mensagem é a da §8, para ser exibida
+como está. `400` é corpo malformado. `404` é registro ou rota inexistente.
+`405` lista os métodos que o caminho aceita. `500` diz só "Erro interno." — o
+detalhe fica no log do servidor, porque texto de erro de banco não é interface.
+
+## Papel (§5)
+
+Na v1 todos são `master` e veem tudo. O filtro para `vendedor` já existe e é
+aplicado na saída, num lugar só: some `valorCompra`, `custoTotal`, `lucro`,
+`retornoPct` e o resto da margem; ficam placa, anúncio e dias em pátio.

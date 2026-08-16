@@ -1,0 +1,1564 @@
+{
+  "gerado_de": "patio-prototipo.html",
+  "congelado_em": "2026-08-08",
+  "contas": [
+    {
+      "nome": "Ricardo",
+      "tipo": "socio",
+      "saldo_inicial": 3808862
+    },
+    {
+      "nome": "Alagoana",
+      "tipo": "empresa",
+      "saldo_inicial": 5907476
+    },
+    {
+      "nome": "Victor",
+      "tipo": "socio",
+      "saldo_inicial": 0
+    },
+    {
+      "nome": "João",
+      "tipo": "socio",
+      "saldo_inicial": 0
+    }
+  ],
+  "capital_inicial": [
+    {
+      "socio": "João",
+      "valor": 15000000
+    },
+    {
+      "socio": "Victor",
+      "valor": 7500000
+    },
+    {
+      "socio": "Ricardo",
+      "valor": 7500000
+    }
+  ],
+  "veiculos": [
+    {
+      "codigo": "V-01",
+      "marca": "Nissan",
+      "modelo": "Kicks",
+      "versao": "S",
+      "ano": 2018,
+      "cor": "Prata",
+      "placa": "QLI6389",
+      "km": null,
+      "data_compra": "2025-07-08",
+      "valor_compra": 5800000,
+      "valor_anuncio": null,
+      "fipe_compra": null,
+      "fipe_hoje": null,
+      "data_venda": "2025-09-22",
+      "valor_venda": 6800000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Gastos consolidados da planilha",
+          "categoria": "Não detalhado",
+          "data": "2025-09-22",
+          "valor": 444754
+        }
+      ]
+    },
+    {
+      "codigo": "V-02",
+      "marca": "Ford",
+      "modelo": "Fiesta",
+      "versao": null,
+      "ano": 2009,
+      "cor": "Preto",
+      "placa": "NMC3545",
+      "km": null,
+      "data_compra": "2025-09-12",
+      "valor_compra": 1802116,
+      "valor_anuncio": null,
+      "fipe_compra": 2580000,
+      "fipe_hoje": 2580000,
+      "data_venda": "2026-02-23",
+      "valor_venda": 2600000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta de leilão",
+          "categoria": "Consulta",
+          "data": "2025-09-22",
+          "valor": 5000
+        },
+        {
+          "descricao": "Pintura",
+          "categoria": "Pintura",
+          "data": "2025-09-18",
+          "valor": 50000
+        },
+        {
+          "descricao": "Polimento carro",
+          "categoria": "Polimento",
+          "data": "2025-09-18",
+          "valor": 15000
+        },
+        {
+          "descricao": "Polimento farol",
+          "categoria": "Polimento",
+          "data": "2025-09-18",
+          "valor": 16000
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2025-10-17",
+          "valor": 25000
+        },
+        {
+          "descricao": "Bobina do motor, Everson",
+          "categoria": "Reparo",
+          "data": "2025-11-05",
+          "valor": 10000
+        },
+        {
+          "descricao": "Guincho",
+          "categoria": "Guincho",
+          "data": "2025-11-19",
+          "valor": 15000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2025-11-26",
+          "valor": 3800
+        },
+        {
+          "descricao": "Autotec, troca de óleo, filtro e bomba d'água",
+          "categoria": "Manutenção",
+          "data": "2025-11-29",
+          "valor": 81000
+        },
+        {
+          "descricao": "Bateria",
+          "categoria": "Bateria",
+          "data": "2026-02-05",
+          "valor": 26000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-02-23",
+          "valor": 3000
+        },
+        {
+          "descricao": "Chave reserva",
+          "categoria": "Chaveiro",
+          "data": "2026-02-23",
+          "valor": 13000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-02-23",
+          "valor": 75000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-02-23",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-02-23",
+          "valor": 50000
+        },
+        {
+          "descricao": "Autotec",
+          "categoria": "Retorno",
+          "data": "2026-05-19",
+          "valor": 76500
+        }
+      ]
+    },
+    {
+      "codigo": "V-03",
+      "marca": "Chevrolet",
+      "modelo": "Cruze",
+      "versao": null,
+      "ano": 2012,
+      "cor": "Cinza",
+      "placa": "OHH8C95",
+      "km": null,
+      "data_compra": "2025-10-29",
+      "valor_compra": 3783156,
+      "valor_anuncio": null,
+      "fipe_compra": 5125800,
+      "fipe_hoje": 5125800,
+      "data_venda": "2026-01-23",
+      "valor_venda": 4961724,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta de leilão",
+          "categoria": "Consulta",
+          "data": "2025-10-29",
+          "valor": 5000
+        },
+        {
+          "descricao": "Conserto banco",
+          "categoria": "Peças",
+          "data": "2025-10-31",
+          "valor": 13000
+        },
+        {
+          "descricao": "Polimento carro",
+          "categoria": "Polimento",
+          "data": "2025-11-03",
+          "valor": 15000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2025-11-06",
+          "valor": 5000
+        },
+        {
+          "descricao": "Revisão Autotec, óleo e filtro",
+          "categoria": "Manutenção",
+          "data": "2025-11-12",
+          "valor": 32000
+        },
+        {
+          "descricao": "Frete módulo ABS",
+          "categoria": "Guincho",
+          "data": "2025-11-14",
+          "valor": 14000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2025-11-15",
+          "valor": 5000
+        },
+        {
+          "descricao": "FF Automotiva, módulo",
+          "categoria": "Peças",
+          "data": "2025-11-27",
+          "valor": 450000
+        },
+        {
+          "descricao": "FF Automotiva, módulo",
+          "categoria": "Peças",
+          "data": "2025-11-29",
+          "valor": 90000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-01-10",
+          "valor": 3000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-01-13",
+          "valor": 75000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-01-13",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Amigo",
+          "categoria": "Comissão",
+          "data": "2026-01-13",
+          "valor": 100000
+        },
+        {
+          "descricao": "Parte hidráulica módulo ABS",
+          "categoria": "Peças",
+          "data": "2026-01-16",
+          "valor": 177000
+        },
+        {
+          "descricao": "Motoboy",
+          "categoria": "Serviço",
+          "data": "2026-01-21",
+          "valor": 2500
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-01-22",
+          "valor": 3000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-01-23",
+          "valor": 28742
+        },
+        {
+          "descricao": "FF Automotiva, hidráulico módulo",
+          "categoria": "Serviço",
+          "data": "2026-01-24",
+          "valor": 35000
+        },
+        {
+          "descricao": "Recibo de compra e venda",
+          "categoria": "Transferência",
+          "data": "2026-03-05",
+          "valor": 3500
+        }
+      ]
+    },
+    {
+      "codigo": "V-04",
+      "marca": "Fiat",
+      "modelo": "500",
+      "versao": null,
+      "ano": 2012,
+      "cor": "Branco",
+      "placa": "ORD2680",
+      "km": null,
+      "data_compra": "2025-11-27",
+      "valor_compra": 3460000,
+      "valor_anuncio": null,
+      "fipe_compra": 4498400,
+      "fipe_hoje": 4498400,
+      "data_venda": "2026-02-06",
+      "valor_venda": 4300000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta de leilão",
+          "categoria": "Consulta",
+          "data": "2025-11-27",
+          "valor": 5000
+        },
+        {
+          "descricao": "Polimento carro",
+          "categoria": "Polimento",
+          "data": "2025-11-28",
+          "valor": 15000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2025-11-28",
+          "valor": 5000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2025-11-29",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-01-10",
+          "valor": 5000
+        },
+        {
+          "descricao": "Manutenção do vidro",
+          "categoria": "Manutenção",
+          "data": "2026-01-20",
+          "valor": 15000
+        },
+        {
+          "descricao": "Trava elétrica",
+          "categoria": "Manutenção",
+          "data": "2026-01-20",
+          "valor": 15000
+        },
+        {
+          "descricao": "Retrovisor elétrico",
+          "categoria": "Peças",
+          "data": "2026-01-20",
+          "valor": 20000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-02-06",
+          "valor": 75000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-02-06",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-02-06",
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-05",
+      "marca": "Volkswagen",
+      "modelo": "T-Cross",
+      "versao": null,
+      "ano": 2020,
+      "cor": "Preto",
+      "placa": "QWH2F52",
+      "km": null,
+      "data_compra": "2026-01-14",
+      "valor_compra": 7000000,
+      "valor_anuncio": null,
+      "fipe_compra": 8582000,
+      "fipe_hoje": 8582000,
+      "data_venda": "2026-03-17",
+      "valor_venda": 8500000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Pintura (6 peças) 50%",
+          "categoria": "Pintura",
+          "data": "2026-01-16",
+          "valor": 70000
+        },
+        {
+          "descricao": "Pintura (6 peças) 50%",
+          "categoria": "Pintura",
+          "data": "2026-01-22",
+          "valor": 70000
+        },
+        {
+          "descricao": "Bagagito",
+          "categoria": "Peças",
+          "data": "2026-01-26",
+          "valor": 12706
+        },
+        {
+          "descricao": "Tira morça",
+          "categoria": "Serviço",
+          "data": "2026-01-31",
+          "valor": 50000
+        },
+        {
+          "descricao": "Polimento carro",
+          "categoria": "Polimento",
+          "data": "2026-01-31",
+          "valor": 20000
+        },
+        {
+          "descricao": "Limpador",
+          "categoria": "Peças",
+          "data": "2026-02-03",
+          "valor": 9600
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-02-14",
+          "valor": 10000
+        },
+        {
+          "descricao": "Amarelinha",
+          "categoria": "Amarelinha",
+          "data": "2026-03-17",
+          "valor": 23400
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-03-17",
+          "valor": 75000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-03-17",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-03-17",
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-06",
+      "marca": "Fiat",
+      "modelo": "Mobi",
+      "versao": null,
+      "ano": 2020,
+      "cor": "Branco",
+      "placa": "QUU4H71",
+      "km": null,
+      "data_compra": "2026-02-05",
+      "valor_compra": 3000000,
+      "valor_anuncio": null,
+      "fipe_compra": 4443500,
+      "fipe_hoje": 4443500,
+      "data_venda": "2026-03-05",
+      "valor_venda": 4200000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Pintura geral (40%)",
+          "categoria": "Pintura",
+          "data": "2026-02-10",
+          "valor": 100000
+        },
+        {
+          "descricao": "Pintura geral (40%)",
+          "categoria": "Pintura",
+          "data": "2026-02-13",
+          "valor": 100000
+        },
+        {
+          "descricao": "Pintura geral (20%)",
+          "categoria": "Pintura",
+          "data": "2026-02-21",
+          "valor": 50000
+        },
+        {
+          "descricao": "Calotas Mobi",
+          "categoria": "Peças",
+          "data": "2026-02-21",
+          "valor": 9600
+        },
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-02-21",
+          "valor": 5000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-02-21",
+          "valor": 5000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-03-02",
+          "valor": 65000
+        },
+        {
+          "descricao": "Autotec",
+          "categoria": "Revisão",
+          "data": "2026-03-05",
+          "valor": 79700
+        },
+        {
+          "descricao": "Friso superior",
+          "categoria": "Peças",
+          "data": "2026-03-07",
+          "valor": 20800
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-03-05",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-03-05",
+          "valor": 50000
+        },
+        {
+          "descricao": "Lâmpadas",
+          "categoria": "Retorno",
+          "data": "2026-03-17",
+          "valor": 4000
+        }
+      ]
+    },
+    {
+      "codigo": "V-07",
+      "marca": "Honda",
+      "modelo": "City",
+      "versao": null,
+      "ano": 2023,
+      "cor": "Branco",
+      "placa": "SAC0D38",
+      "km": null,
+      "data_compra": "2026-02-14",
+      "valor_compra": 8400000,
+      "valor_anuncio": 9700000,
+      "fipe_compra": 10543700,
+      "fipe_hoje": 10543700,
+      "data_venda": "2026-08-03",
+      "valor_venda": 9700000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": "Contém um lançamento de consulta de leilão de R$ 50,00 que se refere ao Polo Highline (V-11). Mantido aqui como estava na planilha, para não alterar o custo total já conhecido deste carro.",
+      "custos": [
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-02-21",
+          "valor": 5000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-02-21",
+          "valor": 26334
+        },
+        {
+          "descricao": "Transferência vistoria",
+          "categoria": "Transferência",
+          "data": "2026-02-21",
+          "valor": 18810
+        },
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-02-21",
+          "valor": 5000
+        },
+        {
+          "descricao": "Martelinho",
+          "categoria": "Reparo",
+          "data": "2026-02-21",
+          "valor": 50000
+        },
+        {
+          "descricao": "Para-barro e lanterna",
+          "categoria": "Peças",
+          "data": "2026-02-24",
+          "valor": 69679
+        },
+        {
+          "descricao": "Bateria City",
+          "categoria": "Bateria",
+          "data": "2026-02-25",
+          "valor": 27000
+        },
+        {
+          "descricao": "Polimento carro",
+          "categoria": "Polimento",
+          "data": "2026-02-25",
+          "valor": 15000
+        },
+        {
+          "descricao": "Transferência despache",
+          "categoria": "Transferência",
+          "data": "2026-03-04",
+          "valor": 19000
+        },
+        {
+          "descricao": "Presilhas para lama",
+          "categoria": "Peças",
+          "data": "2026-03-07",
+          "valor": 8000
+        },
+        {
+          "descricao": "Emílio, troca lanterna e para-barro",
+          "categoria": "Reparo",
+          "data": "2026-03-17",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-03-17",
+          "valor": 3000
+        },
+        {
+          "descricao": "Consulta leilão, Polo Highline",
+          "categoria": "Consulta",
+          "data": "2026-03-17",
+          "valor": 5000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-03-19",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-08",
+          "valor": 3000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-11",
+          "valor": 7000
+        },
+        {
+          "descricao": "Pintura retrovisor, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-04-13",
+          "valor": 15000
+        },
+        {
+          "descricao": "Cautelar",
+          "categoria": "Cautelar",
+          "data": "2026-04-13",
+          "valor": 18000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-18",
+          "valor": 5000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-05-04",
+          "valor": 5000
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-05-04",
+          "valor": 6377
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-06-05",
+          "valor": 10000
+        },
+        {
+          "descricao": "Carrossel",
+          "categoria": "Patrocinado",
+          "data": "2026-07-07",
+          "valor": 10000
+        },
+        {
+          "descricao": "Patrocinado, Facebook",
+          "categoria": "Patrocinado",
+          "data": "2026-07-07",
+          "valor": 17150
+        },
+        {
+          "descricao": "Patrocinado Instagram",
+          "categoria": "Patrocinado",
+          "data": "2026-08-01",
+          "valor": 36946
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-08-03",
+          "valor": 3000
+        },
+        {
+          "descricao": "IPVA + amarelinha 2026",
+          "categoria": "IPVA",
+          "data": "2026-08-03",
+          "valor": 342024
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-08-03",
+          "valor": 85000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-08-03",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-08-03",
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-08",
+      "marca": "Hyundai",
+      "modelo": "Creta",
+      "versao": null,
+      "ano": 2017,
+      "cor": "Vermelho",
+      "placa": "QLF3A26",
+      "km": null,
+      "data_compra": "2026-03-17",
+      "valor_compra": 5500000,
+      "valor_anuncio": null,
+      "fipe_compra": 7932500,
+      "fipe_hoje": 7932500,
+      "data_venda": "2026-04-20",
+      "valor_venda": 7800000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": "Contém um lançamento de consulta de leilão de R$ 15,00 que se refere ao Tucson (V-12). Mantido aqui como estava na planilha.",
+      "custos": [
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-03-17",
+          "valor": 5000
+        },
+        {
+          "descricao": "Pintura cubo da roda",
+          "categoria": "Pintura",
+          "data": "2026-03-17",
+          "valor": 2900
+        },
+        {
+          "descricao": "Lanternão, limpadores e símbolo",
+          "categoria": "Peças",
+          "data": "2026-03-27",
+          "valor": 14500
+        },
+        {
+          "descricao": "Pintura",
+          "categoria": "Pintura",
+          "data": "2026-03-27",
+          "valor": 85000
+        },
+        {
+          "descricao": "Polimento carro",
+          "categoria": "Polimento",
+          "data": "2026-03-27",
+          "valor": 18000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-03-28",
+          "valor": 5000
+        },
+        {
+          "descricao": "Autotec",
+          "categoria": "Revisão",
+          "data": "2026-04-01",
+          "valor": 124900
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-04-01",
+          "valor": 70000
+        },
+        {
+          "descricao": "Pintura",
+          "categoria": "Pintura",
+          "data": "2026-04-10",
+          "valor": 35000
+        },
+        {
+          "descricao": "IPVA 2026",
+          "categoria": "IPVA",
+          "data": "2026-04-20",
+          "valor": 209900
+        },
+        {
+          "descricao": "Problema leilão, Rafael",
+          "categoria": "Consulta",
+          "data": "2026-04-20",
+          "valor": 20000
+        },
+        {
+          "descricao": "Consulta leilão, Tucson",
+          "categoria": "Consulta",
+          "data": "2026-04-20",
+          "valor": 1500
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-04-20",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-04-20",
+          "valor": 50000
+        },
+        {
+          "descricao": "Amarelinha",
+          "categoria": "Amarelinha",
+          "data": "2026-05-15",
+          "valor": 23400
+        }
+      ]
+    },
+    {
+      "codigo": "V-09",
+      "marca": "Ford",
+      "modelo": "Ka",
+      "versao": null,
+      "ano": 2016,
+      "cor": "Branco",
+      "placa": "QLC1B51",
+      "km": null,
+      "data_compra": "2026-04-01",
+      "valor_compra": 2700000,
+      "valor_anuncio": null,
+      "fipe_compra": 3646900,
+      "fipe_hoje": 3646900,
+      "data_venda": "2026-05-18",
+      "valor_venda": 3635000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-04-01",
+          "valor": 5000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-04-01",
+          "valor": 70000
+        },
+        {
+          "descricao": "Pintura",
+          "categoria": "Pintura",
+          "data": "2026-04-10",
+          "valor": 50000
+        },
+        {
+          "descricao": "Volante",
+          "categoria": "Peças",
+          "data": "2026-04-13",
+          "valor": 15000
+        },
+        {
+          "descricao": "Casa das lanternas",
+          "categoria": "Peças",
+          "data": "2026-05-07",
+          "valor": 15000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-05-04",
+          "valor": 10000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-05-18",
+          "valor": 70000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": "2026-05-18",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": "2026-05-18",
+          "valor": 50000
+        },
+        {
+          "descricao": "Retorno, estética",
+          "categoria": "Retorno",
+          "data": "2026-07-09",
+          "valor": 10000
+        },
+        {
+          "descricao": "Retorno, embreagem",
+          "categoria": "Retorno",
+          "data": "2026-07-16",
+          "valor": 141500
+        }
+      ]
+    },
+    {
+      "codigo": "V-10",
+      "marca": "Ford",
+      "modelo": "EcoSport",
+      "versao": null,
+      "ano": 2020,
+      "cor": "Cinza",
+      "placa": "QWT4D53",
+      "km": null,
+      "data_compra": "2026-04-06",
+      "valor_compra": 5200000,
+      "valor_anuncio": 6800000,
+      "fipe_compra": 6895600,
+      "fipe_hoje": 6895600,
+      "data_venda": null,
+      "valor_venda": null,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-04-06",
+          "valor": 5000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-04-06",
+          "valor": 70000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-07",
+          "valor": 5000
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-04-13",
+          "valor": 60000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-14",
+          "valor": 3000
+        },
+        {
+          "descricao": "Coifa e capa de freio de mão",
+          "categoria": "Peças",
+          "data": "2026-04-13",
+          "valor": 12000
+        },
+        {
+          "descricao": "Volante",
+          "categoria": "Peças",
+          "data": "2026-04-22",
+          "valor": 15000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-25",
+          "valor": 5000
+        },
+        {
+          "descricao": "Combustível (óleo diesel)",
+          "categoria": "Combustível",
+          "data": "2026-04-27",
+          "valor": 1000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-04-27",
+          "valor": 5000
+        },
+        {
+          "descricao": "Refletores pisca",
+          "categoria": "Peças",
+          "data": "2026-04-27",
+          "valor": 16589
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-05-04",
+          "valor": 20000
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-05-04",
+          "valor": 6377
+        },
+        {
+          "descricao": "Pneu",
+          "categoria": "Peças",
+          "data": "2026-05-06",
+          "valor": 37000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-05-15",
+          "valor": 5000
+        },
+        {
+          "descricao": "Autotec",
+          "categoria": "Revisão",
+          "data": "2026-05-19",
+          "valor": 26200
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-05-28",
+          "valor": 5000
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-05-28",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-06-03",
+          "valor": 3000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-06-06",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-06-11",
+          "valor": 5000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-06-16",
+          "valor": 10000
+        },
+        {
+          "descricao": "Revisão Autotec",
+          "categoria": "Revisão",
+          "data": "2026-06-26",
+          "valor": 62700
+        },
+        {
+          "descricao": "Carrossel",
+          "categoria": "Patrocinado",
+          "data": "2026-07-07",
+          "valor": 10000
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-07-07",
+          "valor": 17150
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-08-01",
+          "valor": 36946
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-08-01",
+          "valor": 10000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-11",
+      "marca": "Volkswagen",
+      "modelo": "Polo",
+      "versao": "Highline",
+      "ano": 2024,
+      "cor": "Preto",
+      "placa": "RGX3B71",
+      "km": null,
+      "data_compra": "2026-04-06",
+      "valor_compra": 8550000,
+      "valor_anuncio": null,
+      "fipe_compra": null,
+      "fipe_hoje": null,
+      "data_venda": "2026-06-05",
+      "valor_venda": 9750000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Gastos consolidados da planilha",
+          "categoria": "Não detalhado",
+          "data": "2026-06-05",
+          "valor": 313377
+        }
+      ]
+    },
+    {
+      "codigo": "V-12",
+      "marca": "Hyundai",
+      "modelo": "Tucson",
+      "versao": null,
+      "ano": 2011,
+      "cor": "Preto",
+      "placa": "NMD7C19",
+      "km": null,
+      "data_compra": "2026-04-20",
+      "valor_compra": 2800000,
+      "valor_anuncio": null,
+      "fipe_compra": null,
+      "fipe_hoje": null,
+      "data_venda": "2026-05-20",
+      "valor_venda": 3900000,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Gastos consolidados da planilha",
+          "categoria": "Não detalhado",
+          "data": "2026-05-20",
+          "valor": 771000
+        }
+      ]
+    },
+    {
+      "codigo": "V-13",
+      "marca": "Chevrolet",
+      "modelo": "Tracker",
+      "versao": null,
+      "ano": 2022,
+      "cor": "Branco",
+      "placa": "SAB1D80",
+      "km": null,
+      "data_compra": "2026-06-26",
+      "valor_compra": 6700000,
+      "valor_anuncio": 8900000,
+      "fipe_compra": 9207900,
+      "fipe_hoje": 9207900,
+      "data_venda": null,
+      "valor_venda": null,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-06-26",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-06-30",
+          "valor": 10000
+        },
+        {
+          "descricao": "Friso lateral, Mercado Livre",
+          "categoria": "Peças",
+          "data": "2026-06-30",
+          "valor": 21400
+        },
+        {
+          "descricao": "Polimento carro, Joelmo",
+          "categoria": "Polimento",
+          "data": "2026-07-02",
+          "valor": 20000
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-07-02",
+          "valor": 40000
+        },
+        {
+          "descricao": "Carrossel",
+          "categoria": "Patrocinado",
+          "data": "2026-07-07",
+          "valor": 10000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-07-11",
+          "valor": 5000
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-07-14",
+          "valor": 15000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-07-17",
+          "valor": 10000
+        },
+        {
+          "descricao": "Transferência",
+          "categoria": "Transferência",
+          "data": "2026-07-31",
+          "valor": 70000
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-07-31",
+          "valor": 20000
+        },
+        {
+          "descricao": "Patrocinado",
+          "categoria": "Patrocinado",
+          "data": "2026-08-01",
+          "valor": 36946
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-14",
+      "marca": "Hyundai",
+      "modelo": "HB20",
+      "versao": null,
+      "ano": 2014,
+      "cor": "Branco",
+      "placa": "OHI0729",
+      "km": null,
+      "data_compra": "2026-07-17",
+      "valor_compra": 3550000,
+      "valor_anuncio": 4900000,
+      "fipe_compra": 4650000,
+      "fipe_hoje": 4650000,
+      "data_venda": null,
+      "valor_venda": null,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-07-28",
+          "valor": 5000
+        },
+        {
+          "descricao": "Caixa de direção",
+          "categoria": "Manutenção",
+          "data": "2026-07-24",
+          "valor": 75000
+        },
+        {
+          "descricao": "Polimento farol, TC",
+          "categoria": "Polimento",
+          "data": "2026-07-27",
+          "valor": 20000
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-07-27",
+          "valor": 50000
+        },
+        {
+          "descricao": "Polimento, Joelmo",
+          "categoria": "Polimento",
+          "data": "2026-07-31",
+          "valor": 20000
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-07-31",
+          "valor": 100000
+        },
+        {
+          "descricao": "Coifa, Neguinho",
+          "categoria": "Peças",
+          "data": "2026-08-08",
+          "valor": 6000
+        },
+        {
+          "descricao": "Revisão, Autotec",
+          "categoria": "Revisão",
+          "data": "2026-08-08",
+          "valor": 180000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-15",
+      "marca": "Ford",
+      "modelo": "Ka Sedan",
+      "versao": null,
+      "ano": 2018,
+      "cor": "Branco",
+      "placa": "QLI0534",
+      "km": null,
+      "data_compra": "2026-07-28",
+      "valor_compra": 2900000,
+      "valor_anuncio": 4000000,
+      "fipe_compra": 4050000,
+      "fipe_hoje": 4050000,
+      "data_venda": null,
+      "valor_venda": null,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-07-28",
+          "valor": 5000
+        },
+        {
+          "descricao": "Antena e manopla",
+          "categoria": "Peças",
+          "data": "2026-07-31",
+          "valor": 14300
+        },
+        {
+          "descricao": "Combustível",
+          "categoria": "Combustível",
+          "data": "2026-07-31",
+          "valor": 5000
+        },
+        {
+          "descricao": "Pintura, Emílio",
+          "categoria": "Pintura",
+          "data": "2026-08-08",
+          "valor": 130000
+        },
+        {
+          "descricao": "Polimento carro, Joelmo",
+          "categoria": "Polimento",
+          "data": "2026-08-08",
+          "valor": 20000
+        },
+        {
+          "descricao": "Polimento farol, TC",
+          "categoria": "Polimento",
+          "data": "2026-08-08",
+          "valor": 20000
+        },
+        {
+          "descricao": "Lâmpadas, TC",
+          "categoria": "Lâmpada",
+          "data": "2026-08-08",
+          "valor": 7000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 50000
+        }
+      ]
+    },
+    {
+      "codigo": "V-16",
+      "marca": "Toyota",
+      "modelo": "Yaris",
+      "versao": null,
+      "ano": 2019,
+      "cor": "Branco",
+      "placa": "QLM7165",
+      "km": null,
+      "data_compra": "2026-08-03",
+      "valor_compra": 6300000,
+      "valor_anuncio": 7100000,
+      "fipe_compra": 7250800,
+      "fipe_hoje": 7250800,
+      "data_venda": null,
+      "valor_venda": null,
+      "origem": "compra",
+      "troca_de_codigo": null,
+      "observacao": null,
+      "custos": [
+        {
+          "descricao": "Consulta leilão",
+          "categoria": "Consulta",
+          "data": "2026-08-03",
+          "valor": 5000
+        },
+        {
+          "descricao": "Coifa, Neguinho",
+          "categoria": "Peças",
+          "data": "2026-08-08",
+          "valor": 6000
+        },
+        {
+          "descricao": "Pintura entrada, Emílio (50%)",
+          "categoria": "Pintura",
+          "data": "2026-08-08",
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Alagoana",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 100000
+        },
+        {
+          "descricao": "Comissão Victor",
+          "categoria": "Comissão",
+          "data": null,
+          "valor": 50000
+        }
+      ]
+    }
+  ]
+}
