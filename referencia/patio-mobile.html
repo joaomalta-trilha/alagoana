@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alagoana Veículos — mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#15181A; --ink2:#4A524F; --ink3:#858B87;
+  --paper:#F1F3F0; --card:#FFFFFF; --line:#DDE1DB; --line2:#C6CCC4;
+  --verde:#14503F; --verde2:#2A8466; --verde-bg:#E4EFE9;
+  --ambar:#A96200; --ambar-bg:#F8EEDD;
+  --vermelho:#93262A; --vermelho-bg:#F7E6E6;
+  --azul:#1B4B77; --azul-bg:#E4EDF5;
+  --azul-marca:#0032D3; --azul-marca-esc:#0026A6;
+  --nav-h:62px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);
+}
+.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:"Archivo",sans-serif; font-weight:600; letter-spacing:-.01em; margin:0}
+button,input,select{font-family:inherit}
+:focus-visible{outline:2px solid var(--azul-marca); outline-offset:2px}
+.hidden{display:none !important}
+.pos{color:var(--verde)} .neg{color:var(--vermelho)}
+
+/* ---------- topo ---------- */
+.top{
+  position:sticky; top:0; z-index:20; background:var(--azul-marca); color:#FFF;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.top img{height:24px; display:block}
+.top .tela{font-family:"Archivo",sans-serif; font-size:13px; font-weight:500; color:rgba(255,255,255,.78)}
+
+.wrap{padding:16px 16px 8px}
+.view{display:none} .view.on{display:block}
+.sec-t{font-family:"Archivo",sans-serif; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; margin:22px 0 9px}
+.sec-t:first-child{margin-top:0}
+
+/* ---------- cartoes ---------- */
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:11px}
+.card h3{font-size:15px}
+.hint{font-size:12.5px; color:var(--ink3); margin:3px 0 0}
+
+/* ---------- patrimonio ---------- */
+.pat-bar{display:flex; height:12px; border-radius:99px; overflow:hidden; margin:14px 0 10px; background:#E4E7E2}
+.pat-bar div{height:100%}
+.b-caixa{background:var(--azul-marca)} .b-estoque{background:var(--verde2)}
+.pat-l{display:flex; justify-content:space-between; font-size:12.5px; color:var(--ink2)}
+.pat-l span{display:flex; align-items:center; gap:6px}
+.dot{width:8px; height:8px; border-radius:2px; display:inline-block; flex:0 0 auto}
+.d-caixa{background:var(--azul-marca)} .d-estoque{background:var(--verde2)}
+.pat-grid{display:grid; grid-template-columns:1fr; margin-top:18px}
+.pat-lab{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink3); font-weight:600; border-top:1px solid var(--line); padding-top:15px; margin-top:16px}
+.pat-lab.topo{border-top:0; padding-top:0; margin-top:0}
+.pat-cel{padding:12px 0 2px}
+.pat-cel span{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink2)}
+.pat-cel b{display:block; font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:21px; letter-spacing:-.02em; margin-top:6px}
+.pat-cel.forte{border-left:3px solid var(--ink); padding-left:14px}
+.pat-cel.forte b{font-size:26px}
+.pat-proj .pat-cel b{color:var(--ink3); font-weight:400}
+.pat-proj .pat-cel.forte{border-left-style:dashed; border-left-color:var(--line2)}
+.pat-proj .pat-cel.forte b{color:var(--ink2); font-weight:500}
+.pat-proj .pat-cel.ganho b{color:var(--verde2)}
+.pat-linha{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:11px 0; border-bottom:1px solid #EDEFEA}
+.pat-linha:last-child{border-bottom:0; padding-bottom:0}
+.pat-linha.tot{border-top:2px solid var(--ink); border-bottom:0; margin-top:6px; padding-top:12px}
+.pat-linha span{font-size:13.5px; color:var(--ink2)}
+.pat-linha b{font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:17px; white-space:nowrap}
+.pat-linha.tot span{font-weight:600; color:var(--ink); font-size:14px}
+.pat-linha.tot b{font-size:22px}
+.proj .pat-linha b{color:var(--ink3); font-weight:400}
+.proj .pat-linha.tot b{color:var(--ink2); font-weight:500}
+.proj .ganho b{color:var(--verde2)}
+
+/* ---------- kpis ---------- */
+.kpis{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.kpi{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px}
+.kpi span{display:block; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink3); font-weight:600}
+.kpi b{display:block; font-family:"IBM Plex Mono",monospace; font-size:17px; letter-spacing:-.03em; white-space:nowrap; font-weight:500; margin-top:5px; letter-spacing:-.02em}
+.kpi i{display:block; font-style:normal; font-size:11.5px; color:var(--ink3); margin-top:2px}
+.kpi.alerta b{color:var(--vermelho)}
+
+/* ---------- carro (cartao de lista) ---------- */
+.carro{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:10px; width:100%; text-align:left; cursor:pointer; display:block}
+.carro:active{background:#F7F9F6}
+.carro-top{display:flex; justify-content:space-between; gap:12px; align-items:flex-start}
+.carro-nome{font-weight:600; font-size:15.5px; line-height:1.3}
+.carro-meta{font-size:12px; color:var(--ink3); margin-top:2px}
+.plate{display:inline-block; background:#FFF; border:1.5px solid #15181A; border-radius:5px; overflow:hidden; width:96px; flex:0 0 auto}
+.plate-top{background:#1B4B77; color:#FFF; font-family:"Archivo",sans-serif; font-weight:600; font-size:6.5px; letter-spacing:.14em; padding:1px 5px; display:flex; justify-content:space-between; align-items:center}
+.plate-top i{width:7px; height:5px; background:#2A8466; border-radius:1px; display:inline-block}
+.plate-num{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:14px; letter-spacing:.04em; text-align:center; padding:2px 0 4px}
+.carro-nums{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:13px; padding-top:12px; border-top:1px solid #EDEFEA}
+.carro-nums div span{display:block; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink3); font-weight:600}
+.carro-nums div b{font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:14.5px; display:block; margin-top:2px}
+.carro-nums div.destaque b{color:var(--verde)}
+.carro-nums div.ruim b{color:var(--vermelho)}
+.age{display:flex; align-items:center; gap:8px; margin-top:11px}
+.age-track{flex:1; height:5px; background:#E8EBE6; border-radius:99px; overflow:hidden}
+.age-fill{height:100%; border-radius:99px}
+.age-d{font-family:"IBM Plex Mono",monospace; font-size:12px; white-space:nowrap; color:var(--ink2)}
+.a0 .age-fill{background:var(--verde2)} .a0 .age-d{color:var(--verde)}
+.a1 .age-fill{background:#7FA83C}
+.a2 .age-fill{background:#D89A2B} .a2 .age-d{color:var(--ambar)}
+.a3 .age-fill{background:#B94B45} .a3 .age-d{color:var(--vermelho); font-weight:600}
+.gfill{background:#D89A2B} .gfim{background:#B9C0BA}
+
+.pill{display:inline-block; padding:2px 9px; border-radius:99px; font-size:11px; font-weight:600}
+.p-ok{background:var(--verde-bg); color:var(--verde)}
+.p-gar{background:var(--ambar-bg); color:var(--ambar)}
+.p-tipo{background:#EEF1EC; color:var(--ink2)}
+.p-troca{background:#EAEFFC; color:var(--azul-marca)}
+
+/* ---------- ficha ---------- */
+.ficha-head{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:11px}
+.plate.g{width:150px; border-width:2px}
+.plate.g .plate-top{font-size:8.5px; padding:2px 7px}
+.plate.g .plate-num{font-size:22px; padding:4px 0 6px}
+.spec{display:grid; grid-template-columns:1fr 1fr 1fr; gap:13px; margin-top:15px; padding-top:14px; border-top:1px solid #EDEFEA}
+.spec div span{display:block; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink3); font-weight:600}
+.spec div b{font-weight:500; font-size:14px}
+.rows{list-style:none; margin:0; padding:0}
+.rows li{display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid #EDEFEA; font-size:14px}
+.rows li:last-child{border-bottom:0}
+.rows li b{font-family:"IBM Plex Mono",monospace; font-weight:500; white-space:nowrap}
+.rows li.sum{background:#F4F6F3; margin:2px -16px; padding:11px 16px; border-top:1px solid var(--line2); border-bottom:1px solid var(--line2); font-weight:600}
+.rows li.fim{background:var(--verde-bg); margin:8px -16px -16px; padding:14px 16px; border:0; border-radius:0 0 12px 12px}
+.rows li.fim span{font-weight:600} .rows li.fim b{font-size:18px; color:var(--verde)}
+.rows li.fim.ruim{background:var(--vermelho-bg)} .rows li.fim.ruim b{color:var(--vermelho)}
+.sign{display:inline-block; width:14px; color:var(--ink3); font-family:"IBM Plex Mono",monospace}
+.bloco-t{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink3); font-weight:600; margin:16px 0 2px}
+.custo-li{display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid #EDEFEA}
+.custo-li:last-child{border-bottom:0}
+.custo-li .cn{font-size:14px; line-height:1.35}
+.custo-li .cm{font-size:11.5px; color:var(--ink3); margin-top:2px}
+.custo-li b{font-family:"IBM Plex Mono",monospace; font-weight:500; white-space:nowrap}
+.gar-track{height:8px; background:#E4E7E2; border-radius:99px; overflow:hidden; margin:12px 0 9px}
+.gar-fill{height:100%; border-radius:99px}
+.link-troca{background:#EAEFFC; border:1px solid #C3D0F5; border-radius:12px; padding:13px 14px; margin-bottom:11px; font-size:13.5px; line-height:1.45}
+.link-troca button{background:none; border:0; color:var(--azul-marca); font-size:13.5px; font-weight:600; padding:6px 0 0; text-decoration:underline; cursor:pointer}
+.voltar{background:none; border:0; color:var(--ink2); font-size:14.5px; padding:0 0 12px; cursor:pointer}
+
+/* ---------- caixa ---------- */
+.cx{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px}
+.cx.total{background:var(--azul-marca); border-color:var(--azul-marca); color:#FFF}
+.cx .cxt{font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink3); font-weight:600}
+.cx.total .cxt{color:rgba(255,255,255,.72)}
+.cx .cxn{font-weight:600; font-size:15px}
+.cx b{font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:19px; white-space:nowrap}
+.cx.zero b{color:var(--ink3)}
+
+/* ---------- graficos ---------- */
+.chart-box{position:relative; height:190px; margin-top:12px}
+
+/* ---------- perigo ---------- */
+.perigo{background:var(--vermelho-bg); border:1px solid #E4BFBF; border-radius:12px; padding:15px; margin-bottom:11px}
+.perigo h3{font-size:15px; color:var(--vermelho)}
+.perigo p{font-size:13px; color:#7A2A2A; margin:6px 0 0; line-height:1.45}
+.perigo ul{margin:9px 0 0; padding-left:19px; font-size:13px; color:#7A2A2A}
+.btn-perigo{background:var(--vermelho); color:#FFF; border:0; padding:13px 18px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; width:100%}
+.acoes-ficha{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:11px}
+
+/* ---------- botoes ---------- */
+.btn{background:var(--azul-marca); color:#FFF; border:0; padding:13px 18px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; width:100%}
+.btn:active{background:var(--azul-marca-esc)}
+.btn-sec{background:#FFF; color:var(--ink2); border:1px solid var(--line2); padding:12px 18px; border-radius:10px; font-size:14.5px; cursor:pointer; width:100%}
+
+/* ---------- acao flutuante ---------- */
+.fab{
+  position:fixed; right:16px; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px); z-index:30;
+  background:var(--azul-marca); color:#FFF; border:0; border-radius:99px;
+  padding:15px 22px; font-size:15px; font-weight:600; cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,50,211,.34);
+}
+.fab:active{background:var(--azul-marca-esc)}
+
+/* ---------- navegacao inferior ---------- */
+.nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  background:rgba(255,255,255,.96); backdrop-filter:blur(12px);
+  border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(4,1fr);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav button{
+  background:none; border:0; padding:9px 4px 8px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:10.5px; font-weight:600; color:var(--ink3); letter-spacing:.02em; height:var(--nav-h);
+  justify-content:center;
+}
+.nav button svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.nav button.on{color:var(--azul-marca)}
+
+/* ---------- folha inferior ---------- */
+.sheet-bg{position:fixed; inset:0; background:rgba(20,24,26,.5); z-index:50; display:flex; align-items:flex-end}
+.sheet-bg.hidden{display:none !important}
+.sheet{
+  background:var(--card); width:100%; border-radius:18px 18px 0 0; padding:8px 16px calc(20px + env(safe-area-inset-bottom));
+  max-height:92vh; overflow-y:auto;
+}
+.grab{width:38px; height:4px; background:var(--line2); border-radius:99px; margin:8px auto 14px}
+.sheet h3{font-size:17px; margin-bottom:3px}
+.campo{margin-top:14px}
+.campo label{display:block; font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink3); font-weight:600; margin-bottom:6px}
+.campo input,.campo select{
+  width:100%; font-size:16px; padding:13px 12px; border:1px solid var(--line2);
+  border-radius:10px; background:#FFF; color:var(--ink);
+}
+.dupla{display:grid; grid-template-columns:1fr 1fr; gap:11px}
+.chips{display:flex; gap:8px; overflow-x:auto; padding:2px 16px 4px; margin:0 -16px; scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{background:#F2F5F1; border:1px solid var(--line); border-radius:99px; padding:9px 14px; font-size:13.5px; white-space:nowrap; cursor:pointer; color:var(--ink2)}
+.chip:active{border-color:var(--azul-marca); background:#EAEFFC; color:var(--azul-marca)}
+.chip b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--ink)}
+.err{color:var(--vermelho); font-size:13px; margin:12px 0 0}
+.acoes{display:flex; flex-direction:column; gap:9px; margin-top:18px}
+.vazio{padding:34px 16px; text-align:center; color:var(--ink3); font-size:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <img src="data:image/png;base64,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" alt="Alagoana Veículos">
+  <span class="tela" id="tela-nome">Painel</span>
+</div>
+
+<div class="wrap">
+  <section class="view on" id="v-painel"></section>
+  <section class="view" id="v-estoque"></section>
+  <section class="view" id="v-vendas"></section>
+  <section class="view" id="v-caixa"></section>
+  <section class="view" id="v-ficha"></section>
+</div>
+
+<button class="fab" id="fab" onclick="abrirCusto()">+ Custo</button>
+
+<nav class="nav" id="nav"></nav>
+
+<div class="sheet-bg hidden" id="sheet-bg" onclick="if(event.target===this)fecharSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+const HOJE = new Date('2026-08-08');
+const BRL = n => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const BRLk = n => 'R$ ' + (n/1000).toFixed(0) + ' mil';
+const D = s => new Date(s + 'T00:00:00');
+const dias = (a,b) => Math.round((b-a)/86400000);
+const fdata = s => s ? D(s).toLocaleDateString('pt-BR') : '—';
+const addD = (s,n) => { const d = D(s); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+
+const CATALOGO_MOTO = {
+ 'Aprilia':['RS 660','SR 150','SR 160','Tuono 660'],
+ 'BMW':['C 400 X','F 750 GS','F 800 GS','F 850 GS','F 900 R','F 900 XR','G 310 GS','G 310 R','R 1200 GS','R 1250 GS','R 1250 RT','R nineT','S 1000 R','S 1000 RR','S 1000 XR'],
+ 'Dafra':['Apache 150','Citycom 300','Horizon 150','Next 250','NH 190','Riva 150','Roadwin 250','Speed 150'],
+ 'Ducati':['Diavel','Hypermotard','Monster','Multistrada','Panigale V2','Panigale V4','Scrambler','Streetfighter','SuperSport'],
+ 'Haojue':['Chopper Road 150','DK 150','DR 160','Master Ride 150','NK 150'],
+ 'Harley-Davidson':['Fat Boy','Forty-Eight','Heritage Classic','Iron 883','Pan America','Road Glide','Road King','Softail Slim','Sportster S','Street 750','Street Bob','Street Glide'],
+ 'Honda':['ADV 150','Africa Twin','Biz 110i','Biz 125','CB 300F Twister','CB 500F','CB 500X','CB 650R','CB 1000R','CBR 500R','CBR 650R','CBR 1000RR','CG 160 Cargo','CG 160 Fan','CG 160 Start','CG 160 Titan','Elite 125','Forza 350','NC 750X','NXR 160 Bros','PCX 160','Pop 110i','Sahara 300','XRE 190','XRE 300'],
+ 'Husqvarna':['Norden 901','Svartpilen 401','Vitpilen 401'],
+ 'Kasinski':['Comet 250','Mirage 250','Prima 150','Win 110'],
+ 'Kawasaki':['Ninja 300','Ninja 400','Ninja 650','Ninja ZX-6R','Ninja ZX-10R','Versys 650','Versys 1000','Vulcan S','Z400','Z650','Z900','Z1000'],
+ 'KTM':['Adventure 390','Adventure 890','Duke 200','Duke 250','Duke 390','Duke 790','RC 390'],
+ 'MV Agusta':['Brutale 800','Dragster 800','F3 800','Turismo Veloce'],
+ 'Piaggio':['Beverly 300','Liberty 150','Medley 150','MP3 300'],
+ 'Royal Enfield':['Classic 350','Continental GT 650','Himalayan','Hunter 350','Interceptor 650','Meteor 350','Scram 411'],
+ 'Shineray':['Jet 50','Phoenix 50','SHI 175','XY 50Q','XY 200'],
+ 'Suzuki':['Bandit 650','Burgman 125','DR 160','GSX-8S','GSX-R1000','GSX-S750','GSX-S1000','Intruder 125','V-Strom 650','V-Strom 1050','Yes 125'],
+ 'Traxx':['JH 125','Star 50','Work 125'],
+ 'Triumph':['Bonneville T100','Bonneville T120','Rocket 3','Scrambler 900','Speed Triple','Street Triple','Tiger 800','Tiger 900','Trident 660'],
+ 'Vespa':['GTS 300','Primavera 150','Sprint 150'],
+ 'Yamaha':['Crosser 150','Factor 125','Factor 150','Fazer 250','Fluo 125','Lander 250','MT-03','MT-07','MT-09','MT-15','Neo 125','NMAX 160','R3','R15','Ténéré 250','Ténéré 700','Tracer 900','XJ6','XMAX 250','YZF-R1']
+};
+
+const CATALOGO = {
+ 'Audi':['A1','A3','A4','A5','A6','Q3','Q5','Q7','Q8','TT'],
+ 'BMW':['Série 1','Série 2','Série 3','Série 4','Série 5','Série 7','X1','X2','X3','X4','X5','X6','Z4'],
+ 'Chevrolet':['Agile','Astra','Blazer','Camaro','Captiva','Celta','Classic','Cobalt','Corsa','Cruze','Cruze Sport6','Equinox','Joy','Meriva','Montana','Onix','Onix Plus','Prisma','S10','Spin','Tracker','Trailblazer','Vectra','Zafira'],
+ 'Chrysler':['300C','PT Cruiser'],
+ 'Citroën':['Aircross','Basalt','Berlingo','C3','C3 Aircross','C4','C4 Cactus','C4 Lounge','C4 Pallas','Jumpy','Xsara Picasso'],
+ 'Dodge':['Dakota','Durango','Journey'],
+ 'Fiat':['500','Argo','Bravo','Cronos','Doblò','Ducato','Fastback','Fiorino','Freemont','Grand Siena','Idea','Linea','Mobi','Palio','Palio Weekend','Pulse','Punto','Siena','Strada','Titano','Toro','Uno'],
+ 'Ford':['Bronco Sport','Courier','EcoSport','Edge','Escort','F-250','Fiesta','Focus','Fusion','Ka','Ka Sedan','Maverick','Ranger','Territory'],
+ 'Honda':['Accord','City','City Hatch','Civic','CR-V','Fit','HR-V','WR-V','ZR-V'],
+ 'Hyundai':['Azera','Creta','Elantra','HB20','HB20S','HB20X','HR','i30','ix35','Santa Fe','Sonata','Tucson','Veloster'],
+ 'Jeep':['Cherokee','Commander','Compass','Gladiator','Grand Cherokee','Renegade','Wrangler'],
+ 'Kia':['Bongo','Cadenza','Carnival','Cerato','Mohave','Picanto','Sorento','Soul','Sportage','Stonic'],
+ 'Land Rover':['Defender','Discovery','Discovery Sport','Freelander','Range Rover','Range Rover Evoque','Range Rover Sport','Range Rover Velar'],
+ 'Mercedes-Benz':['CLA','Classe A','Classe B','Classe C','Classe E','Classe S','GLA','GLB','GLC','GLE','GLK','Sprinter'],
+ 'Mini':['Clubman','Cooper','Countryman'],
+ 'Mitsubishi':['ASX','Eclipse Cross','L200 Sport','L200 Triton','Lancer','Outlander','Pajero','Pajero Sport','Pajero TR4'],
+ 'Nissan':['Frontier','Grand Livina','Kicks','Leaf','Livina','March','Sentra','Tiida','Versa','X-Trail'],
+ 'Peugeot':['2008','206','207','208','3008','307','308','408','5008','508','Boxer','Hoggar','Partner'],
+ 'Porsche':['911','Boxster','Cayenne','Macan','Panamera'],
+ 'Ram':['1500','2500','3500','Classic','Rampage'],
+ 'Renault':['Captur','Clio','Duster','Fluence','Kangoo','Kardian','Kwid','Logan','Master','Megane','Oroch','Sandero','Sandero Stepway','Scenic','Symbol'],
+ 'Subaru':['Forester','Impreza','Legacy','Outback','WRX','XV'],
+ 'Suzuki':['Grand Vitara','Jimny','Jimny Sierra','S-Cross','SX4','Vitara'],
+ 'Toyota':['Camry','Corolla','Corolla Cross','Etios','Etios Sedan','Hilux','Prius','RAV4','SW4','Yaris','Yaris Sedan'],
+ 'Troller':['T4'],
+ 'Volkswagen':['Amarok','Bora','CrossFox','Fox','Gol','Golf','Jetta','Kombi','Nivus','Passat','Polo','Saveiro','SpaceFox','T-Cross','Taos','Tiguan','Touareg','Up!','Virtus','Voyage'],
+ 'Volvo':['C40','S60','V40','XC40','XC60','XC90']
+};
+
+const CORES = ['Branco','Prata','Preto','Cinza','Grafite','Vermelho','Azul','Marrom','Bege','Verde','Vinho','Amarelo','Laranja','Dourado','Bronze','Chumbo'];
+
+const NOVO = '__novo__';
+
+const TIPOS = [['carro','Carro'],['moto','Moto'],['outro','Outros']];
+const tipoDe = {};                       // prefixo do formulario -> tipo escolhido
+const catDe = t => t === 'moto' ? CATALOGO_MOTO : CATALOGO;
+
+function optsMarca(sel, tipo){
+  const cat = catDe(tipo || 'carro');
+  return `<option value="">Selecione</option>` +
+    Object.keys(cat).sort((a,b)=>a.localeCompare(b,'pt-BR')).map(m=>`<option ${m===sel?'selected':''}>${m}</option>`).join('') +
+    `<option value="${NOVO}">+ Outra marca…</option>`;
+}
+function optsModelo(marca, sel, tipo){
+  const l = (catDe(tipo || 'carro')[marca]) || [];
+  return `<option value="">${marca ? 'Selecione' : 'Escolha a marca antes'}</option>` +
+    l.map(m=>`<option ${m===sel?'selected':''}>${m}</option>`).join('') +
+    (marca ? `<option value="${NOVO}">+ Outro modelo…</option>` : '');
+}
+function optsTipo(sel){
+  return TIPOS.map(([v,r])=>`<option value="${v}" ${v===sel?'selected':''}>${r}</option>`).join('');
+}
+function optsCor(sel){
+  return `<option value="">Selecione</option>` +
+    CORES.map(c=>`<option ${c===sel?'selected':''}>${c}</option>`).join('') +
+    `<option value="${NOVO}">+ Outra cor…</option>`;
+}
+
+const el = id => document.getElementById(id);
+
+function montarSelects(p, tipo){
+  tipoDe[p] = tipo || 'carro';
+  if (el(p+'-tipo')) el(p+'-tipo').innerHTML = optsTipo(tipoDe[p]);
+  aplicarTipo(p);
+}
+
+// 'outro' abre campos livres; carro e moto usam catalogo
+function aplicarTipo(p){
+  const t = tipoDe[p] || 'carro';
+  const livre = t === 'outro';
+  el(p+'-marca').classList.toggle('hidden', livre);
+  el(p+'-modelo').classList.toggle('hidden', livre);
+  el(p+'-marca-novo').classList.toggle('hidden', !livre);
+  el(p+'-modelo-novo').classList.toggle('hidden', !livre);
+  if (livre) {
+    el(p+'-marca-novo').placeholder = 'Marca';
+    el(p+'-modelo-novo').placeholder = 'Modelo';
+    el(p+'-marca-novo').onblur = null;
+    el(p+'-modelo-novo').onblur = null;
+  } else {
+    el(p+'-marca').innerHTML = optsMarca('', t);
+    el(p+'-modelo').innerHTML = optsModelo('', '', t);
+    el(p+'-marca-novo').placeholder = 'Nome da marca';
+    el(p+'-modelo-novo').placeholder = 'Nome do modelo';
+  }
+  el(p+'-cor').innerHTML = optsCor();
+  el(p+'-cor-novo').classList.add('hidden');
+}
+
+function mudouTipo(p){
+  tipoDe[p] = el(p+'-tipo').value;
+  aplicarTipo(p);
+}
+
+// leitura dos campos, respeitando o modo livre
+function lerVeic(p, campo){
+  const livre = (tipoDe[p] || 'carro') === 'outro';
+  return livre ? el(p+'-'+campo+'-novo').value.trim() : el(p+'-'+campo).value.trim();
+}
+
+
+function mudouMarca(p){
+  const t = tipoDe[p] || 'carro';
+  const s = el(p+'-marca'), inp = el(p+'-marca-novo');
+  if (s.value === NOVO) { inp.classList.remove('hidden'); inp.value = ''; inp.focus(); el(p+'-modelo').innerHTML = optsModelo('', '', t); return; }
+  inp.classList.add('hidden');
+  el(p+'-modelo').innerHTML = optsModelo(s.value, '', t);
+  el(p+'-modelo-novo').classList.add('hidden');
+}
+function addMarca(p){
+  const t = tipoDe[p] || 'carro';
+  if (t === 'outro') return;
+  const cat = catDe(t);
+  const inp = el(p+'-marca-novo'), nome = inp.value.trim();
+  if (!nome) { el(p+'-marca').value = ''; inp.classList.add('hidden'); return; }
+  if (!cat[nome]) cat[nome] = [];
+  el(p+'-marca').innerHTML = optsMarca(nome, t);
+  el(p+'-modelo').innerHTML = optsModelo(nome, '', t);
+  inp.classList.add('hidden');
+  el(p+'-modelo').focus();
+}
+
+function mudouModelo(p){
+  const s = el(p+'-modelo'), inp = el(p+'-modelo-novo');
+  if (s.value === NOVO) { inp.classList.remove('hidden'); inp.value = ''; inp.focus(); return; }
+  inp.classList.add('hidden');
+}
+function addModelo(p){
+  const t = tipoDe[p] || 'carro';
+  if (t === 'outro') return;
+  const cat = catDe(t);
+  const inp = el(p+'-modelo-novo'), nome = inp.value.trim(), marca = el(p+'-marca').value;
+  if (!nome || !marca) { el(p+'-modelo').value = ''; inp.classList.add('hidden'); return; }
+  if (!cat[marca].includes(nome)) { cat[marca].push(nome); cat[marca].sort((a,b)=>a.localeCompare(b,'pt-BR')); }
+  el(p+'-modelo').innerHTML = optsModelo(marca, nome, t);
+  inp.classList.add('hidden');
+}
+
+function mudouCor(p){
+  const s = el(p+'-cor'), inp = el(p+'-cor-novo');
+  if (s.value === NOVO) { inp.classList.remove('hidden'); inp.value = ''; inp.focus(); return; }
+  inp.classList.add('hidden');
+}
+function addCor(p){
+  const inp = el(p+'-cor-novo'), nome = inp.value.trim();
+  if (!nome) { el(p+'-cor').value = ''; inp.classList.add('hidden'); return; }
+  if (!CORES.includes(nome)) CORES.push(nome);
+  el(p+'-cor').innerHTML = optsCor(nome);
+  inp.classList.add('hidden');
+}
+
+function campoVeiculo(p){
+  return `
+    <div><label for="${p}-marca">Marca</label>
+      <select id="${p}-marca" onchange="mudouMarca('${p}')"></select>
+      <input type="text" id="${p}-marca-novo" class="hidden" placeholder="Nome da marca" style="margin-top:6px" onchange="addMarca('${p}')" onblur="addMarca('${p}')"></div>
+    <div><label for="${p}-modelo">Modelo</label>
+      <select id="${p}-modelo" onchange="mudouModelo('${p}')"></select>
+      <input type="text" id="${p}-modelo-novo" class="hidden" placeholder="Nome do modelo" style="margin-top:6px" onchange="addModelo('${p}')" onblur="addModelo('${p}')"></div>
+    <div><label for="${p}-ano">Ano</label><input type="number" id="${p}-ano" placeholder="2021"></div>
+    <div><label for="${p}-cor">Cor</label>
+      <select id="${p}-cor" onchange="mudouCor('${p}')"></select>
+      <input type="text" id="${p}-cor-novo" class="hidden" placeholder="Nome da cor" style="margin-top:6px" onchange="addCor('${p}')" onblur="addCor('${p}')"></div>`;
+}
+
+const CATS = ['Combustível','Transferência','Consulta','Peças','Pintura','Polimento','Reparo','Manutenção','Revisão','Serviço','Guincho','IPVA','Imposto','Amarelinha','Cautelar','Bateria','Chaveiro','Lâmpada','Patrocinado','Comissão','Retorno','Troca','Não detalhado'];
+
+
+let frota = [
+{id:'V-01',marca:'Nissan',modelo:'Kicks S',ano:2018,cor:'Prata',placa:'QLI6389',km:null,
+ dataCompra:'2025-07-08',compra:58000,anuncio:null,fipe:null,dataVenda:'2025-09-22',venda:68000,
+ custos:[['Gastos consolidados da planilha','Não detalhado','2025-09-22',4447.54]]},
+
+{id:'V-02',marca:'Ford',modelo:'Fiesta',ano:2009,cor:'Preto',placa:'NMC3545',km:null,
+ dataCompra:'2025-09-12',compra:18021.16,anuncio:null,fipe:25800,dataVenda:'2026-02-23',venda:26000,
+ custos:[['Consulta de leilão','Consulta','2025-09-22',50],['Pintura','Pintura','2025-09-18',500],
+ ['Polimento carro','Polimento','2025-09-18',150],['Polimento farol','Polimento','2025-09-18',160],
+ ['Patrocinado','Patrocinado','2025-10-17',250],['Bobina do motor, Everson','Reparo','2025-11-05',100],
+ ['Guincho','Guincho','2025-11-19',150],['Combustível','Combustível','2025-11-26',38],
+ ['Autotec, troca de óleo, filtro e bomba d\'água','Manutenção','2025-11-29',810],
+ ['Bateria','Bateria','2026-02-05',260],['Combustível','Combustível','2026-02-23',30],
+ ['Chave reserva','Chaveiro','2026-02-23',130],['Transferência','Transferência','2026-02-23',750],
+ ['Comissão Alagoana','Comissão','2026-02-23',1000],['Comissão Victor','Comissão','2026-02-23',500],
+ ['Autotec','Retorno','2026-05-19',765]]},
+
+{id:'V-03',marca:'Chevrolet',modelo:'Cruze (50%)',ano:2012,cor:'Cinza',placa:'OHH8C95',km:null,
+ dataCompra:'2025-10-29',compra:37831.56,anuncio:null,fipe:51258,dataVenda:'2026-01-23',venda:49617.24,
+ custos:[['Consulta de leilão','Consulta','2025-10-29',50],['Conserto banco','Peças','2025-10-31',130],
+ ['Polimento carro','Polimento','2025-11-03',150],['Combustível','Combustível','2025-11-06',50],
+ ['Revisão Autotec, óleo e filtro','Manutenção','2025-11-12',320],['Frete módulo ABS','Guincho','2025-11-14',140],
+ ['Combustível','Combustível','2025-11-15',50],['FF Automotiva, módulo','Peças','2025-11-27',4500],
+ ['FF Automotiva, módulo','Peças','2025-11-29',900],['Combustível','Combustível','2026-01-10',30],
+ ['Transferência','Transferência','2026-01-13',750],['Comissão Alagoana','Comissão','2026-01-13',1000],
+ ['Comissão Amigo','Comissão','2026-01-13',1000],['Parte hidráulica módulo ABS','Peças','2026-01-16',1770],
+ ['Motoboy','Serviço','2026-01-21',25],['Combustível','Combustível','2026-01-22',30],
+ ['Combustível','Combustível','2026-01-23',287.42],['FF Automotiva, hidráulico módulo','Serviço','2026-01-24',350],
+ ['Recibo de compra e venda','Transferência','2026-03-05',35]]},
+
+{id:'V-04',marca:'Fiat',modelo:'500',ano:2012,cor:'Branco',placa:'ORD2680',km:null,
+ dataCompra:'2025-11-27',compra:34600,anuncio:null,fipe:44984,dataVenda:'2026-02-06',venda:43000,
+ custos:[['Consulta de leilão','Consulta','2025-11-27',50],['Polimento carro','Polimento','2025-11-28',150],
+ ['Combustível','Combustível','2025-11-28',50],['Combustível','Combustível','2025-11-29',100],
+ ['Combustível','Combustível','2026-01-10',50],['Manutenção do vidro','Manutenção','2026-01-20',150],
+ ['Trava elétrica','Manutenção','2026-01-20',150],['Retrovisor elétrico','Peças','2026-01-20',200],
+ ['Transferência','Transferência','2026-02-06',750],['Comissão Alagoana','Comissão','2026-02-06',1000],
+ ['Comissão Victor','Comissão','2026-02-06',500]]},
+
+{id:'V-05',marca:'Volkswagen',modelo:'T-Cross',ano:2020,cor:'Preta',placa:'QWH2F52',km:null,
+ dataCompra:'2026-01-14',compra:70000,anuncio:null,fipe:85820,dataVenda:'2026-03-17',venda:85000,
+ custos:[['Pintura (6 peças) 50%','Pintura','2026-01-16',700],['Pintura (6 peças) 50%','Pintura','2026-01-22',700],
+ ['Bagagito','Peças','2026-01-26',127.06],['Tira morça','Serviço','2026-01-31',500],
+ ['Polimento carro','Peças','2026-01-31',200],['Limpador','Peças','2026-02-03',96],
+ ['Combustível','Combustível','2026-02-14',100],['Amarelinha','Amarelinha','2026-03-17',234],
+ ['Transferência','Transferência','2026-03-17',750],['Comissão Alagoana','Comissão','2026-03-17',1000],
+ ['Comissão Victor','Comissão','2026-03-17',500]]},
+
+{id:'V-06',marca:'Fiat',modelo:'Mobi',ano:2020,cor:'Branco',placa:'QUU4H71',km:null,
+ dataCompra:'2026-02-05',compra:30000,anuncio:null,fipe:44435,dataVenda:'2026-03-05',venda:42000,
+ custos:[['Pintura geral (40%)','Pintura','2026-02-10',1000],['Pintura geral (40%)','Pintura','2026-02-13',1000],
+ ['Pintura geral (20%)','Peças','2026-02-21',500],['Calotas Mobi','Peças','2026-02-21',96],
+ ['Consulta leilão','Consulta','2026-02-21',50],['Combustível','Combustível','2026-02-21',50],
+ ['Transferência','Transferência','2026-03-02',650],['Autotec','Revisão','2026-03-05',797],
+ ['Friso superior','Peças','2026-03-07',208],['Comissão Alagoana','Comissão','2026-03-05',1000],
+ ['Comissão Victor','Comissão','2026-03-05',500],['Lâmpadas','Retorno','2026-03-17',40]]},
+
+{id:'V-07',marca:'Honda',modelo:'City',ano:2023,cor:'Branco',placa:'SAC0D38',km:null,
+ dataCompra:'2026-02-14',compra:84000,anuncio:97000,fipe:105437,dataVenda:'2026-08-03',venda:97000,
+ custos:[['Combustível','Combustível','2026-02-21',50],['Transferência','Transferência','2026-02-21',263.34],
+ ['Transferência vistoria','Transferência','2026-02-21',188.10],['Consulta leilão','Consulta','2026-02-21',50],
+ ['Martelinho','Reparo','2026-02-21',500],['Para-barro e lanterna','Peças','2026-02-24',696.79],
+ ['Bateria City','Peças','2026-02-25',270],['Polimento carro','Polimento','2026-02-25',150],
+ ['Transferência despache','Transferência','2026-03-04',190],['Presilhas para lama','Peças','2026-03-07',80],
+ ['Emílio, troca lanterna e para-barro','Reparo','2026-03-17',100],['Combustível','Combustível','2026-03-17',30],
+ ['Consulta leilão, Polo Highline','Consulta','2026-03-17',50],['Combustível','Combustível','2026-03-19',100],
+ ['Combustível','Combustível','2026-04-08',30],['Combustível','Combustível','2026-04-11',70],
+ ['Pintura retrovisor, Emílio','Pintura','2026-04-13',150],['Cautelar','Cautelar','2026-04-13',180],
+ ['Combustível','Combustível','2026-04-18',50],['Combustível','Combustível','2026-05-04',50],
+ ['Patrocinado','Patrocinado','2026-05-04',63.77],['Patrocinado','Patrocinado','2026-06-05',100],
+ ['Carrossel','Patrocinado','2026-07-07',100],['Patrocinado, Facebook','Patrocinado','2026-07-07',171.50],
+ ['Patrocinado Instagram','Patrocinado','2026-08-01',369.46],['Combustível','Combustível','2026-08-03',30],
+ ['IPVA + amarelinha 2026','IPVA','2026-08-03',3420.24],['Transferência','Transferência','2026-08-03',850],
+ ['Comissão Alagoana','Comissão','2026-08-03',1000],['Comissão Victor','Comissão','2026-08-03',500]]},
+
+{id:'V-08',marca:'Hyundai',modelo:'Creta',ano:2017,cor:'Vermelho',placa:'QLF3A26',km:null,
+ dataCompra:'2026-03-17',compra:55000,anuncio:null,fipe:79325,dataVenda:'2026-04-20',venda:78000,
+ custos:[['Consulta leilão','Consulta','2026-03-17',50],['Pintura cubo da roda','Pintura','2026-03-17',29],
+ ['Lanternão, limpadores e símbolo','Peças','2026-03-27',145],['Pintura','Pintura','2026-03-27',850],
+ ['Polimento carro','Polimento','2026-03-27',180],['Combustível','Combustível','2026-03-28',50],
+ ['Autotec','Revisão','2026-04-01',1249],['Transferência','Transferência','2026-04-01',700],
+ ['Pintura','Pintura','2026-04-10',350],['IPVA 2026','IPVA','2026-04-20',2099],
+ ['Problema leilão, Rafael','Consulta','2026-04-20',200],['Consulta leilão, Tucson','Combustível','2026-04-20',15],
+ ['Comissão Alagoana','Comissão','2026-04-20',1000],['Comissão Victor','Comissão','2026-04-20',500],
+ ['Amarelinha','Amarelinha','2026-05-15',234]]},
+
+{id:'V-09',marca:'Ford',modelo:'Ka',ano:2016,cor:'Branco',placa:'QLC1B51',km:null,
+ dataCompra:'2026-04-01',compra:27000,anuncio:null,fipe:36469,dataVenda:'2026-05-18',venda:36350,
+ custos:[['Consulta leilão','Consulta','2026-04-01',50],['Transferência','Transferência','2026-04-01',700],
+ ['Pintura','Pintura','2026-04-10',500],['Volante','Peças','2026-04-13',150],
+ ['Casa das lanternas','Peças','2026-05-07',150],['Combustível','Combustível','2026-05-04',100],
+ ['Transferência','Transferência','2026-05-18',700],['Comissão Alagoana','Comissão','2026-05-18',1000],
+ ['Comissão Victor','Comissão','2026-05-18',500],['Retorno, estética','Retorno','2026-07-09',100],
+ ['Retorno, embreagem','Retorno','2026-07-16',1415]]},
+
+{id:'V-10',marca:'Ford',modelo:'EcoSport',ano:2020,cor:'Cinza',placa:'QWT4D53',km:null,
+ dataCompra:'2026-04-06',compra:52000,anuncio:68000,fipe:68956,dataVenda:null,venda:null,
+ custos:[['Consulta leilão','Consulta','2026-04-06',50],['Transferência','Transferência','2026-04-06',700],
+ ['Combustível','Combustível','2026-04-07',50],['Pintura, Emílio','Pintura','2026-04-13',600],
+ ['Combustível','Combustível','2026-04-14',30],['Coifa e capa de freio de mão','Peças','2026-04-13',120],
+ ['Volante','Peças','2026-04-22',150],['Combustível','Combustível','2026-04-25',50],
+ ['Combustível (óleo diesel)','Combustível','2026-04-27',10],['Combustível','Combustível','2026-04-27',50],
+ ['Refletores pisca','Peças','2026-04-27',165.89],['Pintura, Emílio','Pintura','2026-05-04',200],
+ ['Patrocinado','Patrocinado','2026-05-04',63.77],['Pneu','Peças','2026-05-06',370],
+ ['Combustível','Combustível','2026-05-15',50],['Autotec','Revisão','2026-05-19',262],
+ ['Combustível','Combustível','2026-05-28',50],['Patrocinado','Patrocinado','2026-05-28',100],
+ ['Combustível','Combustível','2026-06-03',30],['Combustível','Combustível','2026-06-06',100],
+ ['Combustível','Combustível','2026-06-11',50],['Combustível','Combustível','2026-06-16',100],
+ ['Revisão Autotec','Revisão','2026-06-26',627],['Carrossel','Patrocinado','2026-07-07',100],
+ ['Patrocinado','Patrocinado','2026-07-07',171.50],['Patrocinado','Patrocinado','2026-08-01',369.46],
+ ['Combustível','Combustível','2026-08-01',100],['Comissão Alagoana','Comissão',null,1000],
+ ['Comissão Victor','Comissão',null,500]]},
+
+{id:'V-11',marca:'Volkswagen',modelo:'Polo Highline',ano:2024,cor:'Preto',placa:'RGX3B71',km:null,
+ dataCompra:'2026-04-06',compra:85500,anuncio:null,fipe:null,dataVenda:'2026-06-05',venda:97500,
+ custos:[['Gastos consolidados da planilha','Não detalhado','2026-06-05',3133.77]]},
+
+{id:'V-12',marca:'Hyundai',modelo:'Tucson',ano:2011,cor:'Preta',placa:'NMD7C19',km:null,
+ dataCompra:'2026-04-20',compra:28000,anuncio:null,fipe:null,dataVenda:'2026-05-20',venda:39000,
+ custos:[['Gastos consolidados da planilha','Não detalhado','2026-05-20',7710]]},
+
+{id:'V-13',marca:'Chevrolet',modelo:'Tracker',ano:2022,cor:'Branca',placa:'SAB1D80',km:null,
+ dataCompra:'2026-06-26',compra:67000,anuncio:89000,fipe:92079,dataVenda:null,venda:null,
+ custos:[['Combustível','Combustível','2026-06-26',100],['Combustível','Combustível','2026-06-30',100],
+ ['Friso lateral, Mercado Livre','Peças','2026-06-30',214],['Polimento carro, Joelmo','Polimento','2026-07-02',200],
+ ['Pintura, Emílio','Pintura','2026-07-02',400],['Carrossel','Patrocinado','2026-07-07',100],
+ ['Combustível','Combustível','2026-07-11',50],['Pintura, Emílio','Pintura','2026-07-14',150],
+ ['Combustível','Combustível','2026-07-17',100],['Transferência','Transferência','2026-07-31',700],
+ ['Combustível','Combustível','2026-07-31',200],['Patrocinado','Patrocinado','2026-08-01',369.46],
+ ['Comissão Alagoana','Comissão',null,1000],['Comissão Victor','Comissão',null,500]]},
+
+{id:'V-14',marca:'Hyundai',modelo:'HB20',ano:2014,cor:'Branco',placa:'OHI0729',km:null,
+ dataCompra:'2026-07-17',compra:35500,anuncio:49000,fipe:46500,dataVenda:null,venda:null,
+ custos:[['Consulta leilão','Consulta','2026-07-28',50],['Caixa de direção','Manutenção','2026-07-24',750],
+ ['Polimento farol, TC','Polimento','2026-07-27',200],['Pintura, Emílio','Pintura','2026-07-27',500],
+ ['Polimento, Joelmo','Polimento','2026-07-31',200],['Pintura, Emílio','Pintura','2026-07-31',1000],
+ ['Coifa, Neguinho','Peças','2026-08-08',60],['Revisão, Autotec','Revisão','2026-08-08',1800],
+ ['Comissão Alagoana','Comissão',null,1000],['Comissão Victor','Comissão',null,500]]},
+
+{id:'V-15',marca:'Ford',modelo:'Ka Sedan',ano:2018,cor:'Branco',placa:'QLI0534',km:null,
+ dataCompra:'2026-07-28',compra:29000,anuncio:40000,fipe:40500,dataVenda:null,venda:null,
+ custos:[['Consulta leilão','Consulta','2026-07-28',50],['Antena e manopla','Peças','2026-07-31',143],
+ ['Combustível','Combustível','2026-07-31',50],['Pintura, Emílio','Pintura','2026-08-08',1300],
+ ['Polimento carro, Joelmo','Polimento','2026-08-08',200],['Polimento farol, TC','Polimento','2026-08-08',200],
+ ['Lâmpadas, TC','Lâmpada','2026-08-08',70],['Comissão Alagoana','Comissão',null,1000],
+ ['Comissão Victor','Comissão',null,500]]},
+
+{id:'V-16',marca:'Toyota',modelo:'Yaris',ano:2019,cor:'Branco',placa:'QLM7165',km:null,
+ dataCompra:'2026-08-03',compra:63000,anuncio:71000,fipe:72508,dataVenda:null,venda:null,
+ custos:[['Consulta leilão','Consulta','2026-08-03',50],['Coifa, Neguinho','Peças','2026-08-08',60],
+ ['Pintura entrada, Emílio (50%)','Pintura','2026-08-08',1000],['Comissão Alagoana','Comissão',null,1000],
+ ['Comissão Victor','Comissão',null,500]]}
+];
+
+let seqCusto = 0;
+let seqVeic = 0;
+
+function recalc(v){
+  v.lancamentos.sort((a,b) => (a.data||'9999') < (b.data||'9999') ? -1 : (a.data||'9999') > (b.data||'9999') ? 1 : 0);
+  v.custoPrep = v.lancamentos.reduce((a,l)=>a+l.valor, 0);
+  v.custoTotal = v.compra + v.custoPrep;
+  const comData = v.lancamentos.filter(l=>l.data);
+  v.ultimoCusto = comData.length ? comData[comData.length-1].data : v.dataCompra;
+  v.vendido = !!v.dataVenda;
+  v.ciclo = Math.max(0, v.vendido ? dias(D(v.dataCompra), D(v.dataVenda)) : dias(D(v.dataCompra), HOJE));
+  if (v.vendido) {
+    v.margem = v.venda - v.custoTotal;
+    v.margemPct = v.margem / v.custoTotal * 100;
+    v.margemMes = v.ciclo > 0 ? v.margemPct / (v.ciclo/30) : v.margemPct;
+  }
+  v.projetada = v.anuncio ? v.anuncio - v.custoTotal : null;
+  v.vsFipe = (v.anuncio && v.fipeHoje) ? (v.anuncio / v.fipeHoje - 1) * 100 : null;
+  v.deprec = (v.fipe && v.fipeHoje) ? v.fipeHoje - v.fipe : null;
+  v.deprecPct = v.deprec === null ? null : v.deprec / v.fipe * 100;
+}
+
+frota.forEach(v => {
+  seqVeic++;
+  v.tipo = v.tipo || 'carro';
+  v.fipeHoje = v.fipe;
+  v.lancamentos = v.custos.map(c => ({id:'L'+(++seqCusto), nome:c[0], cat:c[1], data:c[2], valor:c[3]}));
+  v.detalhado = !v.lancamentos.some(l => l.cat === 'N\u00e3o detalhado');
+  recalc(v);
+});
+
+/* ---------- caixa ---------- */
+const contas = [
+  {id:'ricardo',  nome:'Ricardo',  tipo:'Sócio',   inicial:38088.62},
+  {id:'alagoana', nome:'Alagoana', tipo:'Empresa',  inicial:59074.76},
+  {id:'victor',   nome:'Victor',   tipo:'Sócio',   inicial:0},
+  {id:'joao',     nome:'João',     tipo:'Sócio',   inicial:0}
+];
+let movimentos = [];
+let seqMov = 0;
+let ultimaConta = 'alagoana';
+
+const conta = id => contas.find(c => c.id === id);
+const saldo = id => conta(id).inicial + movimentos.filter(m => m.conta === id).reduce((a,m)=>a+m.valor, 0);
+const caixaTotal = () => contas.reduce((a,c)=>a+saldo(c.id), 0);
+
+function lancarMov({data, desc, tipo, contaId, valor, ref}){
+  if (!contaId) return null;
+  const m = {id:'M'+(++seqMov), data, desc, tipo, conta:contaId, valor, ref:ref||null};
+  movimentos.push(m);
+  ultimaConta = contaId;
+  return m.id;
+}
+function removerMovDe(refId){
+  movimentos = movimentos.filter(m => m.ref !== refId);
+}
+const opcoesConta = (sel) => `<option value="">Não descontar do caixa</option>` +
+  contas.map(c=>`<option value="${c.id}" ${c.id===(sel||ultimaConta)?'selected':''}>${c.nome} · ${BRL(saldo(c.id))}</option>`).join('');
+
+const porCategoria = lista => CATS
+  .map(c => ({cat:c, valor: lista.reduce((a,v) => a + v.lancamentos.filter(l=>l.cat===c).reduce((x,l)=>x+l.valor, 0), 0)}))
+  .filter(o => o.valor > 0)
+  .sort((a,b) => b.valor - a.valor);
+
+
+function garantiaInfo(v){
+  const fim = addD(v.dataVenda, 90);
+  const rest = dias(HOJE, D(fim));
+  return {fim, rest, ativa: rest > 0, pct: Math.max(0, Math.min(100, (90 - rest) / 90 * 100))};
+}
+
+
+/* ==================== estado ==================== */
+let telaAtual = 'painel';
+let fichaId = null;
+let ultimaData = '2026-08-09';
+let ultimaConta2 = 'alagoana';
+
+const q = id => document.getElementById(id);
+const ageCls = d => d<=30?'a0':d<=60?'a1':d<=90?'a2':'a3';
+
+/* ==================== navegacao ==================== */
+const ICONES = {
+  painel:'<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>',
+  estoque:'<path d="M5 17h14M5 17a2 2 0 1 0 4 0M5 17a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M3 17V9l2-5h14l2 5v8"/><path d="M3 9h18"/>',
+  vendas:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  caixa:'<rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M16 15h3"/>'
+};
+const TELAS = [['painel','Painel'],['estoque','Estoque'],['vendas','Vendas'],['caixa','Caixa']];
+
+q('nav').innerHTML = TELAS.map(([id,rot]) =>
+  `<button data-t="${id}" onclick="irPara('${id}')" class="${id===telaAtual?'on':''}">
+    <svg viewBox="0 0 24 24">${ICONES[id]}</svg>${rot}</button>`).join('');
+
+function irPara(t){
+  telaAtual = t; fichaId = null;
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('on'));
+  q('v-'+t).classList.add('on');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  q('tela-nome').textContent = TELAS.find(x=>x[0]===t)[1];
+  q('fab').classList.toggle('hidden', t === 'caixa');
+  window.scrollTo({top:0, behavior:'instant'});
+  render();
+}
+
+function abrirFicha(id){
+  fichaId = id;
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('on'));
+  q('v-ficha').classList.add('on');
+  q('tela-nome').textContent = 'Veículo';
+  window.scrollTo({top:0, behavior:'instant'});
+  renderFicha();
+}
+
+/* ==================== painel ==================== */
+let charts = {};
+const mk = (id,cfg) => { if(charts[id]) charts[id].destroy(); const el = q(id); if(el) charts[id] = new Chart(el, cfg); };
+const font = {family:'"IBM Plex Sans", sans-serif', size:11};
+const baseOpt = {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},
+  tooltip:{backgroundColor:'#15181A', padding:9, titleFont:font, bodyFont:font, cornerRadius:6}}};
+const gx = {grid:{color:'#EDEFEA'}, border:{display:false}, ticks:{font, color:'#858B87'}};
+const gy = {grid:{display:false}, border:{display:false}, ticks:{font, color:'#4A524F'}};
+
+function renderPainel(){
+  const estoque = frota.filter(v=>!v.vendido);
+  const vendidos = frota.filter(v=>v.vendido);
+  const cx = caixaTotal();
+  const custo = estoque.reduce((a,v)=>a+v.custoTotal,0);
+  const potencial = estoque.reduce((a,v)=>a+(v.anuncio||v.custoTotal),0);
+  const pat = cx + custo, nreal = potencial - custo;
+  const pc = pat ? cx/pat*100 : 0;
+  const parados = estoque.filter(v=>v.ciclo>90);
+  const giro = vendidos.length ? Math.round(vendidos.reduce((a,v)=>a+v.ciclo,0)/vendidos.length) : 0;
+  const lucro = vendidos.reduce((a,v)=>a+v.margem,0);
+  const emGar = vendidos.filter(v=>garantiaInfo(v).ativa).length;
+
+  q('v-painel').innerHTML = `
+    <div class="card">
+      <h3>Patrimônio</h3>
+      <p class="hint">Dinheiro em conta e carros no pátio.</p>
+      <div class="pat-bar"><div class="b-caixa" style="width:${pc}%"></div><div class="b-estoque" style="width:${100-pc}%"></div></div>
+      <div class="pat-l">
+        <span><i class="dot d-caixa"></i>Caixa ${pc.toFixed(0)}%</span>
+        <span><i class="dot d-estoque"></i>Estoque ${(100-pc).toFixed(0)}%</span>
+      </div>
+      <div class="pat-grid">
+        <div class="pat-lab topo">Hoje</div>
+        <div class="pat-cel forte"><span>Patrimônio total</span><b>${BRL(pat)}</b></div>
+        <div class="pat-cel"><span><i class="dot d-estoque"></i>Estoque ao custo</span><b>${BRL(custo)}</b></div>
+        <div class="pat-cel"><span><i class="dot d-caixa"></i>Caixa disponível</span><b>${BRL(cx)}</b></div>
+      </div>
+      <div class="pat-grid pat-proj">
+        <div class="pat-lab">Se todo o estoque sair pelo preço de anúncio</div>
+        <div class="pat-cel forte"><span>Patrimônio futuro</span><b>${BRL(pat+nreal)}</b></div>
+        <div class="pat-cel"><span><i class="dot d-estoque"></i>Estoque a preço de anúncio</span><b>${BRL(potencial)}</b></div>
+        <div class="pat-cel ganho"><span>Lucro não realizado</span><b>+ ${BRL(nreal)}</b></div>
+      </div>
+      <p class="hint" style="margin-top:16px">A linha de baixo é projeção, não resultado: supõe venda pelo preço pedido, sem desconto no fechamento e sem novos custos até lá.</p>
+    </div>
+
+    <div class="sec-t">Operação</div>
+    <div class="kpis">
+      <div class="kpi"><span>Em estoque</span><b>${estoque.length}</b><i>carros no pátio</i></div>
+      <div class="kpi"><span>Giro médio</span><b>${giro}d</b><i>compra até venda</i></div>
+      <div class="kpi"><span>Lucro realizado</span><b class="pos">${BRL(lucro)}</b><i>${vendidos.length} vendas</i></div>
+      <div class="kpi ${parados.length?'alerta':''}"><span>Parados +90d</span><b>${parados.length}</b><i>${parados.length?BRL(parados.reduce((a,v)=>a+v.custoTotal,0))+' travados':'nenhum'}</i></div>
+      <div class="kpi"><span>Em garantia</span><b>${emGar}</b><i>ainda com exposição</i></div>
+      <div class="kpi"><span>Retorno médio</span><b class="pos">${vendidos.length?(vendidos.reduce((a,v)=>a+v.margemPct,0)/vendidos.length).toFixed(1):0}%</b><i>sobre o investido</i></div>
+    </div>
+
+    <div class="sec-t">Envelhecimento do estoque</div>
+    <div class="card"><div class="chart-box"><canvas id="c-age"></canvas></div></div>
+
+    <div class="sec-t">Onde o dinheiro foi</div>
+    <div class="card">
+      <p class="hint" style="margin:0 0 4px">Maiores categorias de custo, fora a compra do carro.</p>
+      <div class="chart-box" style="height:210px"><canvas id="c-cat"></canvas></div>
+    </div>`;
+
+  if (typeof Chart === 'undefined') return;
+  const bk=[0,0,0,0];
+  estoque.forEach(v=>bk[v.ciclo<=30?0:v.ciclo<=60?1:v.ciclo<=90?2:3]++);
+  mk('c-age',{type:'bar',
+    data:{labels:['0–30','31–60','61–90','90+'],
+      datasets:[{data:bk, backgroundColor:['#2A8466','#7FA83C','#D89A2B','#B94B45'], borderRadius:5, barPercentage:.6}]},
+    options:{...baseOpt, scales:{x:gy, y:{...gx, ticks:{...gx.ticks, precision:0}}}}});
+
+  const cats = porCategoria(frota).slice(0,7);
+  mk('c-cat',{type:'bar',
+    data:{labels:cats.map(o=>o.cat), datasets:[{data:cats.map(o=>o.valor), backgroundColor:'#4A524F', borderRadius:3, barThickness:13}]},
+    options:{...baseOpt, indexAxis:'y', scales:{x:{...gx, ticks:{...gx.ticks, callback:n=>'R$ '+(n/1000).toFixed(0)+'k'}}, y:gy}}});
+}
+
+/* ==================== listas ==================== */
+const plate = (p,g) => `<div class="plate ${g?'g':''}"><div class="plate-top"><i></i>BRASIL<i style="visibility:hidden"></i></div><div class="plate-num">${p}</div></div>`;
+
+function renderEstoque(){
+  const l = frota.filter(v=>!v.vendido).sort((a,b)=>b.ciclo-a.ciclo);
+  const cap = l.reduce((a,v)=>a+v.custoTotal,0);
+  q('v-estoque').innerHTML = `
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div><div class="cxt" style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);font-weight:600">No pátio</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:500">${l.length} ${l.length===1?'veículo':'veículos'}</div></div>
+      <div style="text-align:right"><div style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);font-weight:600">Investido</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:500">${BRL(cap)}</div></div>
+    </div>
+    <button class="btn" style="margin-bottom:14px" onclick="abrirCarro()">Lançar carro</button>
+    ${l.length ? l.map(v=>`<button class="carro" onclick="abrirFicha('${v.id}')">
+      <div class="carro-top">
+        <div><div class="carro-nome">${v.marca} ${v.modelo}</div>
+          <div class="carro-meta">${v.ano||'—'} · ${v.cor}${v.tipo&&v.tipo!=='carro'?` · <span class="pill p-tipo">${v.tipo==='moto'?'moto':'outro'}</span>`:''}${v.trocaDe?' · <span class="pill p-troca">troca</span>':''}</div></div>
+        ${plate(v.placa)}
+      </div>
+      <div class="carro-nums">
+        <div><span>Custo total</span><b>${BRL(v.custoTotal)}</b></div>
+        <div><span>Anúncio</span><b>${v.anuncio?BRL(v.anuncio):'—'}</b></div>
+        <div class="${v.projetada===null?'':v.projetada>0?'destaque':'ruim'}"><span>Lucro proj.</span><b>${v.projetada===null?'—':BRL(v.projetada)}</b></div>
+      </div>
+      <div class="age ${ageCls(v.ciclo)}">
+        <div class="age-track"><div class="age-fill" style="width:${Math.min(100,v.ciclo/120*100)}%"></div></div>
+        <span class="age-d">${v.ciclo} dias em pátio</span>
+      </div>
+    </button>`).join('') : '<div class="vazio">Nenhum carro no pátio.</div>'}`;
+}
+
+function renderVendas(){
+  const l = frota.filter(v=>v.vendido).sort((a,b)=>D(b.dataVenda)-D(a.dataVenda));
+  const inv = l.reduce((a,v)=>a+v.custoTotal,0), luc = l.reduce((a,v)=>a+v.margem,0);
+  q('v-vendas').innerHTML = `
+    <div class="card">
+      <div class="bloco-t" style="margin-top:0">Consolidado</div>
+      <div class="pat-linha"><span>${l.length} carros vendidos</span><b>${BRL(l.reduce((a,v)=>a+v.venda,0))}</b></div>
+      <div class="pat-linha"><span>Total investido</span><b>${BRL(inv)}</b></div>
+      <div class="pat-linha"><span>Custo de garantia</span><b class="neg">${BRL(l.reduce((a,v)=>a+v.lancamentos.filter(x=>x.cat==='Retorno').reduce((s,x)=>s+x.valor,0),0))}</b></div>
+      <div class="pat-linha tot"><span>Lucro total · ${(luc/inv*100).toFixed(1)}%</span><b class="pos">${BRL(luc)}</b></div>
+    </div>
+    ${l.map(v=>{ const g = garantiaInfo(v); return `<button class="carro" onclick="abrirFicha('${v.id}')">
+      <div class="carro-top">
+        <div><div class="carro-nome">${v.marca} ${v.modelo}</div>
+          <div class="carro-meta">${v.ano||'—'} · vendido ${fdata(v.dataVenda)}${v.tipo&&v.tipo!=='carro'?` · <span class="pill p-tipo">${v.tipo==='moto'?'moto':'outro'}</span>`:''}${v.trocaPor?' · <span class="pill p-troca">com troca</span>':''}</div></div>
+        ${plate(v.placa)}
+      </div>
+      <div class="carro-nums">
+        <div><span>Custo total</span><b>${BRL(v.custoTotal)}</b></div>
+        <div><span>Venda</span><b>${BRL(v.venda)}</b></div>
+        <div class="${v.margem>0?'destaque':'ruim'}"><span>Lucro · ${v.margemPct.toFixed(1)}%</span><b>${BRL(v.margem)}</b></div>
+      </div>
+      <div class="age">
+        <div class="age-track"><div class="age-fill ${g.ativa?'gfill':'gfim'}" style="width:${g.pct}%"></div></div>
+        <span class="age-d" style="${g.ativa?'color:var(--ambar);font-weight:600':''}">${g.ativa?'garantia: faltam '+g.rest+'d':'garantia encerrada'}</span>
+      </div>
+    </button>`; }).join('')}`;
+}
+
+function renderCaixa(){
+  q('v-caixa').innerHTML = `
+    <div class="cx total">
+      <div><div class="cxt">Consolidado</div><div class="cxn">Caixa total</div></div>
+      <b>${BRL(caixaTotal())}</b>
+    </div>
+    ${contas.map(c=>{ const s = saldo(c.id); return `<div class="cx ${s===0?'zero':''}">
+      <div><div class="cxt">${c.tipo}</div><div class="cxn">${c.nome}</div></div><b>${BRL(s)}</b></div>`; }).join('')}
+    <button class="btn" style="margin:14px 0" onclick="abrirAporte()">Registrar aporte</button>
+    <div class="sec-t">Extrato</div>
+    <div class="card">
+      ${movimentos.length ? movimentos.slice().sort((a,b)=>a.data<b.data?1:-1).map(m=>`
+        <div class="custo-li"><div><div class="cn">${m.desc}</div><div class="cm">${fdata(m.data)} · ${conta(m.conta).nome}</div></div>
+        <b class="${m.valor>=0?'pos':'neg'}">${m.valor>=0?'+ ':'− '}${BRL(Math.abs(m.valor))}</b></div>`).join('')
+      : '<div class="vazio">Nenhuma movimentação ainda.<br>Os saldos acima são a posição de hoje.</div>'}
+    </div>`;
+}
+
+/* ==================== ficha ==================== */
+function renderFicha(){
+  const v = frota.find(x=>x.id===fichaId);
+  const g = v.vendido ? garantiaInfo(v) : null;
+  const cats = porCategoria([v]);
+
+  q('v-ficha').innerHTML = `
+    <button class="voltar" onclick="irPara('${v.vendido?'vendas':'estoque'}')">← Voltar</button>
+
+    <div class="ficha-head">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600">${v.id}</div>
+          <h2 style="font-size:20px;margin-top:3px">${v.marca} ${v.modelo}</h2>
+          <div style="margin-top:9px"><span class="pill ${v.vendido?'p-ok':'p-gar'}">${v.vendido?'Vendido':'Disponível'}</span></div></div>
+        ${plate(v.placa,true)}
+      </div>
+      <div style="display:flex;gap:9px;margin-top:14px">
+        <button class="btn-sec" onclick="abrirEditar('${v.id}')">Editar</button>
+        <button class="btn-sec" style="color:var(--vermelho);border-color:#E0BDBD" onclick="confirmarExclusao('${v.id}')">Excluir</button>
+      </div>
+      <div class="spec">
+        <div><span>Tipo</span><b>${({carro:'Carro',moto:'Moto',outro:'Outro'})[v.tipo||'carro']}</b></div>
+        <div><span>Ano</span><b>${v.ano||'—'}</b></div>
+        <div><span>Cor</span><b>${v.cor}</b></div>
+        <div><span>Km</span><b class="num">${v.km?v.km.toLocaleString('pt-BR'):'—'}</b></div>
+        <div><span>Compra</span><b class="num">${fdata(v.dataCompra)}</b></div>
+        <div><span>${v.vendido?'Venda':'Em pátio'}</span><b class="num">${v.vendido?fdata(v.dataVenda):v.ciclo+'d'}</b></div>
+        <div><span>Ciclo</span><b class="num">${v.ciclo}d</b></div>
+      </div>
+    </div>
+
+    ${v.trocaDe ? (()=>{ const o=frota.find(x=>x.id===v.trocaDe); return `<div class="link-troca">
+      Entrou na troca da venda do <b>${o.marca} ${o.modelo}</b>, avaliado em <b>${BRL(v.avaliacao)}</b>${v.agio>0?` · ágio de <b>${BRL(v.agio)}</b>`:''}.
+      <button onclick="abrirFicha('${o.id}')">Ver a venda</button></div>`; })() : ''}
+    ${v.trocaPor ? (()=>{ const n=frota.find(x=>x.id===v.trocaPor); return `<div class="link-troca">
+      Nesta venda entrou um <b>${n.marca} ${n.modelo}</b> na troca, por <b>${BRL(n.avaliacao)}</b>.
+      <button onclick="abrirFicha('${n.id}')">Ver o carro</button></div>`; })() : ''}
+
+    ${g ? `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3 style="font-size:14.5px">Garantia de 3 meses</h3>
+        <span class="pill ${g.ativa?'p-gar':'p-ok'}">${g.ativa?'Em garantia':'Encerrada'}</span>
+      </div>
+      <div class="gar-track"><div class="gar-fill ${g.ativa?'gfill':'gfim'}" style="width:${g.pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2)">
+        <span>${g.ativa?'Faltam <b class="num">'+g.rest+' dias</b>':'Encerrou há '+Math.abs(g.rest)+' dias'}</span>
+        <span>Até ${fdata(g.fim)}</span>
+      </div>
+    </div>` : `<button class="btn" style="margin-bottom:11px" onclick="abrirVenda('${v.id}')">Marcar como vendido</button>`}
+
+    <div class="card">
+      <h3>Análise financeira</h3>
+      <div class="bloco-t">O que o carro custou</div>
+      <ul class="rows">
+        <li><span><span class="sign">−</span>Valor de compra</span><b>${BRL(v.compra)}</b></li>
+        <li><span><span class="sign">−</span>Custos lançados · ${v.detalhado?v.lancamentos.length:'consolidado'}</span><b>${BRL(v.custoPrep)}</b></li>
+        <li class="sum"><span><span class="sign">=</span>Custo total</span><b>${BRL(v.custoTotal)}</b></li>
+      </ul>
+      <div class="bloco-t">${v.vendido?'O que o carro rendeu':'O que o carro pode render'}</div>
+      <ul class="rows">
+        ${v.vendido
+          ? `<li><span><span class="sign">+</span>Valor de venda</span><b>${BRL(v.venda)}</b></li>
+             ${v.ciclo>=15?`<li><span><span class="sign"></span>Retorno por mês</span><b>${v.margemMes.toFixed(2)}%</b></li>`:''}
+             <li class="fim ${v.margem<=0?'ruim':''}"><span>Lucro · ${v.margemPct.toFixed(1)}%</span><b>${BRL(v.margem)}</b></li>`
+          : (v.anuncio
+            ? `<li><span><span class="sign">+</span>Valor de anúncio</span><b>${BRL(v.anuncio)}</b></li>
+               <li class="fim ${v.projetada<=0?'ruim':''}"><span>Projetado · ${(v.projetada/v.custoTotal*100).toFixed(1)}%</span><b>${BRL(v.projetada)}</b></li>`
+            : `<li><span>Sem valor de anúncio definido</span><b>—</b></li>`)}
+      </ul>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <h3>Referência Fipe</h3>
+        <button class="voltar" style="padding:0;color:var(--azul-marca);font-weight:600;font-size:13.5px" onclick="abrirFipe('${v.id}')">Atualizar</button>
+      </div>
+      <ul class="rows" style="margin-top:8px">
+        <li><span>Fipe na compra</span><b>${v.fipe?BRL(v.fipe):'—'}</b></li>
+        <li><span>Fipe hoje</span><b>${v.fipeHoje?BRL(v.fipeHoje):'—'}</b></li>
+        <li><span>Depreciação</span><b class="${v.deprec===null?'':v.deprec<0?'neg':'pos'}">${v.deprec===null?'—':(v.deprec>0?'+ ':'− ')+BRL(Math.abs(v.deprec))}</b></li>
+        <li><span>Anúncio vs Fipe</span><b class="${v.vsFipe===null?'':v.vsFipe<0?'neg':''}">${v.vsFipe===null?'—':(v.vsFipe>0?'+':'')+v.vsFipe.toFixed(1)+'%'}</b></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <h3>Custos lançados</h3>
+        <button class="voltar" style="padding:0;color:var(--azul-marca);font-weight:600;font-size:13.5px" onclick="abrirCusto('${v.id}')">+ Lançar</button>
+      </div>
+      <p class="hint" style="margin-bottom:8px">Total de ${BRL(v.custoPrep)} em ${v.lancamentos.length} lançamentos.</p>
+      ${cats.length?`<div class="chart-box" style="height:${Math.max(120, cats.length*26)}px"><canvas id="c-ficha"></canvas></div>`:''}
+      <div style="margin-top:12px">
+        ${v.lancamentos.length ? v.lancamentos.map(l=>`<div class="custo-li">
+          <div><div class="cn">${l.nome}</div><div class="cm">${l.cat} · ${l.data?fdata(l.data):'prevista'}</div></div>
+          <b>${BRL(l.valor)}</b></div>`).join('') : '<div class="vazio">Nenhum custo lançado.</div>'}
+      </div>
+    </div>`;
+
+  if (typeof Chart !== 'undefined' && cats.length) {
+    mk('c-ficha',{type:'bar',
+      data:{labels:cats.map(o=>o.cat), datasets:[{data:cats.map(o=>o.valor), backgroundColor:'#2A8466', borderRadius:3, barThickness:11}]},
+      options:{...baseOpt, indexAxis:'y', scales:{x:{...gx, ticks:{...gx.ticks, callback:n=>'R$ '+(n/1000).toFixed(1)+'k'}}, y:gy}}});
+  }
+}
+
+/* ==================== folha inferior ==================== */
+function abrirSheet(html){ q('sheet').innerHTML = '<div class="grab"></div>' + html; q('sheet-bg').classList.remove('hidden'); }
+function fecharSheet(){ q('sheet-bg').classList.add('hidden'); }
+
+const opConta = sel => `<option value="">Não descontar do caixa</option>` +
+  contas.map(c=>`<option value="${c.id}" ${c.id===(sel||ultimaConta2)?'selected':''}>${c.nome} · ${BRL(saldo(c.id))}</option>`).join('');
+
+function atalhos(){
+  const m = {};
+  frota.forEach(v=>v.lancamentos.forEach(l=>{
+    if (l.cat==='Não detalhado') return;
+    const k = l.nome.toLowerCase()+'|'+l.cat;
+    if(!m[k]) m[k]={nome:l.nome,cat:l.cat,vals:{},n:0};
+    m[k].n++; m[k].vals[l.valor]=(m[k].vals[l.valor]||0)+1;
+  }));
+  return Object.values(m).filter(o=>o.n>1).sort((a,b)=>b.n-a.n).slice(0,6)
+    .map(o=>({nome:o.nome, cat:o.cat, valor:+Object.entries(o.vals).sort((a,b)=>b[1]-a[1])[0][0]}));
+}
+
+function abrirCusto(id){
+  const est = frota.filter(v=>!v.vendido), vend = frota.filter(v=>v.vendido);
+  const nm = v => `${v.marca} ${v.modelo} · ${v.placa}`;
+  const at = atalhos();
+  abrirSheet(`
+    <h3>Lançar custo</h3>
+    <p class="hint">Toque num atalho ou preencha abaixo.</p>
+    ${at.length?`<div class="chips" style="margin-top:12px">${at.map((a,i)=>`<button class="chip" onclick="usarAtalho(${i})">${a.nome} · <b>${BRL(a.valor)}</b></button>`).join('')}</div>`:''}
+    <div class="campo"><label for="cu-carro">Veículo</label>
+      <select id="cu-carro">
+        <optgroup label="Em pátio">${est.map(v=>`<option value="${v.id}" ${v.id===(id||(fichaId||''))?'selected':''}>${nm(v)}</option>`).join('')}</optgroup>
+        <optgroup label="Vendidos">${vend.map(v=>`<option value="${v.id}" ${v.id===(id||(fichaId||''))?'selected':''}>${nm(v)}</option>`).join('')}</optgroup>
+      </select></div>
+    <div class="campo"><label for="cu-nome">Descrição</label><input type="text" id="cu-nome" placeholder="Pintura, Emílio"></div>
+    <div class="dupla">
+      <div class="campo"><label for="cu-cat">Categoria</label><select id="cu-cat">${CATS.filter(c=>c!=='Não detalhado').map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="campo"><label for="cu-valor">Valor</label><input type="number" inputmode="decimal" step="0.01" id="cu-valor" placeholder="0"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="cu-data">Data</label><input type="date" id="cu-data" value="${ultimaData}"></div>
+      <div class="campo"><label for="cu-conta">Pagar com</label><select id="cu-conta">${opConta()}</select></div>
+    </div>
+    <p class="err hidden" id="cu-err"></p>
+    <div class="acoes">
+      <button class="btn" onclick="salvarCusto(false)">Salvar</button>
+      <button class="btn-sec" onclick="salvarCusto(true)">Salvar e lançar outro</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+    </div>`);
+}
+
+function usarAtalho(i){
+  const a = atalhos()[i];
+  q('cu-nome').value = a.nome; q('cu-cat').value = a.cat; q('cu-valor').value = a.valor;
+  q('cu-valor').focus();
+}
+
+function salvarCusto(continuar){
+  const err = q('cu-err');
+  const v = frota.find(x=>x.id===q('cu-carro').value);
+  const nome = q('cu-nome').value.trim(), cat = q('cu-cat').value;
+  const data = q('cu-data').value, valor = +q('cu-valor').value;
+  const contaId = q('cu-conta').value;
+  const falha = m => { err.textContent = m; err.classList.remove('hidden'); };
+  if (!nome || !data || !valor || valor<=0) return falha('Preencha descrição, data e um valor maior que zero.');
+  if (cat==='Retorno' && !v.vendido) return falha('Retorno só pode ser lançado em carro já vendido.');
+  if (contaId && valor > saldo(contaId)) return falha(`Saldo insuficiente em ${conta(contaId).nome}: ${BRL(saldo(contaId))}.`);
+
+  const lid = 'L'+(++seqCusto);
+  v.lancamentos.push({id:lid, nome, cat, data, valor});
+  if (contaId) { movimentos.push({id:'M'+(++seqMov), data, desc:`${nome} · ${v.marca} ${v.modelo}`, tipo:'custo', conta:contaId, valor:-valor, ref:lid}); ultimaConta2 = contaId; }
+  recalc(v); ultimaData = data;
+  err.classList.add('hidden');
+  render();
+  if (continuar) { q('cu-nome').value=''; q('cu-valor').value=''; q('cu-nome').focus(); }
+  else fecharSheet();
+}
+
+function abrirVenda(id){
+  const v = frota.find(x=>x.id===id);
+  abrirSheet(`
+    <h3>Registrar venda</h3>
+    <p class="hint">${v.marca} ${v.modelo} · ${v.placa}</p>
+    <div class="dupla">
+      <div class="campo"><label for="vd-data">Data</label><input type="date" id="vd-data" value="2026-08-09"></div>
+      <div class="campo"><label for="vd-valor">Valor</label><input type="number" inputmode="decimal" step="0.01" id="vd-valor" value="${v.anuncio||''}"></div>
+    </div>
+    <div class="campo"><label for="vd-conta">Receber em</label><select id="vd-conta">${opConta()}</select></div>
+    <div class="campo"><label style="display:flex;gap:10px;align-items:center;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink2);font-weight:400">
+      <input type="checkbox" id="vd-com" style="width:auto;padding:0" ${v.lancamentos.some(l=>l.cat==='Comissão')?'':'checked'}> Lançar comissões padrão (R$ 1.500)</label></div>
+    <p class="err hidden" id="vd-err"></p>
+    <div class="acoes">
+      <button class="btn" onclick="salvarVenda('${id}')">Confirmar venda</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+    </div>`);
+}
+
+function salvarVenda(id){
+  const v = frota.find(x=>x.id===id);
+  const data = q('vd-data').value, valor = +q('vd-valor').value, contaId = q('vd-conta').value;
+  const err = q('vd-err');
+  if (!data || !valor || valor<=0) { err.textContent='Informe a data e o valor da venda.'; err.classList.remove('hidden'); return; }
+  v.dataVenda = data; v.venda = valor;
+  if (q('vd-com').checked) {
+    v.lancamentos.push({id:'L'+(++seqCusto), nome:'Comissão Alagoana', cat:'Comissão', data, valor:1000});
+    v.lancamentos.push({id:'L'+(++seqCusto), nome:'Comissão Victor', cat:'Comissão', data, valor:500});
+  }
+  if (contaId) { movimentos.push({id:'M'+(++seqMov), data, desc:`Venda ${v.marca} ${v.modelo} · ${v.placa}`, tipo:'venda', conta:contaId, valor, ref:v.id}); ultimaConta2 = contaId; }
+  recalc(v); fecharSheet(); renderFicha(); render();
+}
+
+function abrirFipe(id){
+  const v = frota.find(x=>x.id===id);
+  abrirSheet(`
+    <h3>Referência Fipe</h3>
+    <p class="hint">${v.marca} ${v.modelo} · preenchida à mão.</p>
+    <div class="dupla">
+      <div class="campo"><label for="fp-compra">Fipe na compra</label><input type="number" inputmode="decimal" step="0.01" id="fp-compra" value="${v.fipe||''}"></div>
+      <div class="campo"><label for="fp-hoje">Fipe hoje</label><input type="number" inputmode="decimal" step="0.01" id="fp-hoje" value="${v.fipeHoje||''}"></div>
+    </div>
+    <div class="campo"><label for="fp-anun">Valor de anúncio</label><input type="number" inputmode="decimal" step="0.01" id="fp-anun" value="${v.anuncio||''}"></div>
+    <div class="acoes">
+      <button class="btn" onclick="salvarFipe('${id}')">Salvar</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+    </div>`);
+}
+function salvarFipe(id){
+  const v = frota.find(x=>x.id===id);
+  v.fipe = +q('fp-compra').value || v.fipe;
+  v.fipeHoje = +q('fp-hoje').value || v.fipeHoje;
+  v.anuncio = +q('fp-anun').value || v.anuncio;
+  recalc(v); fecharSheet(); renderFicha(); render();
+}
+
+function abrirAporte(){
+  abrirSheet(`
+    <h3>Aporte ou retirada</h3>
+    <p class="hint">Entrada e saída de capital dos sócios.</p>
+    <div class="dupla">
+      <div class="campo"><label for="ap-tipo">Operação</label><select id="ap-tipo"><option value="aporte">Aporte</option><option value="retirada">Retirada</option></select></div>
+      <div class="campo"><label for="ap-valor">Valor</label><input type="number" inputmode="decimal" step="0.01" id="ap-valor"></div>
+    </div>
+    <div class="campo"><label for="ap-conta">Conta</label><select id="ap-conta">${contas.map(c=>`<option value="${c.id}">${c.nome} · ${BRL(saldo(c.id))}</option>`).join('')}</select></div>
+    <div class="campo"><label for="ap-data">Data</label><input type="date" id="ap-data" value="2026-08-09"></div>
+    <div class="campo"><label for="ap-desc">Observação</label><input type="text" id="ap-desc" placeholder="opcional"></div>
+    <p class="err hidden" id="ap-err"></p>
+    <div class="acoes">
+      <button class="btn" onclick="salvarAporte()">Salvar</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+    </div>`);
+}
+function salvarAporte(){
+  const tipo = q('ap-tipo').value, contaId = q('ap-conta').value;
+  const data = q('ap-data').value, valor = +q('ap-valor').value, desc = q('ap-desc').value.trim();
+  const err = q('ap-err');
+  if (!data || !valor || valor<=0) { err.textContent='Informe a data e um valor maior que zero.'; err.classList.remove('hidden'); return; }
+  if (tipo==='retirada' && valor > saldo(contaId)) { err.textContent=`Saldo insuficiente. ${conta(contaId).nome} tem ${BRL(saldo(contaId))}.`; err.classList.remove('hidden'); return; }
+  movimentos.push({id:'M'+(++seqMov), data, desc: desc || (tipo==='aporte'?'Aporte de sócio':'Retirada de sócio'), tipo, conta:contaId, valor: tipo==='aporte'?valor:-valor, ref:null});
+  fecharSheet(); render();
+}
+
+function abrirCarro(){
+  abrirSheet(`
+    <h3>Novo veículo</h3>
+    <p class="hint">Os custos você lança depois, na ficha.</p>
+    <div class="campo"><label for="nv-tipo">Tipo</label><select id="nv-tipo" onchange="mudouTipo('nv')"></select></div>
+    <div class="campo"><label for="nv-marca">Marca</label>
+      <select id="nv-marca" onchange="mudouMarca('nv')"></select>
+      <input type="text" id="nv-marca-novo" class="hidden" placeholder="Nome da marca" style="margin-top:8px" onchange="addMarca('nv')"></div>
+    <div class="campo"><label for="nv-modelo">Modelo</label>
+      <select id="nv-modelo" onchange="mudouModelo('nv')"></select>
+      <input type="text" id="nv-modelo-novo" class="hidden" placeholder="Nome do modelo" style="margin-top:8px" onchange="addModelo('nv')"></div>
+    <div class="dupla">
+      <div class="campo"><label for="nv-ano">Ano</label><input type="number" inputmode="numeric" id="nv-ano" placeholder="2021"></div>
+      <div class="campo"><label for="nv-cor">Cor</label>
+        <select id="nv-cor" onchange="mudouCor('nv')"></select>
+        <input type="text" id="nv-cor-novo" class="hidden" placeholder="Nome da cor" style="margin-top:8px" onchange="addCor('nv')"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="nv-placa">Placa</label><input type="text" id="nv-placa" placeholder="ABC1D23" autocapitalize="characters"></div>
+      <div class="campo"><label for="nv-km">Km</label><input type="number" inputmode="numeric" id="nv-km" placeholder="opcional"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="nv-data">Data de compra</label><input type="date" id="nv-data" value="2026-08-09"></div>
+      <div class="campo"><label for="nv-compra">Valor de compra</label><input type="number" inputmode="decimal" step="0.01" id="nv-compra"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="nv-anuncio">Anúncio</label><input type="number" inputmode="decimal" step="0.01" id="nv-anuncio" placeholder="opcional"></div>
+      <div class="campo"><label for="nv-fipe">Fipe</label><input type="number" inputmode="decimal" step="0.01" id="nv-fipe" placeholder="opcional"></div>
+    </div>
+    <div class="campo"><label for="nv-conta">Pagar com</label><select id="nv-conta">${opConta()}</select></div>
+    <p class="err hidden" id="nv-err"></p>
+    <div class="acoes">
+      <button class="btn" onclick="salvarCarro()">Salvar veículo</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+    </div>`);
+  montarSelects('nv','carro');
+}
+
+function salvarCarro(){
+  const g = id => q('nv-'+id).value;
+  const err = q('nv-err');
+  const marca = lerVeic('nv','marca'), modelo = lerVeic('nv','modelo'), placa = g('placa').trim().toUpperCase();
+  const compra = +g('compra'), data = g('data'), contaId = g('conta');
+  const tipo = tipoDe['nv'] || 'carro';
+  const falha = m => { err.textContent = m; err.classList.remove('hidden'); };
+  if (!marca || marca===NOVO || !modelo || modelo===NOVO || !placa || !data || !compra || compra<=0)
+    return falha('Preencha marca, modelo, placa, data e um valor de compra maior que zero.');
+  if (contaId && compra > saldo(contaId)) return falha(`Saldo insuficiente em ${conta(contaId).nome}: ${BRL(saldo(contaId))}.`);
+
+  const v = {
+    id:'V-'+String(++seqVeic).padStart(2,'0'), marca, modelo, placa,
+    tipo, ano:+g('ano')||null, cor:g('cor').trim()||'—', km:+g('km')||null,
+    dataCompra:data, compra, anuncio:+g('anuncio')||null, fipe:+g('fipe')||null, fipeHoje:+g('fipe')||null,
+    dataVenda:null, venda:null, custos:[], lancamentos:[], detalhado:true
+  };
+  recalc(v); frota.push(v);
+  if (contaId) { movimentos.push({id:'M'+(++seqMov), data, desc:`Compra ${marca} ${modelo} · ${placa}`, tipo:'compra', conta:contaId, valor:-compra, ref:v.id}); ultimaConta2 = contaId; }
+  fecharSheet(); render();
+}
+
+
+/* ==================== editar e excluir ==================== */
+
+function abrirEditar(id){
+  const v = frota.find(x=>x.id===id);
+  garantirNoCatalogo(v);
+  abrirSheet(`
+    <h3>Editar veículo</h3>
+    <p class="hint">${v.id} · ${v.placa}</p>
+    <div class="campo"><label for="ed-tipo">Tipo</label><select id="ed-tipo" onchange="mudouTipo('ed')"></select></div>
+    <div class="campo"><label for="ed-marca">Marca</label>
+      <select id="ed-marca" onchange="mudouMarca('ed')"></select>
+      <input type="text" id="ed-marca-novo" class="hidden" placeholder="Nome da marca" style="margin-top:8px" onchange="addMarca('ed')"></div>
+    <div class="campo"><label for="ed-modelo">Modelo</label>
+      <select id="ed-modelo" onchange="mudouModelo('ed')"></select>
+      <input type="text" id="ed-modelo-novo" class="hidden" placeholder="Nome do modelo" style="margin-top:8px" onchange="addModelo('ed')"></div>
+    <div class="dupla">
+      <div class="campo"><label for="ed-ano">Ano</label><input type="number" inputmode="numeric" id="ed-ano" value="${v.ano||''}"></div>
+      <div class="campo"><label for="ed-cor">Cor</label>
+        <select id="ed-cor" onchange="mudouCor('ed')"></select>
+        <input type="text" id="ed-cor-novo" class="hidden" placeholder="Nome da cor" style="margin-top:8px" onchange="addCor('ed')"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="ed-placa">Placa</label><input type="text" id="ed-placa" value="${v.placa}" autocapitalize="characters"></div>
+      <div class="campo"><label for="ed-km">Km</label><input type="number" inputmode="numeric" id="ed-km" value="${v.km||''}"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="ed-data">Data de compra</label><input type="date" id="ed-data" value="${v.dataCompra}"></div>
+      <div class="campo"><label for="ed-compra">Valor de compra</label><input type="number" inputmode="decimal" step="0.01" id="ed-compra" value="${v.compra}"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="ed-anuncio">Anúncio</label><input type="number" inputmode="decimal" step="0.01" id="ed-anuncio" value="${v.anuncio||''}"></div>
+      <div class="campo"><label for="ed-fipe">Fipe na compra</label><input type="number" inputmode="decimal" step="0.01" id="ed-fipe" value="${v.fipe||''}"></div>
+    </div>
+    <div class="dupla">
+      <div class="campo"><label for="ed-fipehoje">Fipe hoje</label><input type="number" inputmode="decimal" step="0.01" id="ed-fipehoje" value="${v.fipeHoje||''}"></div>
+      ${v.vendido?`<div class="campo"><label for="ed-venda">Valor da venda</label><input type="number" inputmode="decimal" step="0.01" id="ed-venda" value="${v.venda}"></div>`:'<div></div>'}
+    </div>
+    ${v.vendido?`<div class="campo"><label for="ed-dvenda">Data da venda</label><input type="date" id="ed-dvenda" value="${v.dataVenda}"></div>`:''}
+    <p class="err hidden" id="ed-err"></p>
+    <div class="acoes">
+      <button class="btn" onclick="salvarEdicao('${id}')">Salvar alterações</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+      <button class="btn-sec" style="color:var(--vermelho);border-color:#E0BDBD" onclick="confirmarExclusao('${id}')">Excluir veículo</button>
+    </div>`);
+  montarSelectsCom('ed', v);
+}
+
+function salvarEdicao(id){
+  const v = frota.find(x=>x.id===id);
+  const g = k => q('ed-'+k).value;
+  const err = q('ed-err');
+  const marca = lerVeic('ed','marca'), modelo = lerVeic('ed','modelo'), placa = g('placa').trim().toUpperCase();
+  const compra = +g('compra'), data = g('data');
+  const tipoEd = tipoDe['ed'] || 'carro';
+  if (!marca || marca===NOVO || !modelo || modelo===NOVO || !placa || !data || !compra || compra<=0) {
+    err.textContent = 'Marca, modelo, placa, data e valor de compra são obrigatórios.';
+    err.classList.remove('hidden'); return;
+  }
+  if (v.vendido && D(g('dvenda')) < D(data)) {
+    err.textContent = 'A data da venda não pode ser anterior à da compra.';
+    err.classList.remove('hidden'); return;
+  }
+  Object.assign(v, {marca, modelo, placa, tipo:tipoEd, ano:+g('ano')||null, cor:g('cor').trim()||'—', km:+g('km')||null,
+    dataCompra:data, compra, anuncio:+g('anuncio')||null, fipe:+g('fipe')||null, fipeHoje:+g('fipehoje')||null});
+  if (v.vendido) { v.dataVenda = g('dvenda'); v.venda = +g('venda') || v.venda; }
+  movimentos.forEach(m => {
+    if (m.ref !== v.id) return;
+    if (m.tipo==='compra') { m.valor = -compra; m.data = data; m.desc = `Compra ${marca} ${modelo} · ${placa}`; }
+    if (m.tipo==='venda' && v.vendido) {
+      const t = v.trocaPor ? frota.find(x=>x.id===v.trocaPor) : null;
+      m.valor = v.venda - (t ? t.avaliacao : 0); m.data = v.dataVenda;
+    }
+  });
+  recalc(v); fecharSheet(); render();
+}
+
+function confirmarExclusao(id){
+  const v = frota.find(x=>x.id===id);
+  const movs = movimentos.filter(m => m.ref===v.id || v.lancamentos.some(l=>l.id===m.ref));
+  const vinc = v.trocaDe ? frota.find(x=>x.id===v.trocaDe) : (v.trocaPor ? frota.find(x=>x.id===v.trocaPor) : null);
+  abrirSheet(`
+    <h3>Excluir este veículo?</h3>
+    <p class="hint">Esta ação não pode ser desfeita.</p>
+    <div class="link-troca" style="background:var(--ambar-bg);border-color:#E8D2A8;color:#7A4A00;margin-top:14px">
+      <b>${v.marca} ${v.modelo} · ${v.placa}</b>, comprado em ${fdata(v.dataCompra)} por ${BRL(v.compra)}.
+      <div style="margin-top:9px">Serão apagados junto:</div>
+      <ul style="margin:6px 0 0 18px;padding:0">
+        <li>${v.lancamentos.length} ${v.lancamentos.length===1?'lançamento':'lançamentos'} de custo, somando ${BRL(v.custoPrep)}</li>
+        <li>${movs.length} ${movs.length===1?'movimentação':'movimentações'} de caixa${movs.length?', devolvendo '+BRL(Math.abs(movs.reduce((a,m)=>a+m.valor,0)))+' ao saldo':''}</li>
+        ${v.vendido?`<li>A venda de ${BRL(v.venda)} e o lucro de ${BRL(v.margem)}</li>`:''}
+        ${vinc?`<li>O vínculo de troca com o <b>${vinc.marca} ${vinc.modelo}</b>, que <b>continua no sistema</b></li>`:''}
+      </ul>
+    </div>
+    <div class="acoes">
+      <button class="btn" style="background:var(--vermelho)" onclick="excluirVeiculo('${id}')">Sim, excluir</button>
+      <button class="btn-sec" onclick="fecharSheet()">Cancelar</button>
+    </div>`);
+}
+
+function excluirVeiculo(id){
+  const v = frota.find(x=>x.id===id);
+  const refs = new Set([v.id, ...v.lancamentos.map(l=>l.id)]);
+  movimentos = movimentos.filter(m => !refs.has(m.ref));
+  if (v.trocaDe) { const o = frota.find(x=>x.id===v.trocaDe); if (o) delete o.trocaPor; }
+  if (v.trocaPor) { const n = frota.find(x=>x.id===v.trocaPor); if (n) { delete n.trocaDe; delete n.avaliacao; delete n.agio; } }
+  frota.splice(frota.indexOf(v), 1);
+  fecharSheet(); irPara(v.vendido ? 'vendas' : 'estoque');
+}
+
+/* ==================== ciclo ==================== */
+function render(){
+  renderPainel(); renderEstoque(); renderVendas(); renderCaixa();
+  if (fichaId) renderFicha();
+}
+render();
+</script>
+</body>
+</html>
