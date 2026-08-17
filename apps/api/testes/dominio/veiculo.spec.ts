@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  custoTotal, lucro, retornoPct, cicloDias, retornoMes, lucroProjetado,
+  custoTotal, lucro, retornoPct, cicloDias, retornoMes, lucroProjetado, descontoNoFechamento,
   depreciacao, depreciacaoPct, anuncioVsFipe,
   faixaIdade, preenchimentoIdade, garantia, calcularTroca, patrimonio,
   diasEntre, somarDias,
@@ -54,6 +54,20 @@ describe("4.1 custo e resultado", () => {
   it("lucro projetado só existe quando há anúncio", () => {
     expect(lucroProjetado(8_900_000, 7_118_346)).toBe(1_781_654);
     expect(lucroProjetado(null, 7_118_346)).toBeNull();
+  });
+
+  it("desconto no fechamento é negativo quando se cede do preço pedido", () => {
+    // Honda City: pedia 97.000,00 e fechou em 97.000,00 — não houve desconto.
+    expect(descontoNoFechamento(9_700_000, 9_700_000)).toBe(0);
+    // Cedeu 2.000,00 do anúncio.
+    expect(descontoNoFechamento(9_500_000, 9_700_000)).toBe(-200_000);
+    // E o caso raro de fechar acima do pedido.
+    expect(descontoNoFechamento(9_800_000, 9_700_000)).toBe(100_000);
+  });
+
+  it("sem venda ou sem anúncio não há desconto a comparar", () => {
+    expect(descontoNoFechamento(null, 9_700_000)).toBeNull();
+    expect(descontoNoFechamento(9_500_000, null)).toBeNull();
   });
 });
 

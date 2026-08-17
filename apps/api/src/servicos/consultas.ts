@@ -11,7 +11,7 @@
 import type { PoolClient } from "pg";
 import { deNumeric, type Centavos } from "../dominio/dinheiro.js";
 import {
-  cicloDias, custoTotal, faixaIdade, garantia, lucro, lucroProjetado,
+  cicloDias, custoTotal, faixaIdade, garantia, lucro, lucroProjetado, descontoNoFechamento,
   preenchimentoIdade, retornoMes, retornoPct, depreciacao, depreciacaoPct,
   anuncioVsFipe, patrimonio, CORES_FAIXA, DIAS_GARANTIA,
   type DataISO, type FaixaIdade, type Garantia,
@@ -59,6 +59,8 @@ export interface VeiculoCalculado {
   retornoMes: number | null;
   lucroProjetado: Centavos | null;
   projetadoPct: number | null;
+  /** §6.5: quanto se cedeu do preço pedido ao fechar. Negativo é desconto. */
+  descontoFechamento: Centavos | null;
   /** §6.3: anúncio abaixo do custo não tem negociação possível que não seja prejuízo. */
   anuncioAbaixoDoCusto: boolean;
 
@@ -127,6 +129,7 @@ export function calcular(l: Linha, hoje: DataISO): VeiculoCalculado {
     retornoMes: pct === null ? null : retornoMes(pct, ciclo),
     lucroProjetado: projetado,
     projetadoPct: projetado === null ? null : retornoPct(projetado, total),
+    descontoFechamento: descontoNoFechamento(valorVenda, valorAnuncio),
     anuncioAbaixoDoCusto: valorAnuncio !== null && valorAnuncio <= total,
 
     depreciacao: depreciacao(fipeCompra, fipeHoje),
@@ -206,6 +209,8 @@ export interface Custo {
 
 export interface Ficha extends VeiculoCalculado {
   custos: Custo[];
+  /** §6.5, linha do tempo: a data do último custo já pago. Previsto não conta. */
+  ultimoCusto: DataISO | null;
   custoPorCategoria: { categoria: string; valor: Centavos }[];
   troca: {
     entrou: { id: string; codigo: string; descricao: string } | null;
@@ -264,8 +269,15 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
   const nome = (v: { codigo: string; marca: string; modelo: string }) =>
     `${v.marca} ${v.modelo}`;
 
+  // Os custos já vêm ordenados por data (nulos por último), então o último com
+  // data é o mais recente. Previsto não entra: a linha do tempo conta o que
+  // aconteceu, não o que está agendado.
+  const comData = custos.rows.filter((k) => k.data !== null);
+  const ultimoCusto = comData.length === 0 ? null : comData[comData.length - 1]!.data;
+
   return {
     ...calcular(linha, hoje),
+    ultimoCusto,
     custos: custos.rows.map((k) => ({
       id: k.id, descricao: k.descricao, categoria: k.categoria,
       data: k.data, prevista: k.data === null, valor: deNumeric(k.valor)!,

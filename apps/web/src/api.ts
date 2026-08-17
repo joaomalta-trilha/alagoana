@@ -73,6 +73,8 @@ export interface Veiculo {
 
   lucro: Centavos | null; retornoPct: number | null; retornoMes: number | null;
   lucroProjetado: Centavos | null; projetadoPct: number | null;
+  /** Quanto se cedeu do preço pedido ao fechar. Negativo é desconto. */
+  descontoFechamento: Centavos | null;
   anuncioAbaixoDoCusto: boolean;
 
   depreciacao: Centavos | null; depreciacaoPct: number | null; anuncioVsFipe: number | null;
@@ -88,6 +90,8 @@ export interface Custo {
 
 export interface Ficha extends Veiculo {
   custos: Custo[];
+  /** A data do último custo já pago; previsto não conta. */
+  ultimoCusto: string | null;
   custoPorCategoria: { categoria: string; valor: Centavos }[];
   troca: {
     entrou: { id: string; codigo: string; descricao: string } | null;

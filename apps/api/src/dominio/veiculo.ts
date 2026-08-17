@@ -63,6 +63,22 @@ export function lucroProjetado(valorAnuncio: Centavos | null, custoTotal: Centav
   return valorAnuncio === null ? null : valorAnuncio - custoTotal;
 }
 
+/**
+ * Quanto se cedeu do preço pedido na hora de fechar.
+ *
+ * Negativo é desconto — o caso comum. Positivo é ter vendido acima do
+ * anúncio, que acontece pouco mas acontece. Fica separado do lucro de
+ * propósito: o lucro diz o resultado, este número diz de onde ele veio.
+ *
+ * Nulo enquanto faltar a venda ou o anúncio; sem os dois não há o que comparar.
+ */
+export function descontoNoFechamento(
+  valorVenda: Centavos | null, valorAnuncio: Centavos | null,
+): Centavos | null {
+  if (valorVenda === null || valorAnuncio === null) return null;
+  return valorVenda - valorAnuncio;
+}
+
 // ----------------------------------------------------------------- 4.2 fipe
 
 export function depreciacao(fipeCompra: Centavos | null, fipeHoje: Centavos | null): Centavos | null {

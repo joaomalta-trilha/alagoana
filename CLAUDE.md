@@ -139,7 +139,6 @@ Em aberto, por ordem de importância:
 - Backup do banco nunca foi restaurado. O Render faz; testar é outra coisa.
 - O freio de tentativas existe só no login, e vive em memória — o que obriga a
   manter **uma instância só** no Render.
-- A ficha não usa duas colunas no desktop, embora o CSS preveja.
 
 ## Convenções de escrita
 

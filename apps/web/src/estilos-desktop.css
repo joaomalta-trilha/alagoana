@@ -44,7 +44,7 @@
   .topbar .sair { color: rgba(255,255,255,.72); padding: 8px 0 8px 14px; min-height: 0; }
   /* Os 44px da §7.4 são regra de dedo. No desktop, mouse mira melhor. */
   .voltar, .acao-linha { min-height: 0; }
-  .custo-li .remover { min-width: 32px; min-height: 32px; margin: 0 0 0 8px; }
+  .custo-li .remover, .custos .remover { min-width: 32px; min-height: 32px; margin: 0 0 0 8px; }
   .topbar .sair:hover { color: #FFF; }
 
   /* ---------- barra de filtros ---------- */
@@ -135,6 +135,72 @@
   .acoes-ficha { grid-template-columns: auto auto; justify-content: start; }
   .acoes-ficha .btn-sec { width: auto; padding: 9px 18px; }
   .card .btn, .card .btn-sec { width: auto; }
+
+  /* ---------- ficha: cabeçalho em duas colunas ---------- */
+  /* No celular a placa fica ao lado do título e as datas entram na ficha
+     técnica. Aqui há largura para o desenho do protótipo: placa e situação em
+     uma coluna, identificação e ficha técnica na outra, e as datas saem para
+     a linha do tempo — que é o bloco 2 da §6.5 e nunca existiu na tela. */
+  .ficha-head { display: flex; gap: 26px; align-items: flex-start; flex-wrap: wrap; padding: 22px; }
+  .ficha-head .ficha-topo { display: block; flex: 1; min-width: 260px; }
+  .ficha-head h2 { font-size: 24px; margin: 4px 0 16px; }
+  .ficha-identidade { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .spec {
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    gap: 16px 22px; margin-top: 0; padding-top: 0; border-top: 0;
+  }
+  .spec div span { font-size: 11px; letter-spacing: .07em; }
+  .spec div b { font-size: 15px; }
+  .acoes-ficha { margin-top: 0; }
+
+  .rows li.fraco b { color: var(--ink2); }
+
+  /* ---------- ficha: linha do tempo (§6.5, bloco 2) ---------- */
+  /* Quatro células coladas, com o arredondamento só nas pontas: lê-se como uma
+     faixa só, e não como quatro cartões soltos. */
+  .timeline { display: flex; gap: 0; margin: 0 0 14px; flex-wrap: wrap; }
+  .tl { flex: 1; min-width: 135px; background: var(--card); border: 1px solid var(--line); padding: 13px 16px; }
+  .tl:first-child { border-radius: 12px 0 0 12px; }
+  .tl:last-child { border-radius: 0 12px 12px 0; }
+  .tl + .tl { border-left: 0; }
+  .tl span {
+    display: block; font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 600;
+  }
+  .tl b { font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: 16px; }
+
+  /* ---------- ficha: título com ação à direita ---------- */
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .card-head .hint { margin-bottom: 0; }
+
+  /* ---------- ficha: Fipe em quatro números ---------- */
+  .fipe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 16px; margin-top: 14px; }
+  .fipe-grid div span {
+    display: block; font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 600;
+  }
+  .fipe-grid div b { font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: 17px; }
+  .note { font-size: 12.5px; color: var(--ink3); margin-top: 12px; line-height: 1.5; }
+
+  /* ---------- ficha: custos em tabela ---------- */
+  /* Sem `.tbl`, que é a tabela de listagem: aquela tem min-width de 1080px e
+     linha clicável, e esta mora dentro de um cartão que pode ser estreito. */
+  .custos { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 16px; }
+  .custos thead th {
+    text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line);
+    font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 600;
+  }
+  .custos tbody td { padding: 10px 12px 10px 0; border-bottom: 1px solid #EDEFEA; }
+  .custos tbody tr:last-child td { border-bottom: 0; }
+  .custos tfoot td { padding: 13px 12px 0 0; border-top: 2px solid var(--ink); font-weight: 600; }
+  .custos .dir { text-align: right; white-space: nowrap; }
+  .custos td:last-child, .custos th:last-child { padding-right: 0; width: 1%; }
+  .cat-tag {
+    display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11.5px;
+    font-weight: 600; background: #EEF1EC; color: var(--ink2); white-space: nowrap;
+  }
+  .prevista { color: var(--ink3); }
 
   /* A folha inferior vira modal centrado: no desktop não existe "inferior". */
   .sheet-bg { align-items: center; justify-content: center; padding: 24px; }
