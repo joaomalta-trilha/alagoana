@@ -65,6 +65,9 @@ vezes em 17/08/2026:
 - **A comissão sai do caixa junto com a venda**, da mesma conta que recebeu:
   vender por 40.000 com 1.500 de comissão deixa 38.500. Sem conta escolhida
   na venda, ela volta a ser a provisão da §3.4.
+- **O rastro da troca** na ficha do carro vendido: o que entrou, o que
+  aconteceu com ele e quanto deu. Consulta recursiva, com guarda de ciclo e
+  limite de profundidade. Fica **fora** das contas do veículo de propósito.
 
 ## Estrutura
 

@@ -88,10 +88,34 @@ export interface Custo {
   devolveAoCaixa: Centavos;
 }
 
+export interface EloDaTroca {
+  id: string; codigo: string; descricao: string;
+  /** 1 = entrou direto nesta venda; 2 = entrou na venda desse; e assim por diante. */
+  nivel: number;
+  veioDe: string;
+  avaliacao: Centavos | null;
+  custoTotal: Centavos;
+  vendido: boolean;
+  dataVenda: string | null;
+  valorVenda: Centavos | null;
+  lucro: Centavos | null;
+  cicloDias: number;
+}
+
+export interface Desdobramento {
+  elos: EloDaTroca[];
+  vendidos: number;
+  emEstoque: number;
+  lucroRealizado: Centavos;
+  custoEmEstoque: Centavos;
+}
+
 export interface Ficha extends Veiculo {
   custos: Custo[];
   /** A data do último custo já pago; previsto não conta. */
   ultimoCusto: string | null;
+  /** O que aconteceu com o que entrou na troca. Fora das contas do veículo. */
+  desdobramento: Desdobramento;
   custoPorCategoria: { categoria: string; valor: Centavos }[];
   troca: {
     /** Os veículos que entraram nesta venda. Pode ser mais de um. */

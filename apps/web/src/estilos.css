@@ -254,6 +254,17 @@ button,input,select{font-family:inherit}
 .recebido{border:1px solid var(--line); border-radius:12px; padding:12px 13px; margin-top:12px; background:#FAFBF9}
 .recebido .bloco-t{margin:0}
 .resumo-venda{margin-top:16px}
+/* O rastro da troca. Cada elo é uma linha com o carro à esquerda e o que ele
+   deu à direita; o recuo marca quem veio da venda de quem. */
+.elos{margin-top:10px}
+.elo{display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+  padding:10px 0; border-bottom:1px solid #EDEFEA}
+.elo:last-child{border-bottom:0}
+.elo-nome{min-width:0}
+.elo-nome .acao-linha{padding:0; font-weight:600; min-height:0; text-align:left}
+.elo-nome .cm{margin-top:2px}
+.elo-nivel{color:var(--ink3); margin-right:5px}
+.elo b{font-family:"IBM Plex Mono",monospace; font-weight:500; white-space:nowrap}
 .resumo-venda li.sum{margin-left:0; margin-right:0; padding-left:12px; padding-right:12px; border-radius:8px}
 /* Desfazer a venda é conserto de engano, não operação do dia: fica no pé do
    cartão de garantia, depois de tudo o que a venda produziu. */

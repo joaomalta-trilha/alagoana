@@ -378,7 +378,7 @@ Ordem dos blocos:
 
 1. **Cabeçalho** — placa Mercosul grande, código, marca/modelo, situação, botões **Editar** e **Excluir**, e a ficha técnica (marca, modelo, versão, ano, km, cor, placa)
 2. **Linha do tempo** — data de compra, último custo lançado, data de venda, ciclo
-3. **Vínculo de troca**, quando houver, nos dois sentidos, com botão para abrir o outro veículo
+3. **Vínculo de troca**, quando houver, nos dois sentidos, com botão para abrir o outro veículo. No carro vendido, o bloco vira **"O que entrou nesta troca"**: cada recebido, o que foi dado por ele, o que aconteceu com ele, e o resultado quando já vendido. *(Ampliado em 17/08/2026, por decisão da loja: o resultado do carro recebido descende deste negócio e some do lucro do vendido — o que é o certo, senão o resultado da venda cresceria com um carro que talvez nem tenha vendido. Mas não pode sumir da vista, então aparece aqui, explicitamente fora das contas do veículo. A cadeia é seguida até o fim: o que entrou na troca do que entrou na troca também aparece.)*
 4. **Garantia** (vendido) ou botão **Marcar como vendido** (em estoque)
 5. **Análise financeira** — dois grupos com títulos ("O que o carro custou" / "O que o carro rendeu"), cada linha com sinal (−, +, =), custo total em faixa cinza e resultado em faixa verde ou vermelha
 6. **Referência Fipe** — Fipe na compra, Fipe hoje, depreciação, variação, e botão para atualizar

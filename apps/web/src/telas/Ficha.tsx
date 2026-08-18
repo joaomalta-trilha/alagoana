@@ -60,7 +60,11 @@ function classeFipe(valor: number | null): string {
 
 export function Ficha(p: Props) {
   const desktop = useDesktop();
-  const { dados: v, erro, carregando } = useDados(() => api.ficha(p.id), p.versao);
+  // O id entra na chave, e não só a versão: sem ele, abrir outro veículo pela
+  // ficha — "Ver a venda", "Ver o carro", os elos da troca — trocava o id sem
+  // buscar nada, e a tela continuava mostrando o carro anterior.
+  const { dados: v, erro, carregando } = useDados(
+    () => api.ficha(p.id), `${p.id}|${p.versao}`);
 
   const grafico = useMemo(() => {
     if (!v || v.custoPorCategoria.length === 0) return null;
@@ -315,6 +319,67 @@ export function Ficha(p: Props) {
     </div>
   );
 
+  // ------------------------------------------------- desdobramento da troca
+  // Fora das contas do veículo de propósito: o lucro do carro que entrou é
+  // dele, não desta venda. Mas nasceu deste negócio, e sem este bloco o rastro
+  // se perde no primeiro clique.
+  const d = v.desdobramento;
+  const desdobramento = d.elos.length === 0 ? null : (
+    <div className="card">
+      <TituloComAcao
+        titulo={d.elos.length === 1 ? "O que entrou nesta troca" : "O que entrou nestas trocas"}
+        hint="Fora das contas acima: o resultado destes carros é deles, não desta venda."
+      />
+
+      <div className="elos">
+        {d.elos.map((e) => (
+          <div className="elo" key={e.id}>
+            <div className="elo-nome">
+              {e.nivel > 1 && <span className="elo-nivel" aria-hidden="true">↳</span>}
+              <button className="acao-linha" onClick={() => p.aoAbrirOutro(e.id)}>
+                {e.codigo} · {e.descricao}
+              </button>
+              <div className="cm">
+                {e.avaliacao !== null && <>Entrou por {brl(e.avaliacao)} · </>}
+                {e.nivel > 1 && <>veio da venda do {e.veioDe} · </>}
+                {e.vendido
+                  ? <>vendido em {dataBr(e.dataVenda)} por {brl(e.valorVenda ?? 0)}</>
+                  : <>no pátio há {e.cicloDias} dias, custando {brl(e.custoTotal)}</>}
+              </div>
+            </div>
+            <b className={e.lucro === null ? "" : e.lucro > 0 ? "pos" : e.lucro < 0 ? "neg" : ""}>
+              {e.lucro === null ? "—" : `${e.lucro > 0 ? "+ " : ""}${brl(e.lucro)}`}
+            </b>
+          </div>
+        ))}
+      </div>
+
+      <ul className="rows" style={{ marginTop: 4 }}>
+        {d.vendidos > 0 && (
+          <li className="fraco">
+            <span>
+              {d.vendidos === 1 ? "1 já vendido" : `${d.vendidos} já vendidos`}
+              {d.emEstoque > 0 && `, ${d.emEstoque} no pátio`}
+            </span>
+            <b className={d.lucroRealizado >= 0 ? "pos" : "neg"}>
+              {d.lucroRealizado > 0 ? "+ " : ""}{brl(d.lucroRealizado)}
+            </b>
+          </li>
+        )}
+        {d.emEstoque > 0 && (
+          <li className="fraco">
+            <span>
+              {d.vendidos > 0
+                ? "Ainda parado, ao custo"
+                : `${d.emEstoque === 1 ? "No pátio" : `${d.emEstoque} no pátio`}, ao custo`}
+            </span>
+            <b>{brl(d.custoEmEstoque)}</b>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+
   // ------------------------------------------------------- 8. custo por categoria
   const cartaoGrafico = grafico && (
     <div className="card" style={desktop ? { flex: 1, marginBottom: 0 } : undefined}>
@@ -452,21 +517,8 @@ export function Ficha(p: Props) {
           <button onClick={() => p.aoAbrirOutro(v.troca.saiu!.id)}>Ver a venda</button>
         </div>
       )}
-      {v.troca.entraram.length > 0 && (
-        <div className="link-troca">
-          {v.troca.entraram.length === 1
-            ? <>Nesta venda entrou um <b>{v.troca.entraram[0]!.descricao}</b> na troca.</>
-            : <>Nesta venda entraram <b>{v.troca.entraram.length} veículos</b> na troca.</>}
-          {/* Um botão por carro: com dois ou mais, "Ver o carro" não diria qual. */}
-          {v.troca.entraram.map((t) => (
-            <button key={t.id} onClick={() => p.aoAbrirOutro(t.id)}>
-              {v.troca.entraram.length === 1
-                ? "Ver o carro"
-                : `${t.descricao}${t.avaliacao === null ? "" : ` · ${brl(t.avaliacao)}`}`}
-            </button>
-          ))}
-        </div>
-      )}
+
+      {desdobramento}
 
       {/* 4. garantia, ou o convite a registrar a venda */}
       {v.garantia ? (

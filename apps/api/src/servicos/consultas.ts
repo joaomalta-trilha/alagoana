@@ -207,6 +207,41 @@ export interface Custo {
   devolveAoCaixa: Centavos;
 }
 
+/**
+ * Um veículo que desceu desta venda pela troca.
+ *
+ * `nivel` 1 é quem entrou direto nesta venda; 2 é quem entrou na venda desse,
+ * e assim por diante. A cadeia toda desce de um negócio só, e é isso que este
+ * bloco existe para mostrar.
+ */
+export interface EloDaTroca {
+  id: string;
+  codigo: string;
+  descricao: string;
+  nivel: number;
+  /** O código do veículo de cuja venda este saiu. */
+  veioDe: string;
+  /** Quanto foi dado por ele na troca. */
+  avaliacao: Centavos | null;
+  custoTotal: Centavos;
+  vendido: boolean;
+  dataVenda: DataISO | null;
+  valorVenda: Centavos | null;
+  /** Nulo enquanto não vendido. */
+  lucro: Centavos | null;
+  cicloDias: number;
+}
+
+export interface Desdobramento {
+  elos: EloDaTroca[];
+  vendidos: number;
+  emEstoque: number;
+  /** Soma dos lucros já realizados na cadeia. */
+  lucroRealizado: Centavos;
+  /** O que a cadeia ainda tem parado no pátio, ao custo. */
+  custoEmEstoque: Centavos;
+}
+
 export interface Ficha extends VeiculoCalculado {
   custos: Custo[];
   /** §6.5, linha do tempo: a data do último custo já pago. Previsto não conta. */
@@ -223,7 +258,19 @@ export interface Ficha extends VeiculoCalculado {
     agio: Centavos | null;
   };
   movimentos: { id: string; data: DataISO; descricao: string; tipo: string; conta: string; valor: Centavos }[];
+  /**
+   * O que aconteceu com o que entrou na troca desta venda — §6.5.
+   *
+   * Fica **fora** das contas do veículo de propósito: o lucro do carro que
+   * entrou é dele, não desta venda, e somá-lo aqui inflaria o resultado do
+   * negócio original. Mas ele nasceu deste negócio, e sem este bloco esse
+   * rastro se perde no primeiro clique.
+   */
+  desdobramento: Desdobramento;
 }
+
+/** Trava de segurança da consulta recursiva; nenhuma cadeia real chega perto. */
+const PROFUNDIDADE_MAXIMA_DA_TROCA = 10;
 
 export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<Ficha> {
   const { rows } = await c.query<Linha>(`${SELECT_VEICULO} where v.id = $1`, [id]);
@@ -265,6 +312,63 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
        from movimento_caixa m join conta ct on ct.id = m.conta_id
       where m.veiculo_id = $1 order by m.data, m.criado_em`, [id]);
 
+  const nome = (v: { codigo: string; marca: string; modelo: string }) =>
+    `${v.marca} ${v.modelo}`;
+
+  // A cadeia inteira que desceu desta venda: quem entrou na troca, quem entrou
+  // na troca da venda desse, e assim por diante. O `caminho` guarda contra
+  // ciclo — que o schema não permite, mas uma consulta recursiva sem guarda é
+  // um travamento esperando um dado errado.
+  const cadeia = await c.query<{
+    id: string; codigo: string; marca: string; modelo: string; nivel: number;
+    veio_de: string; avaliacao_troca: string | null; custo_total: string;
+    data_compra: DataISO; data_venda: DataISO | null; valor_venda: string | null;
+  }>(
+    `with recursive cadeia as (
+       select v.id, v.troca_de_id, 1 as nivel, array[v.id] as caminho
+         from veiculo v
+        where v.troca_de_id = $1
+       union all
+       select f.id, f.troca_de_id, c.nivel + 1, c.caminho || f.id
+         from veiculo f
+         join cadeia c on f.troca_de_id = c.id
+        where not f.id = any(c.caminho)
+          and c.nivel < $2
+     )
+     select v.id, v.codigo, v.marca, v.modelo, c.nivel,
+            pai.codigo as veio_de, v.avaliacao_troca, cv.custo_total,
+            v.data_compra, v.data_venda, v.valor_venda
+       from cadeia c
+       join veiculo v on v.id = c.id
+       join veiculo pai on pai.id = c.troca_de_id
+       join custo_veiculo cv on cv.veiculo_id = v.id
+      order by c.nivel, v.codigo`,
+    [id, PROFUNDIDADE_MAXIMA_DA_TROCA]);
+
+  const elos: EloDaTroca[] = cadeia.rows.map((x) => {
+    const total = deNumeric(x.custo_total)!;
+    const venda = deNumeric(x.valor_venda);
+    return {
+      id: x.id, codigo: x.codigo, descricao: nome(x), nivel: Number(x.nivel),
+      veioDe: x.veio_de,
+      avaliacao: deNumeric(x.avaliacao_troca),
+      custoTotal: total,
+      vendido: x.data_venda !== null,
+      dataVenda: x.data_venda,
+      valorVenda: venda,
+      lucro: venda === null ? null : lucro(venda, total),
+      cicloDias: cicloDias(x.data_compra, x.data_venda, hoje),
+    };
+  });
+
+  const desdobramento: Desdobramento = {
+    elos,
+    vendidos: elos.filter((e) => e.vendido).length,
+    emEstoque: elos.filter((e) => !e.vendido).length,
+    lucroRealizado: elos.reduce((a, e) => a + (e.lucro ?? 0), 0),
+    custoEmEstoque: elos.filter((e) => !e.vendido).reduce((a, e) => a + e.custoTotal, 0),
+  };
+
   const porCategoria = new Map<string, Centavos>();
   for (const custo of custos.rows) {
     const valor = deNumeric(custo.valor)!;
@@ -275,8 +379,6 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
   // do outro lado do vínculo. Ver a regra de sentido único da §3.3.
   const avaliacao = deNumeric(meus.rows[0]?.avaliacao_troca ?? null);
   const mercado = deNumeric(meus.rows[0]?.mercado_troca ?? null);
-  const nome = (v: { codigo: string; marca: string; modelo: string }) =>
-    `${v.marca} ${v.modelo}`;
 
   // Os custos já vêm ordenados por data (nulos por último), então o último com
   // data é o mais recente. Previsto não entra: a linha do tempo conta o que
@@ -308,6 +410,7 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
       agio: avaliacao === null || mercado === null ? null : Math.max(0, avaliacao - mercado),
     },
     movimentos: movimentos.rows.map((m) => ({ ...m, valor: deNumeric(m.valor)! })),
+    desdobramento,
   };
 }
 
