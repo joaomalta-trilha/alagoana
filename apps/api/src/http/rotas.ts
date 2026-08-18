@@ -31,7 +31,9 @@ import {
   type EntradaTroca, type EntradaVeiculo,
 } from "../servicos/veiculos.js";
 import { atalhos, excluirCusto, lancarCusto, type ModoRateio } from "../servicos/custos.js";
-import { registrarAporte, transferir } from "../servicos/caixa.js";
+import {
+  registrarAporte, transferir, previaExclusaoTransferencia, excluirTransferencia,
+} from "../servicos/caixa.js";
 import {
   consolidadoVendas, ficha, listarVeiculos, painel, totalizar, visaoCaixa, type Situacao,
 } from "../servicos/consultas.js";
@@ -317,6 +319,17 @@ const ROTAS: Rota[] = [
         observacao: texto(ctx.corpo, "observacao"),
       }, ctx.usuario.id));
     },
+  },
+
+  {
+    // A conta do estrago antes de apagar, como a §4.8 pede.
+    metodo: "GET", padrao: "/api/transferencias/:id",
+    fn: (ctx) => comLeitura((c) => previaExclusaoTransferencia(c, ctx.parametros["id"]!)),
+  },
+  {
+    metodo: "DELETE", padrao: "/api/transferencias/:id",
+    fn: (ctx) => comTransacao((c) =>
+      excluirTransferencia(c, ctx.parametros["id"]!, ctx.usuario.id)),
   },
 
   // ------------------------------------------------------- painel e vendas

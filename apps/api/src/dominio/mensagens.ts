@@ -22,6 +22,7 @@ export const MSG = {
   transferenciaMesmaConta: "A conta de origem e a de destino precisam ser diferentes.",
   transferenciaSemValor: "Informe um valor de transferência maior que zero.",
   vendaJaDesfeita: "Este carro não está vendido.",
+  transferenciaNaoEncontrada: "Transferência não encontrada.",
 } as const;
 
 /** `Saldo insuficiente em {conta}: {saldo}.` — §8 */
@@ -44,6 +45,14 @@ export function trocaImpedeDesfazer(
 export function saldoNaoDevolveVenda(conta: string, saldo: Centavos, valor: Centavos): string {
   return `Desfazer a venda tira ${brl(valor)} de ${conta}, que tem ${brl(saldo)}. ` +
     "Lance a entrada que falta ou desfaça primeiro o que gastou desse dinheiro.";
+}
+
+/** Apagar a transferência tira o dinheiro de volta do destino — se ele tiver. */
+export function saldoNaoDesfazTransferencia(
+  conta: string, saldo: Centavos, valor: Centavos,
+): string {
+  return `Apagar esta transferência tira ${brl(valor)} de ${conta}, que tem ${brl(saldo)}. ` +
+    "Devolva o dinheiro à conta antes, ou apague o que foi gasto com ele.";
 }
 
 /**

@@ -13,7 +13,9 @@
 
 import type { PoolClient } from "pg";
 import { deNumeric, paraNumeric, type Centavos } from "../dominio/dinheiro.js";
-import { ErroDeValidacao, MSG, NaoEncontrado, saldoInsuficiente } from "../dominio/mensagens.js";
+import {
+  ErroDeValidacao, MSG, NaoEncontrado, saldoInsuficiente, saldoNaoDesfazTransferencia,
+} from "../dominio/mensagens.js";
 import type { DataISO } from "../dominio/veiculo.js";
 import { registrarEvento } from "./eventos.js";
 
@@ -238,4 +240,94 @@ export async function transferir(
     destino: { nome: destino.nome, saldo: destino.saldo + t.valor },
     valor: t.valor,
   };
+}
+
+export interface PreviaExclusaoTransferencia {
+  id: string;
+  data: DataISO;
+  valor: Centavos;
+  origem: { nome: string; saldoAtual: Centavos; fica: Centavos };
+  destino: { nome: string; saldoAtual: Centavos; fica: Centavos };
+  /** Preenchido quando não dá para apagar, com o motivo. */
+  impedimento: string | null;
+}
+
+/** As duas pernas de uma transferência, lidas pelo par. */
+async function pernasDa(
+  c: PoolClient, transferenciaId: string,
+): Promise<{ conta: string; valor: Centavos; saldo: Centavos; data: DataISO }[]> {
+  const { rows } = await c.query<
+    { conta: string; valor: string; saldo: string; data: DataISO }
+  >(`select ct.nome as conta, m.valor, s.saldo, m.data
+       from movimento_caixa m
+       join conta ct on ct.id = m.conta_id
+       join saldo_conta s on s.conta_id = m.conta_id
+      where m.transferencia_id = $1
+      order by m.valor`, [transferenciaId]);
+
+  return rows.map((r) => ({
+    conta: r.conta, valor: deNumeric(r.valor)!, saldo: deNumeric(r.saldo)!, data: r.data,
+  }));
+}
+
+/**
+ * O que apagar uma transferência vai mexer.
+ *
+ * Só o destino corre risco: apagar a entrada dele tira o dinheiro de volta, e
+ * ele pode já ter gasto. Na origem a saída é apagada e o dinheiro volta, o que
+ * nunca derruba saldo.
+ */
+export async function previaExclusaoTransferencia(
+  c: PoolClient, id: string,
+): Promise<PreviaExclusaoTransferencia> {
+  const pernas = await pernasDa(c, id);
+  if (pernas.length !== 2) throw new NaoEncontrado(MSG.transferenciaNaoEncontrada);
+
+  // `order by m.valor`: a saída é negativa e vem primeiro.
+  const [saida, entrada] = pernas as [typeof pernas[0], typeof pernas[0]];
+  const valor = entrada.valor;
+
+  const ficaNoDestino = entrada.saldo - valor;
+  return {
+    id,
+    data: entrada.data,
+    valor,
+    origem: { nome: saida.conta, saldoAtual: saida.saldo, fica: saida.saldo + valor },
+    destino: { nome: entrada.conta, saldoAtual: entrada.saldo, fica: ficaNoDestino },
+    impedimento: ficaNoDestino < 0
+      ? saldoNaoDesfazTransferencia(entrada.conta, entrada.saldo, valor)
+      : null,
+  };
+}
+
+/**
+ * Apaga as duas pernas de uma transferência.
+ *
+ * As duas juntas, sempre: meia transferência é dinheiro sumindo ou nascendo.
+ * Não é estorno — não deixa rastro no extrato —, porque uma transferência
+ * lançada errada é erro de digitação, não fato do negócio. Quem precisa do
+ * histórico tem a tabela `evento`, que registra o que foi apagado.
+ */
+export async function excluirTransferencia(
+  c: PoolClient, id: string, usuarioId: string | null = null,
+): Promise<PreviaExclusaoTransferencia> {
+  // Trava as duas contas antes de ler saldo, na mesma ordem de `transferir`.
+  const { rows: contas } = await c.query<{ conta_id: string }>(
+    "select distinct conta_id from movimento_caixa where transferencia_id = $1 order by conta_id",
+    [id]);
+  for (const { conta_id } of contas) {
+    await c.query("select id from conta where id = $1 for update", [conta_id]);
+  }
+
+  const previa = await previaExclusaoTransferencia(c, id);
+  if (previa.impedimento) throw new ErroDeValidacao(previa.impedimento);
+
+  await c.query("delete from movimento_caixa where transferencia_id = $1", [id]);
+
+  await registrarEvento(c, usuarioId, "movimento_caixa", id, "excluiu", {
+    origem: previa.origem.nome, destino: previa.destino.nome,
+    valor: previa.valor, data: previa.data,
+  }, null);
+
+  return previa;
 }

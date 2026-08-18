@@ -256,6 +256,9 @@ button,input,select{font-family:inherit}
 .resumo-venda{margin-top:16px}
 /* O rastro da troca. Cada elo é uma linha com o carro à esquerda e o que ele
    deu à direita; o recuo marca quem veio da venda de quem. */
+/* Só a transferência tem o × no extrato. O espaço reservado nas outras
+   linhas mantém os valores alinhados na mesma coluna. */
+.remover-vazio{display:inline-block; min-width:44px}
 .elos{margin-top:10px}
 .elo{display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
   padding:10px 0; border-bottom:1px solid #EDEFEA}

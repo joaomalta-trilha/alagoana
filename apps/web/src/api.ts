@@ -166,6 +166,8 @@ export interface Caixa {
   extrato: {
     id: string; data: string; descricao: string; tipo: string;
     conta: string; valor: Centavos; veiculo: string | null;
+    /** Só as transferências podem ser apagadas daqui; o resto se desfaz na origem. */
+    transferenciaId: string | null;
   }[];
 }
 
@@ -202,6 +204,15 @@ export interface PreviaDesfazerVenda {
   comissoes: { quantidade: number; soma: Centavos };
   agioTroca: { quantidade: number; soma: Centavos };
   /** Quando preenchido, desfazer é recusado — e este é o motivo. */
+  impedimento: string | null;
+}
+
+export interface PreviaExclusaoTransferencia {
+  id: string;
+  data: string;
+  valor: Centavos;
+  origem: { nome: string; saldoAtual: Centavos; fica: Centavos };
+  destino: { nome: string; saldoAtual: Centavos; fica: Centavos };
   impedimento: string | null;
 }
 
@@ -261,6 +272,10 @@ export const api = {
   aporte: (dados: unknown) => pedir<{ id: string }>("POST", "/api/aportes", dados),
   transferir: (dados: unknown) =>
     pedir<ResultadoTransferencia>("POST", "/api/transferencias", dados),
+  previaExclusaoTransferencia: (id: string) =>
+    pedir<PreviaExclusaoTransferencia>("GET", `/api/transferencias/${id}`),
+  excluirTransferencia: (id: string) =>
+    pedir<PreviaExclusaoTransferencia>("DELETE", `/api/transferencias/${id}`),
 
   previaDesfazerVenda: (id: string) =>
     pedir<PreviaDesfazerVenda>("GET", `/api/veiculos/${id}/venda`),

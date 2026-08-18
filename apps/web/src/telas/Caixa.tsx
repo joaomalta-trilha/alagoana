@@ -16,10 +16,11 @@ import { useDados } from "../dados.js";
 import { brl, dataBr } from "../formato.js";
 
 export function Caixa(
-  { versao, aoAportar, aoTransferir }: {
+  { versao, aoAportar, aoTransferir, aoApagarTransferencia }: {
     versao: number;
     aoAportar: () => void;
     aoTransferir: (contas: { id: string; nome: string; saldo: number }[]) => void;
+    aoApagarTransferencia: (transferenciaId: string) => void;
   },
 ) {
   const { dados, erro, carregando } = useDados(() => api.caixa(), versao);
@@ -98,9 +99,23 @@ export function Caixa(
                   {dataBr(m.data)} · {m.conta}{m.veiculo ? ` · ${m.veiculo}` : ""}
                 </div>
               </div>
-              <b className={m.valor >= 0 ? "pos" : "neg"}>
-                {m.valor >= 0 ? "+ " : "− "}{brl(Math.abs(m.valor))}
-              </b>
+              <div style={{ display: "flex", alignItems: "flex-start" }}>
+                <b className={m.valor >= 0 ? "pos" : "neg"}>
+                  {m.valor >= 0 ? "+ " : "− "}{brl(Math.abs(m.valor))}
+                </b>
+                {/* Só transferência se apaga daqui. Venda, compra, custo e
+                    aporte nascem de outro lugar e se desfazem lá — apagar a
+                    linha do extrato deixaria a ficha contando outra história. */}
+                {m.transferenciaId ? (
+                  <button
+                    className="remover"
+                    aria-label={`Apagar ${m.descricao}`}
+                    onClick={() => aoApagarTransferencia(m.transferenciaId!)}
+                  >×</button>
+                ) : (
+                  <span className="remover-vazio" aria-hidden="true" />
+                )}
+              </div>
             </div>
           ))}
       </div>

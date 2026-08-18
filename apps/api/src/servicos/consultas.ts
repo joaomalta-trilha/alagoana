@@ -591,6 +591,12 @@ export interface VisaoCaixa {
   extrato: {
     id: string; data: DataISO; descricao: string; tipo: string;
     conta: string; valor: Centavos; veiculo: string | null;
+    /**
+     * Une as duas pernas de uma transferência — e é o que diz que a linha pode
+     * ser apagada daqui. Os outros movimentos nascem de uma venda ou de um
+     * custo e se desfazem lá, não no extrato.
+     */
+    transferenciaId: string | null;
   }[];
 }
 
@@ -604,13 +610,14 @@ export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<Vi
 
   const extrato = await c.query<{
     id: string; data: DataISO; descricao: string; tipo: string;
-    conta: string; valor: string; veiculo: string | null;
+    conta: string; valor: string; veiculo: string | null; transferencia_id: string | null;
   }>(
-    `select m.id, m.data, m.descricao, m.tipo, ct.nome as conta, m.valor, v.codigo as veiculo
+    `select m.id, m.data, m.descricao, m.tipo, ct.nome as conta, m.valor,
+            v.codigo as veiculo, m.transferencia_id
        from movimento_caixa m
        join conta ct on ct.id = m.conta_id
        left join veiculo v on v.id = m.veiculo_id
-      order by m.data desc, m.criado_em desc
+      order by m.data desc, m.criado_em desc, m.id
       limit $1`, [limiteExtrato]);
 
   const linhas = contas.rows.map((k) => ({
@@ -625,7 +632,9 @@ export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<Vi
       aportes: deNumeric(s.aportes)!, retiradas: deNumeric(s.retiradas)!,
       capital: deNumeric(s.capital)!,
     })),
-    extrato: extrato.rows.map((m) => ({ ...m, valor: deNumeric(m.valor)! })),
+    extrato: extrato.rows.map(({ transferencia_id, ...m }) => ({
+      ...m, valor: deNumeric(m.valor)!, transferenciaId: transferencia_id,
+    })),
   };
 }
 

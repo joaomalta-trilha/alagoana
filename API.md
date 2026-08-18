@@ -102,6 +102,8 @@ caixa, porque ainda não aconteceu.
 | `GET /api/caixa` | saldos, consolidado, capital por sócio e extrato |
 | `POST /api/aportes` | `{socioId, contaId, tipo, valor, data, observacao}` |
 | `POST /api/transferencias` | `{origemId, destinoId, valor, data, observacao}` |
+| `GET /api/transferencias/:id` | prévia do que apagar vai mexer, e o motivo quando não dá |
+| `DELETE /api/transferencias/:id` | apaga as duas pernas juntas |
 
 `tipo` é `aporte` ou `retirada`, e `valor` é sempre positivo — o tipo define o
 sinal. Um aporte grava duas linhas (§3.6): o movimento de caixa e a
@@ -111,6 +113,17 @@ A transferência também grava duas linhas, uma em cada conta, unidas por
 `transferencia_id`. Não é aporte: o dinheiro não entrou nem saiu da empresa,
 só mudou de bolso, e por isso `capital_socio` não se mexe. Recusa origem igual
 ao destino, valor não positivo e saldo que não cobre.
+
+Apagar leva as duas pernas juntas — meia transferência é dinheiro sumindo ou
+nascendo — e recusa quando o destino já gastou o dinheiro, porque tirá-lo
+levaria a conta ao negativo. Não é estorno, não deixa linha no extrato: uma
+transferência lançada errada é erro de digitação, não fato do negócio. O que
+foi apagado fica em `evento`.
+
+`GET /api/caixa` devolve `transferenciaId` em cada linha do extrato, e é ele
+que diz quais podem ser apagadas ali. Venda, compra, custo e aporte nascem de
+outro lugar e se desfazem lá; apagar a linha do extrato deixaria a ficha do
+veículo contando outra história.
 
 Desfazer a venda apaga o que a venda criou — a entrada no caixa, as comissões
 daquele dia e o ágio da troca — e nada além disso: o custo anterior fica, e o

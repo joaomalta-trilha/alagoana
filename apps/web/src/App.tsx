@@ -32,6 +32,7 @@ import { Transferencia } from "./folhas/Transferencia.js";
 import { ConfirmarExclusao } from "./folhas/ConfirmarExclusao.js";
 import { ConfirmarExclusaoCusto } from "./folhas/ConfirmarExclusaoCusto.js";
 import { ConfirmarDesfazerVenda } from "./folhas/ConfirmarDesfazerVenda.js";
+import { ConfirmarExclusaoTransferencia } from "./folhas/ConfirmarExclusaoTransferencia.js";
 
 type Folha =
   | { tipo: "custo"; veiculoId?: string }
@@ -41,6 +42,7 @@ type Folha =
   | { tipo: "aporte" }
   | { tipo: "transferencia"; contas: { id: string; nome: string; saldo: number }[] }
   | { tipo: "desfazerVenda"; veiculoId: string }
+  | { tipo: "exclusaoTransferencia"; transferenciaId: string }
   | { tipo: "exclusao"; veiculoId: string }
   | { tipo: "exclusaoCusto"; custo: Custo }
   | null;
@@ -158,6 +160,8 @@ export function App() {
             versao={versao}
             aoAportar={() => setFolha({ tipo: "aporte" })}
             aoTransferir={(contas) => setFolha({ tipo: "transferencia", contas })}
+            aoApagarTransferencia={(transferenciaId) =>
+              setFolha({ tipo: "exclusaoTransferencia", transferenciaId })}
           />
         )}
       </div>
@@ -204,6 +208,13 @@ export function App() {
         <Transferencia
           catalogos={catalogos} saldos={folha.contas}
           aoFechar={() => setFolha(null)} aoGravar={atualizar}
+        />
+      )}
+      {folha?.tipo === "exclusaoTransferencia" && (
+        <ConfirmarExclusaoTransferencia
+          transferenciaId={folha.transferenciaId}
+          aoFechar={() => setFolha(null)}
+          aoExcluir={atualizar}
         />
       )}
       {folha?.tipo === "desfazerVenda" && (
