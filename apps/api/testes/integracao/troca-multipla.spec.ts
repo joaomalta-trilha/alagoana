@@ -163,8 +163,8 @@ describe("venda recebendo dois veículos", () => {
 
     const previa = await comLeitura((c) => previaExclusao(c, v.id));
     expect(previa.trocas).toEqual([
-      { id: expect.any(String), codigo: "V-02", sentido: "entrou" },
-      { id: expect.any(String), codigo: "V-03", sentido: "entrou" },
+      { id: expect.any(String), codigo: "V-02", descricao: "Fiat Argo", sentido: "entrou" },
+      { id: expect.any(String), codigo: "V-03", descricao: "Yamaha Fazer 250", sentido: "entrou" },
     ]);
   });
 

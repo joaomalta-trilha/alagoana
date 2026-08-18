@@ -259,6 +259,13 @@ button,input,select{font-family:inherit}
 /* Só a transferência tem o × no extrato. O espaço reservado nas outras
    linhas mantém os valores alinhados na mesma coluna. */
 .remover-vazio{display:inline-block; min-width:44px}
+/* Os três números que a loja abre a ficha para ver, antes de qualquer
+   rolagem. Repetem a análise financeira lá embaixo; a repetição é o ponto. */
+.kpis-ficha{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:11px}
+.kpis-ficha .kpi:first-child{grid-column:1 / -1}
+.kpis-ficha .kpi b{font-size:17px}
+.kpis-ficha .kpi.bom b{color:var(--verde)}
+.kpis-ficha .kpi.alerta b{color:var(--vermelho)}
 .elos{margin-top:10px}
 .elo{display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
   padding:10px 0; border-bottom:1px solid #EDEFEA}

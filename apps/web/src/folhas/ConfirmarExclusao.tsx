@@ -61,7 +61,8 @@ export function ConfirmarExclusao(
             {previa.trocas.length > 0 && (
               <li>
                 {previa.trocas.length === 1 ? "O vínculo de troca com o " : "Os vínculos de troca com "}
-                <b>{previa.trocas.map((t) => t.codigo).join(", ")}</b>, que{" "}
+                <b>{previa.trocas.map((t) => `${t.codigo} · ${t.descricao}`).join(", ")}</b>,
+                {" "}que{" "}
                 <b>{previa.trocas.length === 1 ? "continua" : "continuam"} no sistema</b>
               </li>
             )}

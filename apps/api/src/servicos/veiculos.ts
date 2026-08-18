@@ -310,7 +310,7 @@ export interface PreviaExclusao {
   movimentos: { quantidade: number; valorDevolvido: Centavos };
   venda: { data: DataISO; valor: Centavos } | null;
   /** Os vínculos de troca, nos dois sentidos. Numa venda pode entrar mais de um. */
-  trocas: { id: string; codigo: string; sentido: "entrou" | "saiu" }[];
+  trocas: { id: string; codigo: string; descricao: string; sentido: "entrou" | "saiu" }[];
 }
 
 /**
@@ -331,15 +331,22 @@ export async function previaExclusao(c: PoolClient, id: string): Promise<PreviaE
   // devolve +58.000 à conta.
   const valorDevolvido = -deNumeric(movimentos[0]!.soma)!;
 
-  const { rows: entrou } = await c.query<{ id: string; codigo: string }>(
-    "select id, codigo from veiculo where troca_de_id = $1 order by codigo", [id]);
-  const { rows: saiu } = await c.query<{ id: string; codigo: string }>(
-    `select vv.id, vv.codigo from veiculo v
+  const { rows: entrou } = await c.query<
+    { id: string; codigo: string; marca: string; modelo: string }
+  >("select id, codigo, marca, modelo from veiculo where troca_de_id = $1 order by codigo", [id]);
+  const { rows: saiu } = await c.query<
+    { id: string; codigo: string; marca: string; modelo: string }
+  >(`select vv.id, vv.codigo, vv.marca, vv.modelo from veiculo v
        join veiculo vv on vv.id = v.troca_de_id where v.id = $1`, [id]);
 
+  const descrever = (x: { marca: string; modelo: string }) => `${x.marca} ${x.modelo}`;
   const trocas = [
-    ...entrou.map((x) => ({ id: x.id, codigo: x.codigo, sentido: "entrou" as const })),
-    ...saiu.map((x) => ({ id: x.id, codigo: x.codigo, sentido: "saiu" as const })),
+    ...entrou.map((x) => ({
+      id: x.id, codigo: x.codigo, descricao: descrever(x), sentido: "entrou" as const,
+    })),
+    ...saiu.map((x) => ({
+      id: x.id, codigo: x.codigo, descricao: descrever(x), sentido: "saiu" as const,
+    })),
   ];
 
   return {

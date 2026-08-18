@@ -140,9 +140,11 @@ export interface Painel {
   graficos: {
     envelhecimento: { faixa: string; cor: string; quantidade: number }[];
     resultadoPorMes: { mes: string; lucro: Centavos; quantidade: number }[];
-    retornoPorCiclo: { codigo: string; ciclo: number; retorno: number }[];
+    retornoPorCiclo: { codigo: string; descricao: string; ciclo: number; retorno: number }[];
     custoPorCategoria: { categoria: string; valor: Centavos }[];
-    anuncioVsFipe: { codigo: string; anuncio: Centavos; fipe: Centavos; variacao: number }[];
+    anuncioVsFipe: {
+      codigo: string; descricao: string; anuncio: Centavos; fipe: Centavos; variacao: number;
+    }[];
     retornoPorMarca: { marca: string; retorno: number; vendidos: number }[];
   };
 }
@@ -194,7 +196,7 @@ export interface PreviaExclusao {
   custos: { quantidade: number; soma: Centavos };
   movimentos: { quantidade: number; valorDevolvido: Centavos };
   venda: { data: string; valor: Centavos } | null;
-  trocas: { id: string; codigo: string; sentido: "entrou" | "saiu" }[];
+  trocas: { id: string; codigo: string; descricao: string; sentido: "entrou" | "saiu" }[];
 }
 
 export interface PreviaDesfazerVenda {

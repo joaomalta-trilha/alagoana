@@ -157,6 +157,12 @@
 
   .rows li.fraco b { color: var(--ink2); }
 
+  /* No desktop os três cabem lado a lado, na largura da linha do tempo. */
+  .kpis-ficha { grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+  .kpis-ficha .kpi:first-child { grid-column: auto; }
+  .kpis-ficha .kpi { padding: 15px 18px; }
+  .kpis-ficha .kpi b { font-size: 23px; letter-spacing: -.03em; }
+
   /* ---------- ficha: linha do tempo (§6.5, bloco 2) ---------- */
   /* Quatro células coladas, com o arredondamento só nas pontas: lê-se como uma
      faixa só, e não como quatro cartões soltos. */

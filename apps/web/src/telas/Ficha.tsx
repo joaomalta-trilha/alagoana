@@ -52,6 +52,12 @@ function TituloComAcao(
   );
 }
 
+/** Resultado zero ou negativo pinta de vermelho, vendido ou projetado. */
+function resultadoRuim(v: DadosFicha): boolean {
+  const resultado = v.vendido ? v.lucro : v.lucroProjetado;
+  return resultado !== null && resultado <= 0;
+}
+
 /** Sinal e classe da depreciação e da variação, que andam juntas. */
 function classeFipe(valor: number | null): string {
   if (valor === null) return "";
@@ -160,6 +166,40 @@ export function Ficha(p: Props) {
           <b className="num">{v.vendido ? dataBr(v.dataVenda) : `${v.cicloDias}d`}</b>
         </div>
         <div><span>Ciclo</span><b className="num">{v.cicloDias}d</b></div>
+      </div>
+    </div>
+  );
+
+  // ------------------------------------------------- os três números do topo
+  // A §6.5 põe a análise financeira no bloco 5, depois da ficha técnica, da
+  // linha do tempo e da garantia — três telas de rolagem no celular antes do
+  // número que a loja abre a ficha para ver. Estes três repetem o que está lá
+  // embaixo, de propósito: quem abre um carro quer saber quanto ele custou,
+  // por quanto está anunciado e quanto isso dá.
+  const emEvidencia = (
+    <div className="kpis-ficha">
+      <div className="kpi">
+        <span>Custo total</span>
+        <b>{brl(v.custoTotal)}</b>
+        <i>compra e {v.lancamentos} {v.lancamentos === 1 ? "lançamento" : "lançamentos"}</i>
+      </div>
+      <div className="kpi">
+        <span>{v.vendido ? "Valor de venda" : "Valor de anúncio"}</span>
+        <b>{v.vendido ? brl(v.valorVenda ?? 0) : v.valorAnuncio === null ? "—" : brl(v.valorAnuncio)}</b>
+        <i>{v.vendido ? `vendido em ${dataBr(v.dataVenda)}` : "o preço pedido hoje"}</i>
+      </div>
+      <div className={`kpi ${resultadoRuim(v) ? "alerta" : "bom"}`}>
+        <span>{v.vendido ? "Lucro" : "Lucro projetado"}</span>
+        <b>{v.vendido
+          ? brl(v.lucro ?? 0)
+          : v.lucroProjetado === null ? "—" : brl(v.lucroProjetado)}</b>
+        <i>
+          {v.vendido
+            ? `${pct(v.retornoPct ?? 0)} sobre o investido`
+            : v.projetadoPct === null
+              ? "sem anúncio definido"
+              : `${pct(v.projetadoPct)} sobre o investido`}
+        </i>
       </div>
     </div>
   );
@@ -488,6 +528,8 @@ export function Ficha(p: Props) {
       <button className="voltar" onClick={p.aoVoltar}>← Voltar</button>
 
       {cabecalho}
+
+      {emEvidencia}
 
       {/* 2. linha do tempo — no celular estas datas moram na ficha técnica */}
       {desktop && (

@@ -98,7 +98,9 @@ function graficos(d: DadosPainel, desktop: boolean) {
     type: "scatter" as const,
     data: {
       datasets: [{
-        data: g.retornoPorCiclo.map((v) => ({ x: v.ciclo, y: v.retorno, codigo: v.codigo })),
+        data: g.retornoPorCiclo.map((v) => ({
+          x: v.ciclo, y: v.retorno, codigo: v.codigo, descricao: v.descricao,
+        })),
         backgroundColor: g.retornoPorCiclo.map((v) => (v.retorno > 0 ? "#2A8466" : "#B94B45")),
         pointRadius: 6, pointHoverRadius: 8,
       }],
@@ -111,8 +113,10 @@ function graficos(d: DadosPainel, desktop: boolean) {
           ...opcoesBase.plugins.tooltip,
           callbacks: {
             label: (item: { raw: unknown }) => {
-              const p = item.raw as { x: number; y: number; codigo: string };
-              return `${p.codigo} · ${p.x} dias · ${p.y.toFixed(1)}%`;
+              const p = item.raw as
+                { x: number; y: number; codigo: string; descricao: string };
+              // O nome primeiro: "V-05" não diz nada a quem olha o painel.
+              return `${p.descricao} · ${p.x} dias · ${p.y.toFixed(1)}%`;
             },
           },
         },
@@ -130,7 +134,9 @@ function graficos(d: DadosPainel, desktop: boolean) {
   const contraFipe = {
     type: "bar" as const,
     data: {
-      labels: g.anuncioVsFipe.map((v) => v.codigo),
+      // Rótulo é nome, não código. Dois carros do mesmo modelo ficariam com o
+      // mesmo rótulo, e é por isso que o balão traz o código junto.
+      labels: g.anuncioVsFipe.map((v) => v.descricao),
       datasets: [{
         data: g.anuncioVsFipe.map((v) => v.variacao),
         backgroundColor: g.anuncioVsFipe.map((v) => (v.variacao >= 0 ? "#2A8466" : "#D89A2B")),
@@ -140,6 +146,22 @@ function graficos(d: DadosPainel, desktop: boolean) {
     options: {
       ...opcoesBase,
       indexAxis: "y" as const,
+      plugins: {
+        ...opcoesBase.plugins,
+        tooltip: {
+          ...opcoesBase.plugins.tooltip,
+          callbacks: {
+            // O código só no balão: é o que desempata dois carros do mesmo
+            // modelo sem poluir o eixo com uma sigla que ninguém decora.
+            title: (itens: { dataIndex: number }[]) => {
+              const v = g.anuncioVsFipe[itens[0]!.dataIndex]!;
+              return `${v.descricao} · ${v.codigo}`;
+            },
+            label: (item: { raw: unknown }) =>
+              `${Number(item.raw) >= 0 ? "+" : ""}${Number(item.raw).toFixed(1)}% da Fipe`,
+          },
+        },
+      },
       scales: {
         x: {
           ...eixoValor,

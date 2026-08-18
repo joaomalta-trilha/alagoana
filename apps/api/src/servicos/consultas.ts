@@ -491,9 +491,12 @@ export interface Painel {
   graficos: {
     envelhecimento: { faixa: FaixaIdade; cor: string; quantidade: number }[];
     resultadoPorMes: { mes: string; lucro: Centavos; quantidade: number }[];
-    retornoPorCiclo: { codigo: string; ciclo: number; retorno: number }[];
+    /** `descricao` é o que o gráfico rotula; `codigo` desempata dois iguais. */
+    retornoPorCiclo: { codigo: string; descricao: string; ciclo: number; retorno: number }[];
     custoPorCategoria: { categoria: string; valor: Centavos }[];
-    anuncioVsFipe: { codigo: string; anuncio: Centavos; fipe: Centavos; variacao: number }[];
+    anuncioVsFipe: {
+      codigo: string; descricao: string; anuncio: Centavos; fipe: Centavos; variacao: number;
+    }[];
     retornoPorMarca: { marca: string; retorno: number; vendidos: number }[];
   };
 }
@@ -562,7 +565,8 @@ export async function painel(
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([mes, d]) => ({ mes, ...d })),
       retornoPorCiclo: vendidos.map((v) => ({
-        codigo: v.codigo, ciclo: v.cicloDias, retorno: v.retornoPct ?? 0,
+        codigo: v.codigo, descricao: `${v.marca} ${v.modelo}`,
+        ciclo: v.cicloDias, retorno: v.retornoPct ?? 0,
       })),
       custoPorCategoria: categorias.map((k) => ({
         categoria: k.categoria, valor: deNumeric(k.soma)!,
@@ -570,7 +574,8 @@ export async function painel(
       anuncioVsFipe: todos
         .filter((v) => v.valorAnuncio !== null && v.fipeHoje !== null)
         .map((v) => ({
-          codigo: v.codigo, anuncio: v.valorAnuncio!, fipe: v.fipeHoje!,
+          codigo: v.codigo, descricao: `${v.marca} ${v.modelo}`,
+          anuncio: v.valorAnuncio!, fipe: v.fipeHoje!,
           variacao: v.anuncioVsFipe!,
         })),
       retornoPorMarca: [...porMarca.entries()]
