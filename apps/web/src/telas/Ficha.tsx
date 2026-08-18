@@ -34,6 +34,7 @@ interface Props {
   aoLancarCusto: (v: DadosFicha) => void;
   aoAtualizarFipe: (v: DadosFicha) => void;
   aoRemoverCusto: (custo: DadosFicha["custos"][number]) => void;
+  aoDesfazerVenda: (v: DadosFicha) => void;
 }
 
 /** Título de cartão com a ação à direita — o `card-head` do protótipo. */
@@ -497,6 +498,13 @@ export function Ficha(p: Props) {
               Janela em que retornos do comprador ainda são por sua conta.
             </p>
           )}
+
+          <div className="desfazer-venda">
+            <button className="acao-linha" onClick={() => p.aoDesfazerVenda(v)}>
+              Desfazer a venda
+            </button>
+            <span className="hint">Devolve o carro ao estoque.</span>
+          </div>
         </div>
       ) : desktop ? (
         <div className="card">

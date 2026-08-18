@@ -135,13 +135,14 @@ describe("venda — o Honda City da especificação", () => {
 });
 
 describe("comissões (§4.6)", () => {
-  it("vêm marcadas por padrão e lançam 1.000 + 500", async () => {
+  it("vêm marcadas por padrão e lançam uma linha de 1.500", async () => {
     const v = await hondaCity();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-03", valorVenda: 9_700_000,
     }, b.usuarioId));
 
-    expect(r.comissoesLancadas.map((k) => k.valor)).toEqual([100_000, 50_000]);
+    // Eram duas linhas, 1.000 + 500, até 17/08/2026. O total não mudou.
+    expect(r.comissoesLancadas.map((k) => k.valor)).toEqual([150_000]);
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
     expect(f.custoTotal).toBe(9_385_320 + 150_000);
   });

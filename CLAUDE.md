@@ -46,6 +46,20 @@ sistema acharia que já é amanhã.
 **Saldo nunca é armazenado.** É sempre `saldo_inicial + soma dos movimentos`,
 pela view `saldo_conta`. Se aparecer uma coluna de saldo, ela vai divergir.
 
+## O que a loja mudou depois da especificação
+
+A especificação manda, mas ela pode ser alterada por escrito — e foi, três
+vezes em 17/08/2026:
+
+- **Comissão virou uma linha só**, Alagoana R$ 1.500, no lugar de Alagoana
+  R$ 1.000 + Victor R$ 500. Mesmo total. A §4.6 foi atualizada com a data.
+- **Transferência entre contas** do caixa: duas linhas unidas por
+  `transferencia_id`, e nada de `aporte_socio` — o dinheiro mudou de bolso,
+  não entrou na empresa.
+- **Desfazer venda**, que devolve o carro ao pátio apagando só o que a venda
+  criou. Recusa quando entrou carro na troca ou quando o dinheiro já foi
+  gasto; as duas recusas têm teste.
+
 ## Estrutura
 
 ```

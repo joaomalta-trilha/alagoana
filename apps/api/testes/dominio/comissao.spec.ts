@@ -5,10 +5,9 @@ import {
 import { MSG, saldoInsuficiente } from "../../src/dominio/mensagens.js";
 
 describe("comissões (§4.6)", () => {
-  it("o padrão da casa é 1.000 + 500", () => {
+  it("o padrão da casa é uma linha só, de 1.500", () => {
     expect(COMISSOES_PADRAO).toEqual([
-      { beneficiario: "Comissão Alagoana", valor: 100_000 },
-      { beneficiario: "Comissão Victor", valor: 50_000 },
+      { beneficiario: "Comissão Alagoana", valor: 150_000 },
     ]);
   });
 

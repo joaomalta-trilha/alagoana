@@ -43,6 +43,8 @@ catálogo aprende sozinho. `versao` é texto livre e nunca vira catálogo.
 | `GET /api/veiculos/:id/exclusao` | prévia com os números reais do que será apagado |
 | `DELETE /api/veiculos/:id` | exclui; o carro ligado por troca sobrevive sem o vínculo |
 | `POST /api/veiculos/:id/venda` | venda, troca e comissões numa transação só |
+| `GET /api/veiculos/:id/venda` | prévia do desfazer: o que sai do caixa, que comissões somem, e o motivo quando não dá |
+| `DELETE /api/veiculos/:id/venda` | desfaz a venda e devolve o carro ao estoque |
 
 A venda aceita:
 
@@ -99,10 +101,23 @@ caixa, porque ainda não aconteceu.
 |---|---|
 | `GET /api/caixa` | saldos, consolidado, capital por sócio e extrato |
 | `POST /api/aportes` | `{socioId, contaId, tipo, valor, data, observacao}` |
+| `POST /api/transferencias` | `{origemId, destinoId, valor, data, observacao}` |
 
 `tipo` é `aporte` ou `retirada`, e `valor` é sempre positivo — o tipo define o
 sinal. Um aporte grava duas linhas (§3.6): o movimento de caixa e a
 participação. São números diferentes e ambos importam.
+
+A transferência também grava duas linhas, uma em cada conta, unidas por
+`transferencia_id`. Não é aporte: o dinheiro não entrou nem saiu da empresa,
+só mudou de bolso, e por isso `capital_socio` não se mexe. Recusa origem igual
+ao destino, valor não positivo e saldo que não cobre.
+
+Desfazer a venda apaga o que a venda criou — a entrada no caixa, as comissões
+daquele dia e o ágio da troca — e nada além disso: o custo anterior fica, e o
+carro volta preparado. Recusa em dois casos, ambos com o motivo em
+`impedimento`: quando entrou um carro na troca (ele ficaria sem a origem que o
+explica) e quando o dinheiro da venda já foi gasto, porque tirá-lo levaria a
+conta ao negativo.
 
 ## Painel e vendas
 

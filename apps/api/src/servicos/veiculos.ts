@@ -11,7 +11,9 @@
 
 import type { PoolClient } from "pg";
 import { paraNumeric, deNumeric, type Centavos } from "../dominio/dinheiro.js";
-import { ErroDeValidacao, MSG, NaoEncontrado } from "../dominio/mensagens.js";
+import {
+  ErroDeValidacao, MSG, NaoEncontrado, trocaImpedeDesfazer, saldoNaoDevolveVenda,
+} from "../dominio/mensagens.js";
 import { calcularTroca, type DataISO, type ModoTroca } from "../dominio/veiculo.js";
 import {
   CATEGORIA_COMISSAO, lerComissoes, marcarComissoesPorPadrao, type Comissao,
@@ -492,4 +494,123 @@ export async function venderVeiculo(
   });
 
   return { lucro: lucroApurado, entradaEmCaixa, agio, veiculoQueEntrou, comissoesLancadas };
+}
+
+// ------------------------------------------------------------ desfazer venda
+
+export interface PreviaDesfazerVenda {
+  codigo: string;
+  descricao: string;
+  venda: { data: DataISO; valor: Centavos };
+  /** O que sai do caixa ao apagar a entrada da venda, conta por conta. */
+  caixa: { conta: string; valor: Centavos; saldoAtual: Centavos; cabe: boolean }[];
+  /** Comissões lançadas no dia da venda — foram criadas por ela. */
+  comissoes: { quantidade: number; soma: Centavos };
+  /** O ágio da troca, quando o modo "pelo mercado" o lançou como custo. */
+  agioTroca: { quantidade: number; soma: Centavos };
+  /** Preenchido quando a venda não pode ser desfeita, com o motivo. */
+  impedimento: string | null;
+}
+
+/**
+ * O que desfazer a venda vai mexer — a mesma ideia da §4.8 aplicada aqui.
+ *
+ * Desfazer não é editar: devolve o carro ao pátio, tira dinheiro do caixa e
+ * apaga custos que a venda criou. Quem confirma precisa ver a conta antes.
+ */
+export async function previaDesfazerVenda(
+  c: PoolClient, id: string,
+): Promise<PreviaDesfazerVenda> {
+  const v = await carregar(c, id);
+  if (!v.data_venda) throw new ErroDeValidacao(MSG.vendaJaDesfeita);
+
+  // Os movimentos de venda deste carro, com o saldo da conta de cada um.
+  // Apagar uma entrada de +83.000 tira 83.000 da conta: se ela já gastou esse
+  // dinheiro, o saldo iria ao negativo e a §4.7 não admite isso.
+  const { rows: movimentos } = await c.query<
+    { conta: string; valor: string; saldo: string }
+  >(`select ct.nome as conta, m.valor, s.saldo
+       from movimento_caixa m
+       join conta ct on ct.id = m.conta_id
+       join saldo_conta s on s.conta_id = m.conta_id
+      where m.veiculo_id = $1 and m.tipo = 'venda' and m.custo_id is null`, [id]);
+
+  // Comissão e ágio da troca nascem na venda, com a data dela. Custo de
+  // comissão com outra data foi provisionado antes e não é nosso para apagar.
+  const { rows: comissoes } = await c.query<{ n: string; soma: string }>(
+    `select count(*) n, coalesce(sum(valor), 0) soma from custo
+      where veiculo_id = $1 and categoria = $2 and data = $3`,
+    [id, CATEGORIA_COMISSAO, v.data_venda]);
+
+  const { rows: agio } = await c.query<{ n: string; soma: string }>(
+    `select count(*) n, coalesce(sum(valor), 0) soma from custo
+      where veiculo_id = $1 and categoria = 'Troca' and data = $2`,
+    [id, v.data_venda]);
+
+  const { rows: entrou } = await c.query<{ codigo: string; marca: string; modelo: string }>(
+    "select codigo, marca, modelo from veiculo where troca_de_id = $1", [id]);
+
+  const caixa = movimentos.map((m) => {
+    const valor = deNumeric(m.valor)!;
+    const saldoAtual = deNumeric(m.saldo)!;
+    return { conta: m.conta, valor, saldoAtual, cabe: saldoAtual - valor >= 0 };
+  });
+
+  const semSaldo = caixa.find((k) => !k.cabe);
+  const impedimento = entrou[0]
+    ? trocaImpedeDesfazer(entrou[0].codigo, `${entrou[0].marca} ${entrou[0].modelo}`)
+    : semSaldo
+      ? saldoNaoDevolveVenda(semSaldo.conta, semSaldo.saldoAtual, semSaldo.valor)
+      : null;
+
+  return {
+    codigo: v.codigo,
+    descricao: `${v.marca} ${v.modelo} · ${v.placa}`,
+    venda: { data: v.data_venda, valor: deNumeric(v.valor_venda)! },
+    caixa,
+    comissoes: { quantidade: Number(comissoes[0]!.n), soma: deNumeric(comissoes[0]!.soma)! },
+    agioTroca: { quantidade: Number(agio[0]!.n), soma: deNumeric(agio[0]!.soma)! },
+    impedimento,
+  };
+}
+
+/**
+ * Devolve o carro ao pátio, desfazendo o que a venda fez.
+ *
+ * Apaga exatamente o que `venderVeiculo` criou: a entrada no caixa, as
+ * comissões daquele dia e o ágio da troca. Não toca em custo anterior à
+ * venda — o carro volta ao pátio com a preparação que já tinha.
+ *
+ * Recusa quando entrou um carro na troca. Apagar a venda deixaria esse carro
+ * no estoque sem a origem que o explica, e apagá-lo junto seria decidir pelo
+ * dono de um veículo que talvez já tenha custo lançado. Quem escolhe é ele.
+ */
+export async function desfazerVenda(
+  c: PoolClient, id: string, usuarioId: string | null,
+): Promise<PreviaDesfazerVenda> {
+  await c.query("select id from veiculo where id = $1 for update", [id]);
+  const previa = await previaDesfazerVenda(c, id);
+  if (previa.impedimento) throw new ErroDeValidacao(previa.impedimento);
+
+  await c.query(
+    "delete from movimento_caixa where veiculo_id = $1 and tipo = 'venda' and custo_id is null",
+    [id]);
+
+  // O `on delete cascade` de `custo` leva junto o movimento de caixa de uma
+  // comissão que já tenha sido paga — e isso devolve o dinheiro à conta, que
+  // é o certo: se a comissão não existe mais, o pagamento também não.
+  await c.query(
+    "delete from custo where veiculo_id = $1 and categoria = $2 and data = $3",
+    [id, CATEGORIA_COMISSAO, previa.venda.data]);
+  await c.query(
+    "delete from custo where veiculo_id = $1 and categoria = 'Troca' and data = $2",
+    [id, previa.venda.data]);
+
+  await c.query(
+    `update veiculo set data_venda = null, valor_venda = null,
+            avaliacao_troca = null, mercado_troca = null, atualizado_em = now()
+      where id = $1`, [id]);
+
+  await registrarEvento(c, usuarioId, "veiculo", id, "desfez a venda", previa.venda, null);
+  return previa;
 }

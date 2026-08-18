@@ -170,6 +170,23 @@ export interface PreviaExclusao {
   troca: { id: string; codigo: string; sentido: "entrou" | "saiu" } | null;
 }
 
+export interface PreviaDesfazerVenda {
+  codigo: string; descricao: string;
+  venda: { data: string; valor: Centavos };
+  caixa: { conta: string; valor: Centavos; saldoAtual: Centavos; cabe: boolean }[];
+  comissoes: { quantidade: number; soma: Centavos };
+  agioTroca: { quantidade: number; soma: Centavos };
+  /** Quando preenchido, desfazer é recusado — e este é o motivo. */
+  impedimento: string | null;
+}
+
+export interface ResultadoTransferencia {
+  id: string;
+  origem: { nome: string; saldo: Centavos };
+  destino: { nome: string; saldo: Centavos };
+  valor: Centavos;
+}
+
 export interface ResultadoVenda {
   lucro: Centavos; entradaEmCaixa: Centavos; agio: Centavos;
   veiculoQueEntrou: { id: string; codigo: string } | null;
@@ -214,6 +231,14 @@ export const api = {
 
   caixa: () => pedir<Caixa>("GET", "/api/caixa"),
   aporte: (dados: unknown) => pedir<{ id: string }>("POST", "/api/aportes", dados),
+  transferir: (dados: unknown) =>
+    pedir<ResultadoTransferencia>("POST", "/api/transferencias", dados),
+
+  previaDesfazerVenda: (id: string) =>
+    pedir<PreviaDesfazerVenda>("GET", `/api/veiculos/${id}/venda`),
+  desfazerVenda: (id: string) =>
+    pedir<{ desfeita: PreviaDesfazerVenda; veiculo: Ficha }>(
+      "DELETE", `/api/veiculos/${id}/venda`),
 
   painel: (recorte = "") => pedir<Painel>("GET", `/api/painel?${recorte.slice(1)}`),
   vendas: (recorte = "") => pedir<Vendas>("GET", `/api/vendas?${recorte.slice(1)}`),

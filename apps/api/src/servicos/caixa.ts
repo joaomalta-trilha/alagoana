@@ -13,11 +13,12 @@
 
 import type { PoolClient } from "pg";
 import { deNumeric, paraNumeric, type Centavos } from "../dominio/dinheiro.js";
-import { ErroDeValidacao, NaoEncontrado, saldoInsuficiente } from "../dominio/mensagens.js";
+import { ErroDeValidacao, MSG, NaoEncontrado, saldoInsuficiente } from "../dominio/mensagens.js";
 import type { DataISO } from "../dominio/veiculo.js";
 import { registrarEvento } from "./eventos.js";
 
-export type TipoMovimento = "aporte" | "retirada" | "compra" | "custo" | "venda";
+export type TipoMovimento =
+  | "aporte" | "retirada" | "compra" | "custo" | "venda" | "transferencia";
 
 export interface Conta {
   id: string;
@@ -56,6 +57,8 @@ export interface Movimento {
   valor: Centavos;
   veiculoId?: string | null;
   custoId?: string | null;
+  /** Une as duas pernas de uma transferência. Nulo em todo o resto. */
+  transferenciaId?: string | null;
 }
 
 /**
@@ -78,10 +81,11 @@ export async function registrarMovimento(c: PoolClient, m: Movimento): Promise<s
   }
 
   const { rows } = await c.query<{ id: string }>(
-    `insert into movimento_caixa (conta_id, data, descricao, tipo, valor, veiculo_id, custo_id)
-     values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+    `insert into movimento_caixa
+       (conta_id, data, descricao, tipo, valor, veiculo_id, custo_id, transferencia_id)
+     values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
     [m.contaId, m.data, m.descricao, m.tipo, paraNumeric(m.valor),
-     m.veiculoId ?? null, m.custoId ?? null],
+     m.veiculoId ?? null, m.custoId ?? null, m.transferenciaId ?? null],
   );
   return rows[0]!.id;
 }
@@ -163,4 +167,75 @@ export async function registrarAporte(
     { socio: socio[0].nome, tipo: a.tipo, valor: a.valor, data: a.data });
 
   return rows[0]!.id;
+}
+
+// ------------------------------------------------------------ transferência
+
+export interface Transferencia {
+  origemId: string;
+  destinoId: string;
+  data: DataISO;
+  /** Sempre positivo; o sentido vem de origem e destino. */
+  valor: Centavos;
+  observacao?: string | null;
+}
+
+export interface ResultadoTransferencia {
+  id: string;
+  origem: { nome: string; saldo: Centavos };
+  destino: { nome: string; saldo: Centavos };
+  valor: Centavos;
+}
+
+/**
+ * Remaneja dinheiro entre duas contas.
+ *
+ * Duas linhas no extrato, não uma: cada conta tem o seu extrato, e uma linha
+ * só apareceria em uma delas. Elas compartilham um `transferencia_id` para
+ * que o par seja um fato no banco, e não uma coincidência de data e valor.
+ *
+ * Não é aporte nem retirada. O dinheiro não entrou nem saiu da empresa — só
+ * mudou de bolso —, então `capital_socio` não se mexe. Confundir os dois faria
+ * o capital de um sócio crescer sozinho a cada remanejamento.
+ *
+ * O saldo da origem é validado por `registrarMovimento`, e a saída é gravada
+ * primeiro justamente por isso: se não há saldo, nada acontece.
+ */
+export async function transferir(
+  c: PoolClient, t: Transferencia, usuarioId: string | null = null,
+): Promise<ResultadoTransferencia> {
+  if (t.valor <= 0) throw new ErroDeValidacao(MSG.transferenciaSemValor);
+  if (t.origemId === t.destinoId) throw new ErroDeValidacao(MSG.transferenciaMesmaConta);
+
+  // Trava sempre na mesma ordem, senão duas transferências cruzadas entre as
+  // mesmas contas travam uma na outra.
+  for (const id of [t.origemId, t.destinoId].sort()) {
+    await c.query("select id from conta where id = $1 for update", [id]);
+  }
+
+  const origem = await saldoDaConta(c, t.origemId);
+  const destino = await saldoDaConta(c, t.destinoId);
+
+  const { rows: par } = await c.query<{ id: string }>("select gen_random_uuid() as id");
+  const transferenciaId = par[0]!.id;
+  const sufixo = t.observacao?.trim() ? ` · ${t.observacao.trim()}` : "";
+
+  await registrarMovimento(c, {
+    contaId: t.origemId, data: t.data, tipo: "transferencia", valor: -t.valor,
+    descricao: `Transferência para ${destino.nome}${sufixo}`, transferenciaId,
+  });
+  await registrarMovimento(c, {
+    contaId: t.destinoId, data: t.data, tipo: "transferencia", valor: t.valor,
+    descricao: `Transferência de ${origem.nome}${sufixo}`, transferenciaId,
+  });
+
+  await registrarEvento(c, usuarioId, "movimento_caixa", transferenciaId, "transferiu", null,
+    { origem: origem.nome, destino: destino.nome, valor: t.valor, data: t.data });
+
+  return {
+    id: transferenciaId,
+    origem: { nome: origem.nome, saldo: origem.saldo - t.valor },
+    destino: { nome: destino.nome, saldo: destino.saldo + t.valor },
+    valor: t.valor,
+  };
 }

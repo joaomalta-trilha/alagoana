@@ -1,9 +1,14 @@
 /**
  * Comissões — §4.6.
  *
- * "Padrão da casa: Comissão Alagoana R$ 1.000 + Comissão Victor R$ 500,
- * lançadas como custo de categoria Comissão." Os valores ficam em `config`,
- * não no código: a especificação pede que sejam configuráveis.
+ * O padrão da casa era Alagoana R$ 1.000 + Victor R$ 500 em duas linhas. Em
+ * 17/08/2026 a loja pediu uma linha só, de R$ 1.500 em nome da Alagoana: o
+ * rateio entre os sócios não é assunto da ficha do carro, e duas linhas para
+ * um valor só faziam a lista de custos parecer mais movimentada do que é.
+ *
+ * A lista continua sendo lista, e não um número, porque a §4.6 pede valores
+ * configuráveis — e porque voltar a separar é trocar uma linha em `config`,
+ * não mexer em código.
  */
 
 import type { Centavos } from "./dinheiro.js";
@@ -17,8 +22,7 @@ export interface Comissao {
 
 /** O que o seed grava em `config.comissoes_padrao` quando não há nada gravado. */
 export const COMISSOES_PADRAO: readonly Comissao[] = [
-  { beneficiario: "Comissão Alagoana", valor: 100_000 },
-  { beneficiario: "Comissão Victor", valor: 50_000 },
+  { beneficiario: "Comissão Alagoana", valor: 150_000 },
 ];
 
 /**

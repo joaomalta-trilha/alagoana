@@ -15,7 +15,13 @@ import { Carregando, Vazio } from "../componentes/basicos.js";
 import { useDados } from "../dados.js";
 import { brl, dataBr } from "../formato.js";
 
-export function Caixa({ versao, aoAportar }: { versao: number; aoAportar: () => void }) {
+export function Caixa(
+  { versao, aoAportar, aoTransferir }: {
+    versao: number;
+    aoAportar: () => void;
+    aoTransferir: (contas: { id: string; nome: string; saldo: number }[]) => void;
+  },
+) {
   const { dados, erro, carregando } = useDados(() => api.caixa(), versao);
 
   if (erro) return <Vazio>{erro}</Vazio>;
@@ -44,9 +50,14 @@ export function Caixa({ versao, aoAportar }: { versao: number; aoAportar: () => 
         </div>
       ))}
 
-      <button className="btn" style={{ margin: "14px 0" }} onClick={aoAportar}>
-        Registrar aporte
-      </button>
+      {/* Duas ações do mesmo peso: uma move dinheiro entre a loja e os sócios,
+          a outra entre as contas da própria loja. */}
+      <div className="acoes-caixa">
+        <button className="btn" onClick={aoAportar}>Registrar aporte</button>
+        <button className="btn-sec" onClick={() => aoTransferir(dados.contas)}>
+          Transferir entre contas
+        </button>
+      </div>
 
       {comCapital.length > 0 && (
         <>

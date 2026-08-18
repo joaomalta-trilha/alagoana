@@ -132,6 +132,8 @@
   .ficha-colunas { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; align-items: start; }
   .cabecalho-lista { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
   .cabecalho-lista .btn { width: auto; }
+  .acoes-caixa { grid-auto-flow: column; justify-content: start; }
+  .acoes-caixa .btn, .acoes-caixa .btn-sec { width: auto; padding: 10px 20px; }
   .acoes-ficha { grid-template-columns: auto auto; justify-content: start; }
   .acoes-ficha .btn-sec { width: auto; padding: 9px 18px; }
   .card .btn, .card .btn-sec { width: auto; }

@@ -16,11 +16,29 @@ export const MSG = {
     "Preencha marca, modelo, placa, data de compra e um valor de compra maior que zero.",
   vendaAntesDaCompra: "A data da venda não pode ser anterior à da compra.",
   rateioSemSelecao: "Selecione pelo menos um carro para o rateio.",
+
+  // Abaixo, o que não vem da §8 — funções que a loja pediu depois. Mesmo
+  // lugar, mesma regra: o texto é um só, e nenhuma tela o reescreve.
+  transferenciaMesmaConta: "A conta de origem e a de destino precisam ser diferentes.",
+  transferenciaSemValor: "Informe um valor de transferência maior que zero.",
+  vendaJaDesfeita: "Este carro não está vendido.",
 } as const;
 
 /** `Saldo insuficiente em {conta}: {saldo}.` — §8 */
 export function saldoInsuficiente(conta: string, saldo: Centavos): string {
   return `Saldo insuficiente em ${conta}: ${brl(saldo)}.`;
+}
+
+/** Desfazer a venda com o carro da troca ainda no pátio deixaria órfão. */
+export function trocaImpedeDesfazer(codigo: string, descricao: string): string {
+  return `Nesta venda entrou o ${codigo} · ${descricao} na troca. ` +
+    "Exclua esse carro antes de desfazer a venda.";
+}
+
+/** Tirar a venda do extrato é tirar dinheiro da conta — e ele pode não estar lá. */
+export function saldoNaoDevolveVenda(conta: string, saldo: Centavos, valor: Centavos): string {
+  return `Desfazer a venda tira ${brl(valor)} de ${conta}, que tem ${brl(saldo)}. ` +
+    "Lance a entrada que falta ou desfaça primeiro o que gastou desse dinheiro.";
 }
 
 /**

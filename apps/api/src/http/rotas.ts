@@ -26,10 +26,11 @@ import {
 } from "../servicos/catalogos.js";
 import {
   criarVeiculo, editarVeiculo, excluirVeiculo, previaExclusao, venderVeiculo,
+  previaDesfazerVenda, desfazerVenda,
   type EntradaTroca, type EntradaVeiculo,
 } from "../servicos/veiculos.js";
 import { atalhos, excluirCusto, lancarCusto, type ModoRateio } from "../servicos/custos.js";
-import { registrarAporte } from "../servicos/caixa.js";
+import { registrarAporte, transferir } from "../servicos/caixa.js";
 import {
   consolidadoVendas, ficha, listarVeiculos, painel, totalizar, visaoCaixa, type Situacao,
 } from "../servicos/consultas.js";
@@ -217,6 +218,21 @@ const ROTAS: Rota[] = [
     },
   },
 
+  {
+    // A conta do estrago antes de desfazer, como a §4.8 pede para excluir.
+    metodo: "GET", padrao: "/api/veiculos/:id/venda",
+    fn: (ctx) => comLeitura((c) => previaDesfazerVenda(c, ctx.parametros["id"]!)),
+  },
+  {
+    metodo: "DELETE", padrao: "/api/veiculos/:id/venda",
+    fn: async (ctx) => {
+      const desfeita = await comTransacao((c) =>
+        desfazerVenda(c, ctx.parametros["id"]!, ctx.usuario.id));
+      const atualizada = await comLeitura((c) => ficha(c, ctx.parametros["id"]!, hoje()));
+      return { desfeita, veiculo: filtrarPorPapel(atualizada, ctx.usuario.papel) };
+    },
+  },
+
   // -------------------------------------------------------------- custos
   { metodo: "GET", padrao: "/api/custos/atalhos", fn: () => comLeitura((c) => atalhos(c)) },
   {
@@ -271,6 +287,23 @@ const ROTAS: Rota[] = [
         observacao: texto(ctx.corpo, "observacao"),
       }, ctx.usuario.id));
       return { id };
+    },
+  },
+
+  {
+    metodo: "POST", padrao: "/api/transferencias", status: 201,
+    fn: (ctx) => {
+      const origemId = uuidDoCorpo(ctx.corpo, "origemId");
+      const destinoId = uuidDoCorpo(ctx.corpo, "destinoId");
+      if (!origemId || !destinoId) {
+        throw new ErroDeValidacao("Escolha a conta de origem e a de destino.", 400);
+      }
+      return comTransacao((c) => transferir(c, {
+        origemId, destinoId,
+        data: data(ctx.corpo, "data") ?? hoje(),
+        valor: centavos(ctx.corpo, "valor") ?? 0,
+        observacao: texto(ctx.corpo, "observacao"),
+      }, ctx.usuario.id));
     },
   },
 

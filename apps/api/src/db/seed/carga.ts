@@ -14,6 +14,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { PoolClient } from "pg";
 import { paraNumeric, type Centavos } from "../../dominio/dinheiro.js";
+export { COMISSOES_PADRAO } from "../../dominio/comissao.js";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 
@@ -58,12 +59,6 @@ export interface Carga {
   capital_inicial: { socio: string; valor: Centavos }[];
   veiculos: VeiculoJson[];
 }
-
-/** Comissões que a §4.6 sugere por padrão; a loja edita depois. */
-export const COMISSOES_PADRAO = [
-  { beneficiario: "Comissão Alagoana", valor: 100_000 },
-  { beneficiario: "Comissão Victor", valor: 50_000 },
-];
 
 const num = (c: Centavos | null) => (c === null ? null : paraNumeric(c));
 

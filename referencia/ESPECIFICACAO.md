@@ -263,7 +263,7 @@ Se `avaliacao_troca > valor_venda`, o movimento de caixa fica negativo — a loj
 
 ### 4.6 Comissões
 
-Padrão da casa: **Comissão Alagoana R$ 1.000 + Comissão Victor R$ 500**, lançadas como `custo` de categoria `Comissão`.
+Padrão da casa: **Comissão Alagoana R$ 1.500**, lançada como `custo` de categoria `Comissão`. *(Alterado em 17/08/2026, por decisão da loja: eram duas linhas — Alagoana R$ 1.000 e Victor R$ 500 — e viraram uma só, de mesmo total. O rateio entre os sócios não é assunto da ficha do carro.)*
 
 Na tela de venda, um checkbox oferece lançá-las. Vem **marcado** por padrão, exceto quando o veículo já possui algum custo de categoria `Comissão` — caso em que vem desmarcado, porque já foram provisionadas na entrada. Os valores devem ser configuráveis, não fixos no código.
 

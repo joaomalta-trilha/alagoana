@@ -28,8 +28,10 @@ import { RegistrarVenda } from "./folhas/RegistrarVenda.js";
 import { FormVeiculo } from "./folhas/FormVeiculo.js";
 import { AtualizarFipe } from "./folhas/Fipe.js";
 import { Aporte } from "./folhas/Aporte.js";
+import { Transferencia } from "./folhas/Transferencia.js";
 import { ConfirmarExclusao } from "./folhas/ConfirmarExclusao.js";
 import { ConfirmarExclusaoCusto } from "./folhas/ConfirmarExclusaoCusto.js";
+import { ConfirmarDesfazerVenda } from "./folhas/ConfirmarDesfazerVenda.js";
 
 type Folha =
   | { tipo: "custo"; veiculoId?: string }
@@ -37,6 +39,8 @@ type Folha =
   | { tipo: "veiculo"; veiculo?: DadosFicha }
   | { tipo: "fipe"; veiculo: DadosFicha }
   | { tipo: "aporte" }
+  | { tipo: "transferencia"; contas: { id: string; nome: string; saldo: number }[] }
+  | { tipo: "desfazerVenda"; veiculoId: string }
   | { tipo: "exclusao"; veiculoId: string }
   | { tipo: "exclusaoCusto"; custo: Custo }
   | null;
@@ -136,6 +140,7 @@ export function App() {
             aoLancarCusto={(v) => setFolha({ tipo: "custo", veiculoId: v.id })}
             aoAtualizarFipe={(v) => setFolha({ tipo: "fipe", veiculo: v })}
             aoRemoverCusto={(custo) => setFolha({ tipo: "exclusaoCusto", custo })}
+            aoDesfazerVenda={(v) => setFolha({ tipo: "desfazerVenda", veiculoId: v.id })}
           />
         ) : aba === "painel" ? (
           <Painel versao={versao} recorte={recorte} />
@@ -149,7 +154,11 @@ export function App() {
         ) : aba === "vendas" ? (
           <Vendas versao={versao} recorte={recorte} aoAbrirFicha={abrirFicha} />
         ) : (
-          <Caixa versao={versao} aoAportar={() => setFolha({ tipo: "aporte" })} />
+          <Caixa
+            versao={versao}
+            aoAportar={() => setFolha({ tipo: "aporte" })}
+            aoTransferir={(contas) => setFolha({ tipo: "transferencia", contas })}
+          />
         )}
       </div>
 
@@ -190,6 +199,19 @@ export function App() {
       )}
       {catalogos && folha?.tipo === "aporte" && (
         <Aporte catalogos={catalogos} aoFechar={() => setFolha(null)} aoGravar={atualizar} />
+      )}
+      {catalogos && folha?.tipo === "transferencia" && (
+        <Transferencia
+          catalogos={catalogos} saldos={folha.contas}
+          aoFechar={() => setFolha(null)} aoGravar={atualizar}
+        />
+      )}
+      {folha?.tipo === "desfazerVenda" && (
+        <ConfirmarDesfazerVenda
+          veiculoId={folha.veiculoId}
+          aoFechar={() => setFolha(null)}
+          aoDesfazer={atualizar}
+        />
       )}
       {folha?.tipo === "exclusaoCusto" && (
         <ConfirmarExclusaoCusto

@@ -35,9 +35,16 @@ describe("despacho de rotas", () => {
     expect(metodosDe("/api/inexistente")).toEqual([]);
   });
 
-  it("a rota de venda existe só como POST", () => {
-    expect(resolver("POST", "/api/veiculos/abc/venda")?.rota.padrao)
-      .toBe("/api/veiculos/:id/venda");
-    expect(resolver("GET", "/api/veiculos/abc/venda")).toBeNull();
+  it("a venda tem os três verbos: registrar, prever o desfazer e desfazer", () => {
+    for (const metodo of ["POST", "GET", "DELETE"]) {
+      expect(resolver(metodo, "/api/veiculos/abc/venda")?.rota.padrao)
+        .toBe("/api/veiculos/:id/venda");
+    }
+    expect(resolver("PATCH", "/api/veiculos/abc/venda")).toBeNull();
+  });
+
+  it("o desfazer não se confunde com a ficha — são caminhos de tamanhos diferentes", () => {
+    expect(resolver("GET", "/api/veiculos/abc")?.rota.padrao).toBe("/api/veiculos/:id");
+    expect(resolver("DELETE", "/api/veiculos/abc")?.rota.padrao).toBe("/api/veiculos/:id");
   });
 });

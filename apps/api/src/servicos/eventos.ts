@@ -9,7 +9,12 @@
 
 import type { PoolClient } from "pg";
 
-export type Acao = "criou" | "editou" | "excluiu" | "vendeu";
+export type Acao =
+  | "criou" | "editou" | "excluiu" | "vendeu"
+  // Duas ações que a loja pediu depois. "desfez a venda" é o oposto de
+  // "vendeu", e vale a pena distinguir de "editou": desfazer devolve o carro
+  // ao pátio e mexe no caixa, o que uma edição não faz.
+  | "transferiu" | "desfez a venda";
 
 export async function registrarEvento(
   c: PoolClient,
