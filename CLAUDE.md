@@ -59,6 +59,12 @@ vezes em 17/08/2026:
 - **Desfazer venda**, que devolve o carro ao pátio apagando só o que a venda
   criou. Recusa quando entrou carro na troca ou quando o dinheiro já foi
   gasto; as duas recusas têm teste.
+- **Mais de um veículo na troca.** A §4.5 falava de um; agora entra quantos
+  forem, cada um com a sua avaliação, o seu modo e o seu ágio. O caixa recebe
+  a venda menos a soma das avaliações.
+- **A comissão sai do caixa junto com a venda**, da mesma conta que recebeu:
+  vender por 40.000 com 1.500 de comissão deixa 38.500. Sem conta escolhida
+  na venda, ela volta a ser a provisão da §3.4.
 
 ## Estrutura
 

@@ -169,6 +169,9 @@ button,input,select{font-family:inherit}
 .custo-li .remover:active{color:var(--vermelho)}
 .link-troca{background:#EAEFFC; border:1px solid #C3D0F5; border-radius:12px; padding:13px 14px; margin-bottom:11px; font-size:13.5px; line-height:1.45}
 .link-troca button{background:none; border:0; color:var(--azul-marca); font-size:13.5px; font-weight:600; padding:6px 0 0; text-decoration:underline; cursor:pointer}
+/* Com mais de um carro na troca há um botão por carro; sem o espaço entre
+   eles os nomes colam e viram uma linha só de texto sublinhado. */
+.link-troca button + button{margin-left:14px}
 .voltar{background:none; border:0; color:var(--ink2); font-size:14.5px; cursor:pointer;
   /* §7.4. Estende para a esquerda para o dedo não precisar mirar. */
   min-height:44px; padding:0 12px 0 0; margin-bottom:4px; display:flex; align-items:center}
@@ -246,6 +249,12 @@ button,input,select{font-family:inherit}
 /* As duas ações do caixa. No celular empilham, porque lado a lado os alvos
    caem abaixo dos 44px da §7.4 numa tela de 375px. */
 .acoes-caixa{display:grid; gap:9px; margin:14px 0}
+/* Cada veículo recebido na troca é um bloco, para que dois não virem uma
+   parede de campos onde não se sabe qual placa é de qual carro. */
+.recebido{border:1px solid var(--line); border-radius:12px; padding:12px 13px; margin-top:12px; background:#FAFBF9}
+.recebido .bloco-t{margin:0}
+.resumo-venda{margin-top:16px}
+.resumo-venda li.sum{margin-left:0; margin-right:0; padding-left:12px; padding-right:12px; border-radius:8px}
 /* Desfazer a venda é conserto de engano, não operação do dia: fica no pé do
    cartão de garantia, depois de tudo o que a venda produziu. */
 .desfazer-venda{display:flex; align-items:center; gap:10px; flex-wrap:wrap;

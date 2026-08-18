@@ -14,7 +14,7 @@ import { paraNumeric, deNumeric, type Centavos } from "../dominio/dinheiro.js";
 import {
   ErroDeValidacao, MSG, NaoEncontrado, trocaImpedeDesfazer, saldoNaoDevolveVenda,
 } from "../dominio/mensagens.js";
-import { calcularTroca, type DataISO, type ModoTroca } from "../dominio/veiculo.js";
+import { calcularTrocas, type DataISO, type ModoTroca } from "../dominio/veiculo.js";
 import {
   CATEGORIA_COMISSAO, lerComissoes, marcarComissoesPorPadrao, type Comissao,
 } from "../dominio/comissao.js";
@@ -65,7 +65,8 @@ export interface EntradaVenda {
   contaId?: string | null;
   /** Omitido, segue a regra do checkbox da §4.6. */
   lancarComissoes?: boolean;
-  troca?: EntradaTroca | null;
+  /** Numa venda pode entrar mais de um veículo — dois carros, carro e moto. */
+  trocas?: EntradaTroca[] | null;
 }
 
 interface LinhaVeiculo {
@@ -308,7 +309,8 @@ export interface PreviaExclusao {
   custos: { quantidade: number; soma: Centavos };
   movimentos: { quantidade: number; valorDevolvido: Centavos };
   venda: { data: DataISO; valor: Centavos } | null;
-  troca: { id: string; codigo: string; sentido: "entrou" | "saiu" } | null;
+  /** Os vínculos de troca, nos dois sentidos. Numa venda pode entrar mais de um. */
+  trocas: { id: string; codigo: string; sentido: "entrou" | "saiu" }[];
 }
 
 /**
@@ -330,16 +332,15 @@ export async function previaExclusao(c: PoolClient, id: string): Promise<PreviaE
   const valorDevolvido = -deNumeric(movimentos[0]!.soma)!;
 
   const { rows: entrou } = await c.query<{ id: string; codigo: string }>(
-    "select id, codigo from veiculo where troca_de_id = $1", [id]);
+    "select id, codigo from veiculo where troca_de_id = $1 order by codigo", [id]);
   const { rows: saiu } = await c.query<{ id: string; codigo: string }>(
     `select vv.id, vv.codigo from veiculo v
        join veiculo vv on vv.id = v.troca_de_id where v.id = $1`, [id]);
 
-  const troca = entrou[0]
-    ? { id: entrou[0].id, codigo: entrou[0].codigo, sentido: "entrou" as const }
-    : saiu[0]
-      ? { id: saiu[0].id, codigo: saiu[0].codigo, sentido: "saiu" as const }
-      : null;
+  const trocas = [
+    ...entrou.map((x) => ({ id: x.id, codigo: x.codigo, sentido: "entrou" as const })),
+    ...saiu.map((x) => ({ id: x.id, codigo: x.codigo, sentido: "saiu" as const })),
+  ];
 
   return {
     codigo: v.codigo,
@@ -347,7 +348,7 @@ export async function previaExclusao(c: PoolClient, id: string): Promise<PreviaE
     custos: { quantidade: Number(custos[0]!.n), soma: deNumeric(custos[0]!.soma)! },
     movimentos: { quantidade: Number(movimentos[0]!.n), valorDevolvido },
     venda: v.data_venda ? { data: v.data_venda, valor: deNumeric(v.valor_venda)! } : null,
-    troca,
+    trocas,
   };
 }
 
@@ -373,8 +374,11 @@ export async function excluirVeiculo(
 export interface ResultadoVenda {
   lucro: Centavos;
   entradaEmCaixa: Centavos;
+  /** `entradaEmCaixa` menos as comissões pagas na hora. */
+  liquidoEmCaixa: Centavos;
+  /** Soma dos ágios dos veículos recebidos. */
   agio: Centavos;
-  veiculoQueEntrou: { id: string; codigo: string } | null;
+  veiculosQueEntraram: { id: string; codigo: string }[];
   comissoesLancadas: Comissao[];
 }
 
@@ -401,23 +405,28 @@ export async function venderVeiculo(
     "update veiculo set data_venda = $2, valor_venda = $3, atualizado_em = now() where id = $1",
     [id, e.dataVenda, paraNumeric(e.valorVenda)]);
 
-  // ---------------------------------------------------------------- troca
-  let entradaEmCaixa = e.valorVenda;
-  let agio = 0;
-  let veiculoQueEntrou: { id: string; codigo: string } | null = null;
-
-  if (e.troca) {
-    const t = e.troca;
+  // ---------------------------------------------------------------- trocas
+  // Pode entrar mais de um veículo: dois carros, ou um carro e uma moto. Cada
+  // um vira um veículo independente no estoque, com o seu próprio vínculo com
+  // esta venda; o caixa recebe a venda menos a soma das avaliações.
+  const recebidos = e.trocas ?? [];
+  for (const t of recebidos) {
     if (!t.avaliacao || t.avaliacao <= 0) {
-      throw new ErroDeValidacao("Informe a avaliação do veículo recebido na troca.");
+      throw new ErroDeValidacao("Informe a avaliação de cada veículo recebido na troca.");
     }
-    const calculo = calcularTroca(e.valorVenda, t.avaliacao, t.mercado ?? null, t.modo);
-    agio = calculo.agio;
-    entradaEmCaixa = calculo.entradaEmCaixa;
+  }
+
+  const calculo = calcularTrocas(e.valorVenda, recebidos);
+  const entradaEmCaixa = calculo.entradaEmCaixa;
+  const agio = calculo.agioTotal;
+  const veiculosQueEntraram: { id: string; codigo: string }[] = [];
+
+  for (const [i, t] of recebidos.entries()) {
+    const entrada = calculo.entradas[i]!;
 
     validarObrigatorios({
       marca: t.marca, modelo: t.modelo, placa: t.placa,
-      dataCompra: e.dataVenda, valorCompra: calculo.valorCompraEntrada,
+      dataCompra: e.dataVenda, valorCompra: entrada.valorCompraEntrada,
     });
     const tipoQueEntrou = lerTipo(t.tipo);
     await garantirCatalogo(c, tipoQueEntrou, t.marca, t.modelo, t.cor);
@@ -431,21 +440,22 @@ export async function venderVeiculo(
        returning id`,
       [codigo, texto(t.marca), texto(t.modelo), t.versao ?? null, t.ano ?? null,
        texto(t.cor), texto(t.placa).toUpperCase(), t.km ?? null,
-       e.dataVenda, paraNumeric(calculo.valorCompraEntrada),
+       e.dataVenda, paraNumeric(entrada.valorCompraEntrada),
        t.valorAnuncio == null ? null : paraNumeric(t.valorAnuncio),
        id, paraNumeric(t.avaliacao),
        t.mercado == null ? null : paraNumeric(t.mercado), tipoQueEntrou],
     );
-    veiculoQueEntrou = { id: rows[0]!.id, codigo };
+    veiculosQueEntraram.push({ id: rows[0]!.id, codigo });
 
     // Modo "pelo mercado": o ágio vira custo desta venda, porque
-    // supervalorizar a troca é desconto disfarçado (§4.5).
-    if (calculo.custoAgioNoVendido > 0) {
+    // supervalorizar a troca é desconto disfarçado (§4.5). Um custo por
+    // veículo, e não um só somado, para que a linha diga de qual carro veio.
+    if (entrada.custoAgioNoVendido > 0) {
       await c.query(
         `insert into custo (veiculo_id, descricao, categoria, data, valor)
          values ($1, $2, 'Troca', $3, $4)`,
         [id, `Ágio na troca do ${codigo} · ${texto(t.marca)} ${texto(t.modelo)}`,
-         e.dataVenda, paraNumeric(calculo.custoAgioNoVendido)]);
+         e.dataVenda, paraNumeric(entrada.custoAgioNoVendido)]);
     }
   }
 
@@ -464,9 +474,18 @@ export async function venderVeiculo(
   }
 
   // ------------------------------------------------------------ comissões
-  // Entram como custo e sem movimento de caixa. A §4.6 as descreve como
-  // lançamento de custo e a §3.4 já trata comissão como provisão; o dinheiro
-  // sai quando for pago, pela tela de custo, com conta escolhida ali.
+  // Entram como custo e, quando a venda caiu numa conta, saem dela na mesma
+  // hora. Vender o Ka por 40.000 com 1.500 de comissão deixa 38.500 na conta,
+  // que é o que de fato sobra — marcar o checkbox na venda é dizer que a
+  // comissão foi paga ali, não que ficou provisionada.
+  //
+  // São duas linhas no extrato, não uma entrada líquida: a venda foi de
+  // 40.000 e a comissão foi de 1.500, e o extrato conta as duas coisas. Além
+  // disso o movimento fica preso ao custo, então apagar a comissão devolve o
+  // dinheiro pela máquina que já existe.
+  //
+  // Sem conta na venda ("Não descontar do caixa"), a comissão também não sai
+  // de lugar nenhum: vira a provisão da §3.4, paga depois pela tela de custo.
   const { rows: jaTem } = await c.query<{ n: string }>(
     "select count(*) n from custo where veiculo_id = $1 and categoria = $2",
     [id, CATEGORIA_COMISSAO]);
@@ -474,13 +493,25 @@ export async function venderVeiculo(
   const lancar = e.lancarComissoes ?? padrao;
 
   const comissoesLancadas: Comissao[] = [];
+  let comissaoNoCaixa = 0;
   if (lancar) {
     for (const comissao of await comissoesConfiguradas(c)) {
-      await c.query(
+      const { rows: criado } = await c.query<{ id: string }>(
         `insert into custo (veiculo_id, descricao, categoria, data, valor)
-         values ($1, $2, $3, $4, $5)`,
+         values ($1, $2, $3, $4, $5) returning id`,
         [id, comissao.beneficiario, CATEGORIA_COMISSAO, e.dataVenda, paraNumeric(comissao.valor)]);
+
+      await registrarMovimentoOpcional(c, e.contaId ?? null, {
+        data: e.dataVenda,
+        descricao: `${comissao.beneficiario} · ${v.codigo}`,
+        tipo: "custo",
+        valor: -comissao.valor,
+        veiculoId: id,
+        custoId: criado[0]!.id,
+      });
+
       comissoesLancadas.push(comissao);
+      if (e.contaId) comissaoNoCaixa += comissao.valor;
     }
   }
 
@@ -490,10 +521,16 @@ export async function venderVeiculo(
 
   await registrarEvento(c, usuarioId, "veiculo", id, "vendeu", null, {
     dataVenda: e.dataVenda, valorVenda: e.valorVenda,
-    troca: veiculoQueEntrou?.codigo ?? null, modo: e.troca?.modo ?? null,
+    trocas: veiculosQueEntraram.map((x) => x.codigo),
   });
 
-  return { lucro: lucroApurado, entradaEmCaixa, agio, veiculoQueEntrou, comissoesLancadas };
+  return {
+    lucro: lucroApurado,
+    entradaEmCaixa,
+    /** O que sobrou na conta depois da comissão — o número que a tela mostra. */
+    liquidoEmCaixa: entradaEmCaixa - comissaoNoCaixa,
+    agio, veiculosQueEntraram, comissoesLancadas,
+  };
 }
 
 // ------------------------------------------------------------ desfazer venda
@@ -502,7 +539,11 @@ export interface PreviaDesfazerVenda {
   codigo: string;
   descricao: string;
   venda: { data: DataISO; valor: Centavos };
-  /** O que sai do caixa ao apagar a entrada da venda, conta por conta. */
+  /**
+   * O efeito líquido no caixa, conta por conta. `valor` é o que sai: a entrada
+   * da venda menos as comissões que também somem, porque as duas coisas
+   * desaparecem juntas.
+   */
   caixa: { conta: string; valor: Centavos; saldoAtual: Centavos; cabe: boolean }[];
   /** Comissões lançadas no dia da venda — foram criadas por ela. */
   comissoes: { quantidade: number; soma: Centavos };
@@ -524,16 +565,30 @@ export async function previaDesfazerVenda(
   const v = await carregar(c, id);
   if (!v.data_venda) throw new ErroDeValidacao(MSG.vendaJaDesfeita);
 
-  // Os movimentos de venda deste carro, com o saldo da conta de cada um.
-  // Apagar uma entrada de +83.000 tira 83.000 da conta: se ela já gastou esse
-  // dinheiro, o saldo iria ao negativo e a §4.7 não admite isso.
+  // Todo movimento que some ao desfazer, somado por conta.
+  //
+  // Não é só a entrada da venda: a comissão sai da mesma conta na hora da
+  // venda, e desfazer apaga o custo dela — o que leva o movimento junto e
+  // devolve o dinheiro. Contar só a venda faria a prévia recusar um desfazer
+  // que cabe: numa venda de 40.000 com 1.500 de comissão, o que sai da conta
+  // são 38.500, e é esse o número que precisa caber.
   const { rows: movimentos } = await c.query<
-    { conta: string; valor: string; saldo: string }
-  >(`select ct.nome as conta, m.valor, s.saldo
+    { conta: string; sai: string; saldo: string }
+  >(`select ct.nome as conta, sum(m.valor) as sai, min(s.saldo) as saldo
        from movimento_caixa m
        join conta ct on ct.id = m.conta_id
        join saldo_conta s on s.conta_id = m.conta_id
-      where m.veiculo_id = $1 and m.tipo = 'venda' and m.custo_id is null`, [id]);
+      where m.veiculo_id = $1
+        and (
+          (m.tipo = 'venda' and m.custo_id is null)
+          or m.custo_id in (
+            select k.id from custo k
+             where k.veiculo_id = $1 and k.data = $2
+               and k.categoria in ($3, 'Troca')
+          )
+        )
+      group by ct.nome
+     having sum(m.valor) <> 0`, [id, v.data_venda, CATEGORIA_COMISSAO]);
 
   // Comissão e ágio da troca nascem na venda, com a data dela. Custo de
   // comissão com outra data foi provisionado antes e não é nosso para apagar.
@@ -548,17 +603,18 @@ export async function previaDesfazerVenda(
     [id, v.data_venda]);
 
   const { rows: entrou } = await c.query<{ codigo: string; marca: string; modelo: string }>(
-    "select codigo, marca, modelo from veiculo where troca_de_id = $1", [id]);
+    "select codigo, marca, modelo from veiculo where troca_de_id = $1 order by codigo", [id]);
 
   const caixa = movimentos.map((m) => {
-    const valor = deNumeric(m.valor)!;
+    const valor = deNumeric(m.sai)!;
     const saldoAtual = deNumeric(m.saldo)!;
     return { conta: m.conta, valor, saldoAtual, cabe: saldoAtual - valor >= 0 };
   });
 
   const semSaldo = caixa.find((k) => !k.cabe);
-  const impedimento = entrou[0]
-    ? trocaImpedeDesfazer(entrou[0].codigo, `${entrou[0].marca} ${entrou[0].modelo}`)
+  const impedimento = entrou.length
+    ? trocaImpedeDesfazer(
+        entrou.map((x) => ({ codigo: x.codigo, descricao: `${x.marca} ${x.modelo}` })))
     : semSaldo
       ? saldoNaoDevolveVenda(semSaldo.conta, semSaldo.saldoAtual, semSaldo.valor)
       : null;

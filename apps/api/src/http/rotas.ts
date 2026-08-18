@@ -19,6 +19,7 @@ import type { Usuario } from "./autenticacao.js";
 import {
   booleano, centavos, comoCorpo, contaOpcional, data, inteiro, listaDeTexto,
   objeto, texto, uuid, uuidDoCorpo, type Corpo,
+  listaDeObjetos,
 } from "./corpo.js";
 
 import {
@@ -93,10 +94,21 @@ function lerVeiculo(c: Corpo): Partial<EntradaVeiculo> {
   return entrada;
 }
 
-function lerTroca(c: Corpo): EntradaTroca | null {
-  const t = objeto(c, "troca");
-  if (!t) return null;
+/**
+ * Os veículos recebidos na troca.
+ *
+ * Aceita `trocas` (lista) e também `troca` (um objeto), que é como a primeira
+ * versão mandava. Ler os dois custa duas linhas e evita que um cliente antigo
+ * — uma aba aberta desde antes do deploy — perca a troca em silêncio.
+ */
+function lerTrocas(c: Corpo): EntradaTroca[] {
+  const lista = listaDeObjetos(c, "trocas");
+  const um = objeto(c, "troca");
+  const brutas = lista.length ? lista : um ? [um] : [];
+  return brutas.map(lerTroca);
+}
 
+function lerTroca(t: Corpo): EntradaTroca {
   const modo = texto(t, "modo") ?? "avaliacao";
   if (modo !== "avaliacao" && modo !== "mercado") {
     throw new ErroDeValidacao("O modo da troca é 'avaliacao' ou 'mercado'.", 400);
@@ -209,7 +221,7 @@ const ROTAS: Rota[] = [
         ...(booleano(ctx.corpo, "lancarComissoes") !== null
           ? { lancarComissoes: booleano(ctx.corpo, "lancarComissoes")! }
           : {}),
-        troca: lerTroca(ctx.corpo),
+        trocas: lerTrocas(ctx.corpo),
       };
       const resultado = await comTransacao((c) =>
         venderVeiculo(c, ctx.parametros["id"]!, entrada, ctx.usuario.id));

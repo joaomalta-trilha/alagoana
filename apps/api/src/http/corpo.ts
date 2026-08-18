@@ -79,6 +79,15 @@ export function listaDeTexto(c: Corpo, campo: string): string[] {
   return v as string[];
 }
 
+export function listaDeObjetos(c: Corpo, campo: string): Corpo[] {
+  const v = c[campo];
+  if (v === undefined || v === null) return [];
+  if (!Array.isArray(v) || v.some((x) => typeof x !== "object" || x === null || Array.isArray(x))) {
+    throw new ErroDeValidacao(`O campo ${campo} precisa ser uma lista de objetos.`, 400);
+  }
+  return v as Corpo[];
+}
+
 export function objeto(c: Corpo, campo: string): Corpo | null {
   const v = c[campo];
   if (v === undefined || v === null) return null;

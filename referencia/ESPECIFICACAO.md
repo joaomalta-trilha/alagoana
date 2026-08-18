@@ -239,11 +239,13 @@ Enquanto ativa, exibir em âmbar com os dias restantes. Encerrada, cinza com "en
 
 ### 4.5 Venda com troca
 
-Quando entra um veículo na troca, três coisas acontecem em **uma única transação**:
+Quando entram veículos na troca, três coisas acontecem em **uma única transação**:
 
 1. O veículo vendido recebe `data_venda` e `valor_venda`.
-2. Um novo `veiculo` é criado com `origem = 'troca'`, `troca_de_id` apontando para o vendido, `data_compra` = data da venda.
-3. Um `movimento_caixa` de venda é criado com valor **`valor_venda − avaliacao_troca`** — só o que entrou em dinheiro.
+2. Um novo `veiculo` é criado **para cada recebido**, com `origem = 'troca'`, `troca_de_id` apontando para o vendido, `data_compra` = data da venda.
+3. Um `movimento_caixa` de venda é criado com valor **`valor_venda − soma das avaliações`** — só o que entrou em dinheiro.
+
+*(Alterado em 17/08/2026, por decisão da loja: antes entrava no máximo um veículo por venda. Numa venda pode entrar mais de um — dois carros, ou um carro e uma moto. Cada recebido tem a sua avaliação, o seu valor de mercado e o seu modo, e portanto o seu próprio ágio.)*
 
 O valor de compra do veículo que entra depende da escolha do usuário:
 
@@ -253,6 +255,8 @@ O valor de compra do veículo que entra depende da escolha do usuário:
 | **Pelo mercado** | `mercado_troca` | Cria um `custo` de categoria `Troca`, valor = ágio, na venda. |
 
 O segundo modo é o recomendado, e a interface deve explicar por quê: supervalorizar a troca é desconto disfarçado, e sem esse lançamento o desconto some do histórico.
+
+Com mais de um recebido, o modo é escolhido por veículo, e cada ágio vira um `custo` próprio, com o código do carro que o gerou na descrição — um custo somado não diria de onde veio.
 
 > Conferência: Tracker vendido a 89.000 com custo total 71.183,46, recebendo um Argo avaliado em 44.000 e valendo 40.000.
 > Pela avaliação: lucro do Tracker = **17.816,54**; Argo entra por 44.000.
@@ -266,6 +270,8 @@ Se `avaliacao_troca > valor_venda`, o movimento de caixa fica negativo — a loj
 Padrão da casa: **Comissão Alagoana R$ 1.500**, lançada como `custo` de categoria `Comissão`. *(Alterado em 17/08/2026, por decisão da loja: eram duas linhas — Alagoana R$ 1.000 e Victor R$ 500 — e viraram uma só, de mesmo total. O rateio entre os sócios não é assunto da ficha do carro.)*
 
 Na tela de venda, um checkbox oferece lançá-las. Vem **marcado** por padrão, exceto quando o veículo já possui algum custo de categoria `Comissão` — caso em que vem desmarcado, porque já foram provisionadas na entrada. Os valores devem ser configuráveis, não fixos no código.
+
+Quando a venda cai numa conta, a comissão **sai dessa mesma conta na hora**: vender por 40.000 com 1.500 de comissão deixa 38.500. São duas linhas no extrato, a venda cheia e a comissão, e o movimento fica preso ao custo — apagar a comissão devolve o dinheiro. Sem conta na venda ("Não descontar do caixa"), a comissão não sai de lugar nenhum e fica como a provisão da §3.4, paga depois pela tela de custo. *(Acrescentado em 17/08/2026, por decisão da loja.)*
 
 ### 4.7 Caixa e patrimônio
 

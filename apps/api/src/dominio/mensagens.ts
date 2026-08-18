@@ -29,10 +29,15 @@ export function saldoInsuficiente(conta: string, saldo: Centavos): string {
   return `Saldo insuficiente em ${conta}: ${brl(saldo)}.`;
 }
 
-/** Desfazer a venda com o carro da troca ainda no pátio deixaria órfão. */
-export function trocaImpedeDesfazer(codigo: string, descricao: string): string {
-  return `Nesta venda entrou o ${codigo} · ${descricao} na troca. ` +
-    "Exclua esse carro antes de desfazer a venda.";
+/** Desfazer a venda com os carros da troca ainda no pátio os deixaria órfãos. */
+export function trocaImpedeDesfazer(
+  entraram: ReadonlyArray<{ codigo: string; descricao: string }>,
+): string {
+  const lista = entraram.map((v) => `${v.codigo} · ${v.descricao}`).join(", ");
+  return entraram.length === 1
+    ? `Nesta venda entrou o ${lista} na troca. Exclua esse carro antes de desfazer a venda.`
+    : `Nesta venda entraram ${entraram.length} veículos na troca: ${lista}. ` +
+      "Exclua esses carros antes de desfazer a venda.";
 }
 
 /** Tirar a venda do extrato é tirar dinheiro da conta — e ele pode não estar lá. */

@@ -58,10 +58,11 @@ export function ConfirmarExclusao(
                 `, devolvendo ${brl(Math.abs(previa.movimentos.valorDevolvido))} ao saldo`}
             </li>
             {previa.venda && <li>A venda de {brl(previa.venda.valor)}</li>}
-            {previa.troca && (
+            {previa.trocas.length > 0 && (
               <li>
-                O vínculo de troca com o <b>{previa.troca.codigo}</b>, que{" "}
-                <b>continua no sistema</b>
+                {previa.trocas.length === 1 ? "O vínculo de troca com o " : "Os vínculos de troca com "}
+                <b>{previa.trocas.map((t) => t.codigo).join(", ")}</b>, que{" "}
+                <b>{previa.trocas.length === 1 ? "continua" : "continuam"} no sistema</b>
               </li>
             )}
           </ul>

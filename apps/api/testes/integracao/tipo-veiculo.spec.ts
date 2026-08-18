@@ -134,13 +134,13 @@ describe("moto na troca de um carro — o caso principal", () => {
     const r = await comTransacao((c) => venderVeiculo(c, carro.id, {
       dataVenda: "2026-08-03", valorVenda: 8_900_000, lancarComissoes: false,
       contaId: b.alagoana,
-      troca: {
+      trocas: [{
         tipo: "moto", marca: "Yamaha", modelo: "Factor 150", cor: "Azul",
         placa: "MOT9Z99", avaliacao: 1_400_000, mercado: 1_200_000, modo: "mercado",
-      },
+      }],
     }, b.usuarioId));
 
-    const moto = await comLeitura((c) => ficha(c, r.veiculoQueEntrou!.id, HOJE));
+    const moto = await comLeitura((c) => ficha(c, r.veiculosQueEntraram[0]!.id, HOJE));
     expect(moto.tipo).toBe("moto");
     expect(moto.origem).toBe("troca");
     expect(moto.valorCompra).toBe(1_200_000);        // entrou pelo mercado

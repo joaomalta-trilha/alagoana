@@ -213,8 +213,11 @@ export interface Ficha extends VeiculoCalculado {
   ultimoCusto: DataISO | null;
   custoPorCategoria: { categoria: string; valor: Centavos }[];
   troca: {
-    entrou: { id: string; codigo: string; descricao: string } | null;
+    /** Os veículos que entraram nesta venda. Numa venda pode entrar mais de um. */
+    entraram: { id: string; codigo: string; descricao: string; avaliacao: Centavos | null }[];
+    /** A venda de onde este veículo veio. Só pode haver uma. */
     saiu: { id: string; codigo: string; descricao: string } | null;
+    /** Avaliação e ágio deste veículo, quando ele mesmo entrou por troca. */
     avaliacao: Centavos | null;
     mercado: Centavos | null;
     agio: Centavos | null;
@@ -229,6 +232,10 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
 
   // Em série, e não em Promise.all: um PoolClient atende uma consulta por vez,
   // e paralelizar nele só enfileira com um aviso de depreciação de brinde.
+  // O `k.id` no fim do `order by` é desempate: `criado_em` usa `now()`, que é
+  // o instante da TRANSAÇÃO, então dois custos gravados juntos — as duas
+  // comissões, os dois ágios de uma troca dupla — têm o mesmo carimbo. Sem
+  // desempate a lista trocava de ordem entre um carregamento e outro.
   const custos = await c.query<{
     id: string; descricao: string; categoria: string;
     data: DataISO | null; valor: string; devolve: string;
@@ -238,10 +245,12 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
         left join movimento_caixa m on m.custo_id = k.id
        where k.veiculo_id = $1
        group by k.id
-       order by k.data nulls last, k.criado_em`, [id]);
+       order by k.data nulls last, k.criado_em, k.id`, [id]);
 
-  const entrou = await c.query<{ id: string; codigo: string; marca: string; modelo: string }>(
-    "select id, codigo, marca, modelo from veiculo where troca_de_id = $1", [id]);
+  const entrou = await c.query<
+    { id: string; codigo: string; marca: string; modelo: string; avaliacao_troca: string | null }
+  >(`select id, codigo, marca, modelo, avaliacao_troca from veiculo
+      where troca_de_id = $1 order by codigo`, [id]);
 
   const saiu = await c.query<{ id: string; codigo: string; marca: string; modelo: string }>(
     `select vv.id, vv.codigo, vv.marca, vv.modelo from veiculo v
@@ -287,9 +296,10 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
       .map(([categoria, valor]) => ({ categoria, valor }))
       .sort((a, b) => b.valor - a.valor),
     troca: {
-      entrou: entrou.rows[0]
-        ? { id: entrou.rows[0].id, codigo: entrou.rows[0].codigo, descricao: nome(entrou.rows[0]) }
-        : null,
+      entraram: entrou.rows.map((x) => ({
+        id: x.id, codigo: x.codigo, descricao: nome(x),
+        avaliacao: deNumeric(x.avaliacao_troca),
+      })),
       saiu: saiu.rows[0]
         ? { id: saiu.rows[0].id, codigo: saiu.rows[0].codigo, descricao: nome(saiu.rows[0]) }
         : null,

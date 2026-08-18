@@ -452,10 +452,19 @@ export function Ficha(p: Props) {
           <button onClick={() => p.aoAbrirOutro(v.troca.saiu!.id)}>Ver a venda</button>
         </div>
       )}
-      {v.troca.entrou && (
+      {v.troca.entraram.length > 0 && (
         <div className="link-troca">
-          Nesta venda entrou um <b>{v.troca.entrou.descricao}</b> na troca.
-          <button onClick={() => p.aoAbrirOutro(v.troca.entrou!.id)}>Ver o carro</button>
+          {v.troca.entraram.length === 1
+            ? <>Nesta venda entrou um <b>{v.troca.entraram[0]!.descricao}</b> na troca.</>
+            : <>Nesta venda entraram <b>{v.troca.entraram.length} veículos</b> na troca.</>}
+          {/* Um botão por carro: com dois ou mais, "Ver o carro" não diria qual. */}
+          {v.troca.entraram.map((t) => (
+            <button key={t.id} onClick={() => p.aoAbrirOutro(t.id)}>
+              {v.troca.entraram.length === 1
+                ? "Ver o carro"
+                : `${t.descricao}${t.avaliacao === null ? "" : ` · ${brl(t.avaliacao)}`}`}
+            </button>
+          ))}
         </div>
       )}
 

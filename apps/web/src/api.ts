@@ -94,7 +94,8 @@ export interface Ficha extends Veiculo {
   ultimoCusto: string | null;
   custoPorCategoria: { categoria: string; valor: Centavos }[];
   troca: {
-    entrou: { id: string; codigo: string; descricao: string } | null;
+    /** Os veículos que entraram nesta venda. Pode ser mais de um. */
+    entraram: { id: string; codigo: string; descricao: string; avaliacao: Centavos | null }[];
     saiu: { id: string; codigo: string; descricao: string } | null;
     avaliacao: Centavos | null; mercado: Centavos | null; agio: Centavos | null;
   };
@@ -167,7 +168,7 @@ export interface PreviaExclusao {
   custos: { quantidade: number; soma: Centavos };
   movimentos: { quantidade: number; valorDevolvido: Centavos };
   venda: { data: string; valor: Centavos } | null;
-  troca: { id: string; codigo: string; sentido: "entrou" | "saiu" } | null;
+  trocas: { id: string; codigo: string; sentido: "entrou" | "saiu" }[];
 }
 
 export interface PreviaDesfazerVenda {
@@ -188,8 +189,11 @@ export interface ResultadoTransferencia {
 }
 
 export interface ResultadoVenda {
-  lucro: Centavos; entradaEmCaixa: Centavos; agio: Centavos;
-  veiculoQueEntrou: { id: string; codigo: string } | null;
+  lucro: Centavos; entradaEmCaixa: Centavos;
+  /** `entradaEmCaixa` menos as comissões pagas na hora. */
+  liquidoEmCaixa: Centavos;
+  agio: Centavos;
+  veiculosQueEntraram: { id: string; codigo: string }[];
   comissoesLancadas: { beneficiario: string; valor: Centavos }[];
   veiculo: Ficha;
 }

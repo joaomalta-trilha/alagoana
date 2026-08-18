@@ -182,6 +182,53 @@ export function calcularTroca(
   };
 }
 
+export interface VeiculoDaTroca {
+  avaliacao: Centavos;
+  mercado?: Centavos | null;
+  modo: ModoTroca;
+}
+
+export interface ResultadoTrocas {
+  /** Um resultado por veículo recebido, na ordem em que vieram. */
+  entradas: ResultadoTroca[];
+  /** Soma das avaliações — o que deixou de entrar em dinheiro. */
+  avaliacaoTotal: Centavos;
+  /** Soma dos ágios, para exibição. */
+  agioTotal: Centavos;
+  /** Soma dos ágios que viram custo no carro vendido. */
+  custoAgioNoVendido: Centavos;
+  /** `valor_venda` menos a soma das avaliações. Pode ser negativo. */
+  entradaEmCaixa: Centavos;
+}
+
+/**
+ * A mesma conta da §4.5, para quantos veículos entrarem na troca.
+ *
+ * Numa venda pode entrar mais de um carro — dois carros, ou um carro e uma
+ * moto. Cada um tem a sua avaliação, o seu valor de mercado e o seu modo, e
+ * portanto o seu próprio ágio; o que o caixa recebe é a venda menos a soma
+ * das avaliações.
+ *
+ * Com um veículo só, devolve exatamente o que `calcularTroca` devolvia — é o
+ * que o caso do Tracker cobra, e a razão de a §4.5 não precisar mudar.
+ */
+export function calcularTrocas(
+  valorVenda: Centavos,
+  trocas: ReadonlyArray<VeiculoDaTroca>,
+): ResultadoTrocas {
+  const avaliacaoTotal = trocas.reduce((a, t) => a + t.avaliacao, 0);
+  const entradas = trocas.map((t) =>
+    calcularTroca(valorVenda, t.avaliacao, t.mercado ?? null, t.modo));
+
+  return {
+    entradas,
+    avaliacaoTotal,
+    agioTotal: entradas.reduce((a, e) => a + e.agio, 0),
+    custoAgioNoVendido: entradas.reduce((a, e) => a + e.custoAgioNoVendido, 0),
+    entradaEmCaixa: valorVenda - avaliacaoTotal,
+  };
+}
+
 // ---------------------------------------------------- 4.7 caixa e patrimônio
 
 export interface Patrimonio {

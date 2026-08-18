@@ -61,10 +61,11 @@ describe("desfazer venda", () => {
     expect(f.garantia).toBeNull();
   });
 
-  it("tira do caixa exatamente o que a venda pôs", async () => {
+  it("devolve o caixa ao que era antes da venda, comissão inclusive", async () => {
     const antes = await saldo(b.alagoana);          // já descontada a compra
     const v = await carroVendido();
-    expect(await saldo(b.alagoana)).toBe(antes + 4_000_000 - 3_000_000);
+    // Entraram 40.000 e saíram 1.500 de comissão na mesma hora.
+    expect(await saldo(b.alagoana)).toBe(antes + 4_000_000 - 150_000 - 3_000_000);
 
     await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
     expect(await saldo(b.alagoana)).toBe(antes - 3_000_000);
@@ -95,8 +96,10 @@ describe("desfazer venda", () => {
     const previa = await comLeitura((c) => previaDesfazerVenda(c, v.id));
 
     expect(previa.venda).toEqual({ data: "2026-08-10", valor: 4_000_000 });
+    // O que sai é o líquido: 40.000 da venda menos os 1.500 da comissão, que
+    // some junto e devolve o dinheiro.
     expect(previa.caixa).toEqual([
-      { conta: "Alagoana", valor: 4_000_000, saldoAtual: 11_000_000, cabe: true },
+      { conta: "Alagoana", valor: 3_850_000, saldoAtual: 10_850_000, cabe: true },
     ]);
     expect(previa.comissoes).toEqual({ quantidade: 1, soma: 150_000 });
     expect(previa.impedimento).toBeNull();
@@ -113,10 +116,10 @@ describe("desfazer venda", () => {
 
     await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
-      troca: {
+      trocas: [{
         marca: "Ford", modelo: "Ka", cor: "Preto", placa: "BBB2B22",
         avaliacao: 1_000_000, mercado: 1_000_000, modo: "avaliacao",
-      },
+      }],
     }, b.usuarioId));
 
     await expect(comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId)))
@@ -142,9 +145,9 @@ describe("desfazer venda", () => {
       dataCompra: "2026-08-11", valorCompra: 3_500_000, contaId: b.alagoana,
     }, b.usuarioId));
 
-    expect(await saldo(b.alagoana)).toBe(500_000);
+    expect(await saldo(b.alagoana)).toBe(350_000);
     await expect(comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId)))
-      .rejects.toThrow(/Desfazer a venda tira R\$ 40\.000,00 de Alagoana/);
+      .rejects.toThrow(/Desfazer a venda tira R\$ 38\.500,00 de Alagoana/);
   });
 
   it("recusa desfazer o que não está vendido", async () => {
@@ -178,5 +181,79 @@ describe("desfazer venda", () => {
       "select acao, antes from evento where entidade_id = $1 order by criado_em", [v.id]);
     expect(rows.map((r) => r.acao)).toEqual(["criou", "vendeu", "desfez a venda"]);
     expect(rows[2]!.antes).toEqual({ data: "2026-08-10", valor: 4_000_000 });
+  });
+});
+
+describe("comissão sai do caixa na hora da venda", () => {
+  it("a venda de 40.000 com 1.500 de comissão deixa 38.500 na conta", async () => {
+    const antes = await saldo(b.alagoana);
+    const v = await comTransacao((c) => criarVeiculo(c, {
+      marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+    }, b.usuarioId));
+
+    const r = await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
+      lancarComissoes: true,
+    }, b.usuarioId));
+
+    expect(r.entradaEmCaixa).toBe(4_000_000);
+    expect(r.liquidoEmCaixa).toBe(3_850_000);
+    expect(await saldo(b.alagoana)).toBe(antes + 3_850_000);
+  });
+
+  it("o extrato conta as duas coisas: a venda cheia e a comissão", async () => {
+    const v = await comTransacao((c) => criarVeiculo(c, {
+      marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+    }, b.usuarioId));
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
+      lancarComissoes: true,
+    }, b.usuarioId));
+
+    const { rows } = await pool.query<{ descricao: string; valor: string; tipo: string }>(
+      "select descricao, valor, tipo from movimento_caixa order by valor desc");
+    expect(rows.map((m) => [m.tipo, m.descricao, Number(m.valor)])).toEqual([
+      ["venda", "Venda V-01 · Ford Ka", 40000],
+      ["custo", "Comissão Alagoana · V-01", -1500],
+    ]);
+  });
+
+  it("sem conta na venda, a comissão fica provisionada e o caixa não muda", async () => {
+    const antes = await saldo(b.alagoana);
+    const v = await comTransacao((c) => criarVeiculo(c, {
+      marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+    }, b.usuarioId));
+
+    const r = await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: null,
+      lancarComissoes: true,
+    }, b.usuarioId));
+
+    expect(r.liquidoEmCaixa).toBe(4_000_000);   // nada saiu porque nada entrou
+    expect(await saldo(b.alagoana)).toBe(antes);
+
+    // O custo existe, esperando ser pago pela tela de custo (§3.4).
+    const f = await comLeitura((c) => ficha(c, v.id, HOJE));
+    const comissao = f.custos.find((k) => k.categoria === "Comissão")!;
+    expect(comissao.valor).toBe(150_000);
+    expect(comissao.devolveAoCaixa).toBe(0);
+  });
+
+  it("apagar a comissão à mão devolve o dinheiro", async () => {
+    const v = await comTransacao((c) => criarVeiculo(c, {
+      marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+    }, b.usuarioId));
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
+      lancarComissoes: true,
+    }, b.usuarioId));
+
+    const f = await comLeitura((c) => ficha(c, v.id, HOJE));
+    const comissao = f.custos.find((k) => k.categoria === "Comissão")!;
+    expect(comissao.devolveAoCaixa).toBe(150_000);
   });
 });

@@ -184,24 +184,24 @@ describe("venda com troca (§4.5) — o Tracker da especificação", () => {
     const v = await tracker();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-03", valorVenda: 8_900_000, lancarComissoes: false,
-      contaId: b.alagoana, troca: { ...argo, modo: "avaliacao" },
+      contaId: b.alagoana, trocas: [{ ...argo, modo: "avaliacao" }],
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
     expect(f.lucro).toBe(1_781_654);                       // 17.816,54
 
-    const entrou = await comLeitura((c) => ficha(c, r.veiculoQueEntrou!.id, HOJE));
+    const entrou = await comLeitura((c) => ficha(c, r.veiculosQueEntraram[0]!.id, HOJE));
     expect(entrou.valorCompra).toBe(4_400_000);
     expect(entrou.origem).toBe("troca");
     expect(entrou.troca.saiu?.codigo).toBe(f.codigo);      // vínculo no sentido inverso
-    expect(f.troca.entrou?.codigo).toBe(entrou.codigo);
+    expect(f.troca.entraram.map((x) => x.codigo)).toEqual([entrou.codigo]);
   });
 
   it("pelo mercado: o ágio vira custo e o lucro cai para 13.816,54", async () => {
     const v = await tracker();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-03", valorVenda: 8_900_000, lancarComissoes: false,
-      contaId: b.alagoana, troca: { ...argo, modo: "mercado" },
+      contaId: b.alagoana, trocas: [{ ...argo, modo: "mercado" }],
     }, b.usuarioId));
 
     expect(r.agio).toBe(400_000);
@@ -209,7 +209,7 @@ describe("venda com troca (§4.5) — o Tracker da especificação", () => {
     expect(f.lucro).toBe(1_381_654);                       // 13.816,54
     expect(f.custos.find((k) => k.categoria === "Troca")?.valor).toBe(400_000);
 
-    const entrou = await comLeitura((c) => ficha(c, r.veiculoQueEntrou!.id, HOJE));
+    const entrou = await comLeitura((c) => ficha(c, r.veiculosQueEntraram[0]!.id, HOJE));
     expect(entrou.valorCompra).toBe(4_000_000);
   });
 
@@ -222,7 +222,7 @@ describe("venda com troca (§4.5) — o Tracker da especificação", () => {
 
       await comTransacao((c) => venderVeiculo(c, v.id, {
         dataVenda: "2026-08-03", valorVenda: 8_900_000, lancarComissoes: false,
-        contaId: b.alagoana, troca: { ...argo, modo },
+        contaId: b.alagoana, trocas: [{ ...argo, modo }],
       }, b.usuarioId));
 
       expect(await saldo(b.alagoana) - antes).toBe(4_500_000);
@@ -285,15 +285,15 @@ describe("exclusão (§4.8)", () => {
     const v = await hondaCity();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-03", valorVenda: 9_700_000, lancarComissoes: false,
-      troca: {
+      trocas: [{
         marca: "Fiat", modelo: "Argo", cor: "Branco", placa: "ARG2B34",
         avaliacao: 4_400_000, modo: "avaliacao",
-      },
+      }],
     }, b.usuarioId));
 
     await comTransacao((c) => excluirVeiculo(c, v.id, b.usuarioId));
 
-    const sobrevivente = await comLeitura((c) => ficha(c, r.veiculoQueEntrou!.id, HOJE));
+    const sobrevivente = await comLeitura((c) => ficha(c, r.veiculosQueEntraram[0]!.id, HOJE));
     expect(sobrevivente.troca.saiu).toBeNull();
     expect(sobrevivente.origem).toBe("troca");   // o fato histórico permanece
   });

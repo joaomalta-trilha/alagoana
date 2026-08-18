@@ -42,7 +42,7 @@ catálogo aprende sozinho. `versao` é texto livre e nunca vira catálogo.
 | `PATCH /api/veiculos/:id` | edita qualquer campo e **reescreve os movimentos vinculados** (§4.8) |
 | `GET /api/veiculos/:id/exclusao` | prévia com os números reais do que será apagado |
 | `DELETE /api/veiculos/:id` | exclui; o carro ligado por troca sobrevive sem o vínculo |
-| `POST /api/veiculos/:id/venda` | venda, troca e comissões numa transação só |
+| `POST /api/veiculos/:id/venda` | venda, trocas e comissões numa transação só |
 | `GET /api/veiculos/:id/venda` | prévia do desfazer: o que sai do caixa, que comissões somem, e o motivo quando não dá |
 | `DELETE /api/veiculos/:id/venda` | desfaz a venda e devolve o carro ao estoque |
 
