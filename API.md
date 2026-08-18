@@ -120,6 +120,11 @@ levaria a conta ao negativo. Não é estorno, não deixa linha no extrato: uma
 transferência lançada errada é erro de digitação, não fato do negócio. O que
 foi apagado fica em `evento`.
 
+No extrato, `veiculo` é `{codigo, descricao}` — o nome para ler, o código para
+achar. A descrição do movimento nomeia o carro e não traz sigla: quem lê o
+caixa não decora código de veículo. A migração 0006 corrigiu o que já estava
+gravado nos dois formatos antigos.
+
 `GET /api/caixa` devolve `transferenciaId` em cada linha do extrato, e é ele
 que diz quais podem ser apagadas ali. Venda, compra, custo e aporte nascem de
 outro lugar e se desfazem lá; apagar a linha do extrato deixaria a ficha do

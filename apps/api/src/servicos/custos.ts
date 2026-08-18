@@ -93,7 +93,7 @@ export async function lancarCusto(
     const movimentoId = data === null ? null : await registrarMovimentoOpcional(
       c, e.contaId ?? null, {
         data,
-        descricao: `${descricao} · ${v.codigo}`,
+        descricao: `${descricao} · ${v.marca} ${v.modelo}`,
         tipo: "custo",
         valor: -valor,
         veiculoId: v.id,

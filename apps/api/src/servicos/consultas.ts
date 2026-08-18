@@ -595,7 +595,9 @@ export interface VisaoCaixa {
   }[];
   extrato: {
     id: string; data: DataISO; descricao: string; tipo: string;
-    conta: string; valor: Centavos; veiculo: string | null;
+    conta: string; valor: Centavos;
+    /** O carro do movimento, quando há um. Nome para ler, código para achar. */
+    veiculo: { codigo: string; descricao: string } | null;
     /**
      * Une as duas pernas de uma transferência — e é o que diz que a linha pode
      * ser apagada daqui. Os outros movimentos nascem de uma venda ou de um
@@ -615,10 +617,12 @@ export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<Vi
 
   const extrato = await c.query<{
     id: string; data: DataISO; descricao: string; tipo: string;
-    conta: string; valor: string; veiculo: string | null; transferencia_id: string | null;
+    conta: string; valor: string; transferencia_id: string | null;
+    veiculo_codigo: string | null; veiculo_marca: string | null; veiculo_modelo: string | null;
   }>(
     `select m.id, m.data, m.descricao, m.tipo, ct.nome as conta, m.valor,
-            v.codigo as veiculo, m.transferencia_id
+            v.codigo as veiculo_codigo, v.marca as veiculo_marca, v.modelo as veiculo_modelo,
+            m.transferencia_id
        from movimento_caixa m
        join conta ct on ct.id = m.conta_id
        left join veiculo v on v.id = m.veiculo_id
@@ -637,8 +641,14 @@ export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<Vi
       aportes: deNumeric(s.aportes)!, retiradas: deNumeric(s.retiradas)!,
       capital: deNumeric(s.capital)!,
     })),
-    extrato: extrato.rows.map(({ transferencia_id, ...m }) => ({
-      ...m, valor: deNumeric(m.valor)!, transferenciaId: transferencia_id,
+    extrato: extrato.rows.map((m) => ({
+      id: m.id, data: m.data, descricao: m.descricao, tipo: m.tipo, conta: m.conta,
+      valor: deNumeric(m.valor)!,
+      veiculo: m.veiculo_codigo === null ? null : {
+        codigo: m.veiculo_codigo,
+        descricao: `${m.veiculo_marca} ${m.veiculo_modelo}`,
+      },
+      transferenciaId: m.transferencia_id,
     })),
   };
 }

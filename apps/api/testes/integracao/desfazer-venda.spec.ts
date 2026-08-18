@@ -215,8 +215,8 @@ describe("comissão sai do caixa na hora da venda", () => {
     const { rows } = await pool.query<{ descricao: string; valor: string; tipo: string }>(
       "select descricao, valor, tipo from movimento_caixa order by valor desc");
     expect(rows.map((m) => [m.tipo, m.descricao, Number(m.valor)])).toEqual([
-      ["venda", "Venda V-01 · Ford Ka", 40000],
-      ["custo", "Comissão Alagoana · V-01", -1500],
+      ["venda", "Venda · Ford Ka", 40000],
+      ["custo", "Comissão Alagoana · Ford Ka", -1500],
     ]);
   });
 

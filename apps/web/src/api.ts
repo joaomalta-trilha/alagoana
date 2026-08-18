@@ -167,7 +167,8 @@ export interface Caixa {
   }[];
   extrato: {
     id: string; data: string; descricao: string; tipo: string;
-    conta: string; valor: Centavos; veiculo: string | null;
+    conta: string; valor: Centavos;
+    veiculo: { codigo: string; descricao: string } | null;
     /** Só as transferências podem ser apagadas daqui; o resto se desfaz na origem. */
     transferenciaId: string | null;
   }[];

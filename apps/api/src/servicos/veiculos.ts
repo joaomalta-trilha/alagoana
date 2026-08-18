@@ -159,7 +159,7 @@ export async function criarVeiculo(
 
   await registrarMovimentoOpcional(c, e.contaId ?? null, {
     data: e.dataCompra,
-    descricao: `Compra ${codigo} · ${texto(e.marca)} ${texto(e.modelo)}`,
+    descricao: `Compra · ${texto(e.marca)} ${texto(e.modelo)}`,
     tipo: "compra",
     valor: -e.valorCompra,
     veiculoId: id,
@@ -277,7 +277,7 @@ async function sincronizarMovimentos(
     await refazerMovimentoDoVeiculo(c, id, "compra", {
       contaId: contaCompra,
       data: novo.dataCompra,
-      descricao: `Compra ${codigo} · ${novo.marca} ${novo.modelo}`,
+      descricao: `Compra · ${novo.marca} ${novo.modelo}`,
       valor: -novo.valorCompra,
     });
   }
@@ -295,7 +295,7 @@ async function sincronizarMovimentos(
       entrada === null || entrada === 0 ? null : {
         contaId: contaVenda,
         data: novo.dataVenda!,
-        descricao: `Venda ${codigo} · ${novo.marca} ${novo.modelo}`,
+        descricao: `Venda · ${novo.marca} ${novo.modelo}`,
         valor: entrada,
       });
   }
@@ -473,7 +473,7 @@ export async function venderVeiculo(
     await registrarMovimento(c, {
       contaId: e.contaId,
       data: e.dataVenda,
-      descricao: `Venda ${v.codigo} · ${v.marca} ${v.modelo}`,
+      descricao: `Venda · ${v.marca} ${v.modelo}`,
       tipo: "venda",
       valor: entradaEmCaixa,
       veiculoId: id,
@@ -510,7 +510,7 @@ export async function venderVeiculo(
 
       await registrarMovimentoOpcional(c, e.contaId ?? null, {
         data: e.dataVenda,
-        descricao: `${comissao.beneficiario} · ${v.codigo}`,
+        descricao: `${comissao.beneficiario} · ${v.marca} ${v.modelo}`,
         tipo: "custo",
         valor: -comissao.valor,
         veiculoId: id,

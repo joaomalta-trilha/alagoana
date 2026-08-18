@@ -95,9 +95,9 @@ export function Caixa(
             <div key={m.id} className="custo-li">
               <div>
                 <div className="cn">{m.descricao}</div>
-                <div className="cm">
-                  {dataBr(m.data)} · {m.conta}{m.veiculo ? ` · ${m.veiculo}` : ""}
-                </div>
+                {/* Sem o veículo aqui: a descrição de todo movimento que tem
+                    um já o nomeia, e repetir era dizer duas vezes o mesmo. */}
+                <div className="cm">{dataBr(m.data)} · {m.conta}</div>
               </div>
               <div style={{ display: "flex", alignItems: "flex-start" }}>
                 <b className={m.valor >= 0 ? "pos" : "neg"}>
