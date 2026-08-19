@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { api, ErroApi, type Atalho, type Catalogos, type Veiculo } from "../api.js";
+import { identificacao } from "../tipos.js";
 import {
   Acoes, CampoData, CampoSelecao, CampoTexto, CampoValor, Erro, Folha,
 } from "../componentes/Folha.js";
@@ -119,8 +120,6 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
     }
   }
 
-  const nome = (v: Veiculo) => `${v.marca} ${v.modelo} · ${v.placa}`;
-
   return (
     <Folha titulo="Lançar custo" dica="Toque num atalho ou preencha abaixo." aoFechar={aoFechar}>
       {atalhos.length > 0 && (
@@ -136,10 +135,10 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
       {!varios && (
         <CampoSelecao rotulo="Veículo" valor={veiculoId} aoMudar={setVeiculoId}>
           <optgroup label="Em pátio">
-            {emPatio.map((v) => <option key={v.id} value={v.id}>{nome(v)}</option>)}
+            {emPatio.map((v) => <option key={v.id} value={v.id}>{identificacao(v)}</option>)}
           </optgroup>
           <optgroup label="Vendidos">
-            {vendidos.map((v) => <option key={v.id} value={v.id}>{nome(v)}</option>)}
+            {vendidos.map((v) => <option key={v.id} value={v.id}>{identificacao(v)}</option>)}
           </optgroup>
         </CampoSelecao>
       )}
@@ -171,7 +170,7 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
                     onChange={(e) => setSelecionados((atual) =>
                       e.target.checked ? [...atual, v.id] : atual.filter((id) => id !== v.id))}
                   />
-                  {nome(v)}{v.vendido ? " · vendido" : ""}
+                  {identificacao(v)}{v.vendido ? " · vendido" : ""}
                 </label>
               ))}
             </div>

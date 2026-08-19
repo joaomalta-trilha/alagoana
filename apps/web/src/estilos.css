@@ -241,6 +241,10 @@ button,input,select{font-family:inherit}
   width:100%; font-size:16px; padding:13px 12px; border:1px solid var(--line2);
   border-radius:10px; background:#FFF; color:var(--ink);
 }
+/* O seletor de veículo diz nome, ano, cor e placa, e num iPhone o nome mais
+   longo da frota passa 6px da caixa. Reticências fazem a sobra parecer o que
+   é; sem isso o navegador corta no meio de um caractere da placa. */
+.campo select{text-overflow:ellipsis}
 .campo.caixa label{display:flex; gap:10px; align-items:center; text-transform:none; letter-spacing:0; font-size:14px; color:var(--ink2); font-weight:400; margin:0;
   /* O quadradinho tem 13px; quem recebe o toque é o rótulo inteiro (§7.4). */
   min-height:44px; cursor:pointer}

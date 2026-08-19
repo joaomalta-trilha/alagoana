@@ -27,3 +27,24 @@ export function rotuloDoTipo(tipo: TipoVeiculo): string {
 export function veiculos(n: number): string {
   return `${n} ${n === 1 ? "veículo" : "veículos"}`;
 }
+
+/**
+ * Como um veículo se identifica numa lista de escolha.
+ *
+ * Nome, ano, cor e placa — nessa ordem, que é a de quem procura: reconhece o
+ * carro, confirma pelo ano e pela cor, e só olha a placa se ainda restar
+ * dúvida. Marca e modelo sozinhos não bastam: a loja teve dois Hyundai HB20
+ * no pátio ao mesmo tempo, e no seletor eram duas linhas idênticas.
+ *
+ * Ano e cor podem faltar em carro recebido às pressas; o que falta não deixa
+ * um separador solto para trás.
+ */
+export function identificacao(
+  v: { marca: string; modelo: string; ano: number | null; cor: string; placa: string },
+): string {
+  const nome = `${v.marca} ${v.modelo}${v.ano ? ` ${v.ano}` : ""}`;
+  const cor = v.cor.trim();
+  return [nome, cor && cor !== "—" ? cor : null, v.placa]
+    .filter(Boolean)
+    .join(" · ");
+}
