@@ -43,6 +43,10 @@ catálogo aprende sozinho. `versao` é texto livre e nunca vira catálogo.
 | `GET /api/veiculos/:id/exclusao` | prévia com os números reais do que será apagado |
 | `DELETE /api/veiculos/:id` | exclui; o carro ligado por troca sobrevive sem o vínculo |
 | `POST /api/veiculos/:id/venda` | venda, trocas e comissões numa transação só |
+| `GET /api/fipe/versoes` | `?tipo&marca&modelo` — as versões candidatas, com a marca já resolvida |
+| `GET /api/fipe/anos` | `?tipo&marca&modelo&ano` — os anos de uma versão, com o do veículo apontado |
+| `PUT /api/veiculos/:id/fipe` | grava a versão escolhida e consulta o valor |
+| `POST /api/fipe/atualizar` | reescreve a Fipe de hoje dos carros em pátio |
 | `GET /api/veiculos/:id/venda` | prévia do desfazer: o que sai do caixa, que comissões somem, e o motivo quando não dá |
 | `DELETE /api/veiculos/:id/venda` | desfaz a venda e devolve o carro ao estoque |
 
@@ -94,6 +98,28 @@ repete o valor inteiro em cada carro. Um único veículo pode ir em `veiculoId`.
 
 `previsto: true` grava custo sem data (§3.4): entra no custo total e não toca no
 caixa, porque ainda não aconteceu.
+
+## Fipe
+
+A Fipe não conhece "Hyundai HB20": tem 116 versões, e entre as de 2014 a mais
+barata e a mais cara diferem 31%. Por isso a versão é escolhida uma vez, na
+mão, e os códigos ficam no veículo (`fipe_marca_codigo`, `fipe_modelo_codigo`,
+`fipe_ano_codigo`). A marca sai sozinha — das 47 do catálogo, 44 casam por
+caixa e três têm apelido conhecido (GM - Chevrolet, VW - VolksWagen, Kia
+Motors). O modelo casa por palavra, não por prefixo: "Ka Sedan" está em "Ka
+1.5 Sedan SE" e "Fazer 250" em "YS 250 FAZER".
+
+`fipe_compra` é fixa — o retrato do dia da entrada, gravada no lançamento e
+nunca reescrita, nem quando a versão é corrigida. `fipe_hoje` varia: a rotina
+reconsulta quando `fipe_referencia` deixa de bater com a tabela publicada
+("agosto de 2026"), e roda de carona na leitura do painel, no máximo uma vez a
+cada doze horas.
+
+A fonte é gratuita e sem contrato de disponibilidade, então **nada aqui
+derruba operação da loja**: consulta que falha devolve nulo, o carro entra do
+mesmo jeito e a Fipe entra depois, pela ficha. A consulta acontece fora da
+transação do veículo — rede aberta dentro de transação prende conexão do
+banco.
 
 ## Caixa
 

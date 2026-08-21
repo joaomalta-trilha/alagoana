@@ -68,6 +68,11 @@ vezes em 17/08/2026:
 - **O rastro da troca** na ficha do carro vendido: o que entrou, o que
   aconteceu com ele e quanto deu. Consulta recursiva, com guarda de ciclo e
   limite de profundidade. Fica **fora** das contas do veículo de propósito.
+- **A Fipe deixou de ser digitada.** A versão é escolhida uma vez, quando o
+  carro entra, e o código fica gravado; daí a Fipe na compra fica fixa e a de
+  hoje se atualiza sozinha quando a tabela vira o mês. A escolha é manual
+  porque a Fipe tem 116 versões de HB20 e 31% de diferença entre as de 2014 —
+  adivinhar escreveria um número que parece Fipe e não é.
 
 ## Estrutura
 

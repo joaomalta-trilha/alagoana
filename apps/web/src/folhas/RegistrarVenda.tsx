@@ -13,13 +13,14 @@
  */
 
 import { useState } from "react";
-import { api, ErroApi, type Catalogos, type Ficha } from "../api.js";
+import { api, ErroApi, type Catalogos, type EscolhaFipe, type Ficha } from "../api.js";
 import {
   Acoes, CampoData, CampoMarcavel, CampoNumero, CampoSelecao, CampoTexto, CampoValor, Erro, Folha,
 } from "../componentes/Folha.js";
 import {
   CamposDeVeiculo, ESCOLHA_VAZIA, resolver, type EscolhaDeVeiculo,
 } from "../componentes/CamposDeVeiculo.js";
+import { SeletorFipe } from "../componentes/SeletorFipe.js";
 import { brl, hojeISO, paraCampo, paraCentavos } from "../formato.js";
 import { sessao } from "../preferencias.js";
 
@@ -34,6 +35,8 @@ interface Recebido {
   avaliacao: string;
   mercado: string;
   modo: "mercado" | "avaliacao";
+  /** A versão da Fipe deste recebido, quando escolhida. */
+  fipe: EscolhaFipe | null;
 }
 
 interface Props {
@@ -47,7 +50,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
   const jaTemComissao = veiculo.custos.some((c) => c.categoria === "Comissão");
   const vazio = (): Recebido => ({
     escolha: ESCOLHA_VAZIA, cor: catalogos.cores[0] ?? "", placa: "",
-    ano: "", avaliacao: "", mercado: "", modo: "mercado",
+    ano: "", avaliacao: "", mercado: "", modo: "mercado", fipe: null,
   });
 
   const [data, setData] = useState(hojeISO());
@@ -86,6 +89,9 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
         tipo: r.escolha.tipo, marca, modelo, cor: r.cor, placa: r.placa,
         ano: r.ano ? Number(r.ano.replace(/\D/g, "")) : null,
         avaliacao: paraCentavos(r.avaliacao), mercado: paraCentavos(r.mercado), modo: r.modo,
+        // O carro que entra na troca também é um carro entrando: se a versão
+        // foi escolhida, o servidor grava a Fipe na compra dele.
+        ...(r.fipe ? { fipe: r.fipe } : {}),
       };
     });
     const incompleto = trocas.findIndex(
@@ -200,6 +206,17 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
               <option value="mercado">Pelo mercado (recomendado)</option>
               <option value="avaliacao">Pela avaliação</option>
             </CampoSelecao>
+
+            {(() => {
+              const { marca, modelo } = resolver(r.escolha);
+              return marca && modelo ? (
+                <SeletorFipe
+                  tipo={r.escolha.tipo} marca={marca} modelo={modelo}
+                  ano={r.ano ? Number(r.ano.replace(/\D/g, "")) : null}
+                  aoEscolher={(e) => mudar(i, "fipe", e)}
+                />
+              ) : null;
+            })()}
 
             {agio > 0 && (
               <p className="hint" style={{ marginTop: 8 }}>

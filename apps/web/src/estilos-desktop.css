@@ -182,7 +182,8 @@
   .card-head .hint { margin-bottom: 0; }
 
   /* ---------- ficha: Fipe em quatro números ---------- */
-  .fipe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 16px; margin-top: 14px; }
+  .fipe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 14px; }
+  .fipe-grid div b { white-space: nowrap; }
   .fipe-grid div span {
     display: block; font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
     color: var(--ink3); font-weight: 600;

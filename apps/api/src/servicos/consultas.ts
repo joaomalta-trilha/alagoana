@@ -68,6 +68,12 @@ export interface VeiculoCalculado {
   depreciacaoPct: number | null;
   anuncioVsFipe: number | null;
 
+  /** A versão da Fipe escolhida para este carro, quando há uma. */
+  fipeVersao: string | null;
+  fipeCodigo: string | null;
+  /** O mês da tabela que gerou `fipeHoje` — "agosto de 2026". */
+  fipeReferencia: string | null;
+
   garantia: Garantia | null;
 }
 
@@ -78,6 +84,7 @@ interface Linha {
   origem: "compra" | "troca"; observacao: string | null;
   data_compra: DataISO; valor_compra: string; valor_anuncio: string | null;
   fipe_compra: string | null; fipe_hoje: string | null;
+  fipe_versao: string | null; fipe_codigo: string | null; fipe_referencia: string | null;
   data_venda: DataISO | null; valor_venda: string | null;
   custo_preparacao: string; lancamentos: string;
 }
@@ -85,7 +92,8 @@ interface Linha {
 const SELECT_VEICULO = `
   select v.id, v.codigo, v.tipo, v.marca, v.modelo, v.versao, v.ano, v.cor, v.placa, v.km,
          v.origem, v.observacao, v.data_compra, v.valor_compra, v.valor_anuncio,
-         v.fipe_compra, v.fipe_hoje, v.data_venda, v.valor_venda,
+         v.fipe_compra, v.fipe_hoje, v.fipe_versao, v.fipe_codigo, v.fipe_referencia,
+         v.data_venda, v.valor_venda,
          cv.custo_preparacao, cv.lancamentos
     from veiculo v
     join custo_veiculo cv on cv.veiculo_id = v.id`;
@@ -135,6 +143,10 @@ export function calcular(l: Linha, hoje: DataISO): VeiculoCalculado {
     depreciacao: depreciacao(fipeCompra, fipeHoje),
     depreciacaoPct: depreciacaoPct(fipeCompra, fipeHoje),
     anuncioVsFipe: anuncioVsFipe(valorAnuncio, fipeHoje),
+
+    fipeVersao: l.fipe_versao,
+    fipeCodigo: l.fipe_codigo,
+    fipeReferencia: l.fipe_referencia,
 
     garantia: l.data_venda === null ? null : garantia(l.data_venda, hoje),
   };

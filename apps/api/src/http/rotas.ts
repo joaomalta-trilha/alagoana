@@ -35,6 +35,10 @@ import {
   registrarAporte, transferir, previaExclusaoTransferencia, excluirTransferencia,
 } from "../servicos/caixa.js";
 import {
+  versoesDe, anos as anosDaFipe, gravarFipe, atualizarFipeDeHoje, anoDaFipe, talvezAtualizar,
+} from "../servicos/fipe.js";
+import { tipoFipe } from "../dominio/fipe.js";
+import {
   consolidadoVendas, ficha, listarVeiculos, painel, totalizar, visaoCaixa, type Situacao,
 } from "../servicos/consultas.js";
 
@@ -103,6 +107,23 @@ function lerVeiculo(c: Corpo): Partial<EntradaVeiculo> {
  * versão mandava. Ler os dois custa duas linhas e evita que um cliente antigo
  * — uma aba aberta desde antes do deploy — perca a troca em silêncio.
  */
+/** A escolha de versão da Fipe, quando a tela mandou uma. */
+export interface EscolhaFipe {
+  marcaCodigo: string;
+  modeloCodigo: string;
+  anoCodigo: string;
+}
+
+function lerFipe(c: Corpo): EscolhaFipe | null {
+  const f = objeto(c, "fipe");
+  if (!f) return null;
+  const marcaCodigo = texto(f, "marcaCodigo");
+  const modeloCodigo = texto(f, "modeloCodigo");
+  const anoCodigo = texto(f, "anoCodigo");
+  if (!marcaCodigo || !modeloCodigo || !anoCodigo) return null;
+  return { marcaCodigo, modeloCodigo, anoCodigo };
+}
+
 function lerTrocas(c: Corpo): EntradaTroca[] {
   const lista = listaDeObjetos(c, "trocas");
   const um = objeto(c, "troca");
@@ -182,7 +203,20 @@ const ROTAS: Rota[] = [
     metodo: "POST", padrao: "/api/veiculos", status: 201,
     fn: async (ctx) => {
       const entrada = lerVeiculo(ctx.corpo) as EntradaVeiculo;
-      return comTransacao((c) => criarVeiculo(c, entrada, ctx.usuario.id));
+      const criado = await comTransacao((c) => criarVeiculo(c, entrada, ctx.usuario.id));
+
+      // A Fipe vem depois do commit, e de propósito: é chamada de rede, e
+      // rede aberta dentro de transação prende conexão do banco. Se a Fipe
+      // estiver fora do ar, o carro entra do mesmo jeito e a Fipe entra
+      // depois, pela ficha.
+      const escolha = lerFipe(ctx.corpo);
+      const fipe = escolha
+        ? await comTransacao((c) =>
+            gravarFipe(c, criado.id, lerTipo(texto(ctx.corpo, "tipo")), escolha,
+                       { naCompra: true }))
+        : null;
+
+      return { ...criado, fipe };
     },
   },
   {
@@ -227,6 +261,18 @@ const ROTAS: Rota[] = [
       };
       const resultado = await comTransacao((c) =>
         venderVeiculo(c, ctx.parametros["id"]!, entrada, ctx.usuario.id));
+
+      // Cada recebido na troca é um carro entrando: se veio com versão da
+      // Fipe escolhida, grava a Fipe na compra dele. Fora da transação da
+      // venda, pelo mesmo motivo do lançamento de carro.
+      const brutas = listaDeObjetos(ctx.corpo, "trocas");
+      for (const [i, entrou] of resultado.veiculosQueEntraram.entries()) {
+        const escolha = brutas[i] ? lerFipe(brutas[i]!) : null;
+        if (!escolha) continue;
+        await comTransacao((c) =>
+          gravarFipe(c, entrou.id, lerTipo(entrada.trocas?.[i]?.tipo), escolha,
+                     { naCompra: true }));
+      }
       const atualizada = await comLeitura((c) => ficha(c, ctx.parametros["id"]!, hoje()));
       return { ...resultado, veiculo: filtrarPorPapel(atualizada, ctx.usuario.papel) };
     },
@@ -245,6 +291,67 @@ const ROTAS: Rota[] = [
       const atualizada = await comLeitura((c) => ficha(c, ctx.parametros["id"]!, hoje()));
       return { desfeita, veiculo: filtrarPorPapel(atualizada, ctx.usuario.papel) };
     },
+  },
+
+  {
+    // As versões que podem ser este carro. A marca sai sozinha; a versão é a
+    // única coisa que o nosso cadastro não sabe.
+    //
+    // Recebe tipo, marca e modelo em vez de um id porque serve também o carro
+    // que está sendo lançado — que ainda não existe para ter id.
+    metodo: "GET", padrao: "/api/fipe/versoes",
+    fn: async (ctx) => {
+      const tipo = lerTipo(ctx.consulta.get("tipo"));
+      const marca = ctx.consulta.get("marca") ?? "";
+      const modelo = ctx.consulta.get("modelo") ?? "";
+      if (!marca || !modelo) {
+        throw new ErroDeValidacao("Informe a marca e o modelo.", 400);
+      }
+      if (!tipoFipe(tipo)) return { versoes: [], listaInteira: false, semTabela: true };
+
+      const sugestao = await versoesDe(tipo, marca, modelo);
+      if (!sugestao) return { versoes: [], listaInteira: false, indisponivel: true };
+      return sugestao;
+    },
+  },
+  {
+    // Os anos de uma versão, com o do veículo já apontado.
+    metodo: "GET", padrao: "/api/fipe/anos",
+    fn: async (ctx) => {
+      const catalogo = tipoFipe(lerTipo(ctx.consulta.get("tipo")));
+      const marca = ctx.consulta.get("marca");
+      const modelo = ctx.consulta.get("modelo");
+      const ano = Number(ctx.consulta.get("ano")) || null;
+      if (!catalogo || !marca || !modelo) {
+        throw new ErroDeValidacao("Informe a marca e a versão da Fipe.", 400);
+      }
+      const lista = await anosDaFipe(catalogo, marca, modelo);
+      if (!lista) return { anos: [], sugerido: null, indisponivel: true };
+      return { anos: lista, sugerido: anoDaFipe(ano, lista) };
+    },
+  },
+  {
+    // Grava a versão escolhida. Não mexe na Fipe da compra quando ela já
+    // existe: aquela é o retrato do dia da entrada, e corrigir a versão
+    // conserta o número de hoje, não reescreve a história.
+    metodo: "PUT", padrao: "/api/veiculos/:id/fipe",
+    fn: async (ctx) => {
+      const escolha = lerFipe(ctx.corpo);
+      if (!escolha) throw new ErroDeValidacao("Escolha a versão e o ano da Fipe.", 400);
+
+      const v = await comLeitura((c) => ficha(c, ctx.parametros["id"]!, hoje()));
+      const naCompra = v.fipeCompra === null;
+      const fipe = await comTransacao((c) =>
+        gravarFipe(c, v.id, v.tipo, escolha, { naCompra }));
+
+      if (!fipe) throw new ErroDeValidacao("A Fipe não respondeu. Tente de novo em instantes.");
+      const atualizada = await comLeitura((c) => ficha(c, v.id, hoje()));
+      return { fipe, veiculo: filtrarPorPapel(atualizada, ctx.usuario.papel) };
+    },
+  },
+  {
+    metodo: "POST", padrao: "/api/fipe/atualizar",
+    fn: () => comTransacao((c) => atualizarFipeDeHoje(c)),
   },
 
   // -------------------------------------------------------------- custos
@@ -337,7 +444,12 @@ const ROTAS: Rota[] = [
   // rotas de leitura leem os mesmos parâmetros.
   {
     metodo: "GET", padrao: "/api/painel",
-    fn: (ctx) => comLeitura((c) => painel(c, hoje(), lerFiltros(ctx.consulta))),
+    fn: (ctx) => {
+      // Pega carona: se faz meio dia que ninguém confere a Fipe, confere
+      // agora, em segundo plano. A resposta do painel não espera por isso.
+      talvezAtualizar(comTransacao);
+      return comLeitura((c) => painel(c, hoje(), lerFiltros(ctx.consulta)));
+    },
   },
   {
     metodo: "GET", padrao: "/api/vendas",

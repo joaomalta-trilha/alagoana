@@ -270,6 +270,9 @@ button,input,select{font-family:inherit}
 .kpis-ficha .kpi b{font-size:17px}
 .kpis-ficha .kpi.bom b{color:var(--verde)}
 .kpis-ficha .kpi.alerta b{color:var(--vermelho)}
+/* A versão da Fipe já escolhida, no topo da folha. */
+.fipe-atual{background:var(--azul-bg); border-radius:10px; padding:11px 12px; margin-bottom:12px; font-size:13.5px}
+.fipe-atual .cm{margin-top:3px}
 .elos{margin-top:10px}
 .elo{display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
   padding:10px 0; border-bottom:1px solid #EDEFEA}

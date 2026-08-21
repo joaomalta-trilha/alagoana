@@ -307,8 +307,15 @@ export function Ficha(p: Props) {
 
   const fipe = desktop ? (
     <div className="card">
-      <TituloComAcao titulo="Referência Fipe" hint="Preenchida à mão. Atualize quando a tabela virar o mês.">
-        <button className="btn-sec" onClick={() => p.aoAtualizarFipe(v)}>Atualizar valores</button>
+      <TituloComAcao
+        titulo="Referência Fipe"
+        hint={v.fipeVersao
+          ? `${v.fipeVersao}${v.fipeReferencia ? ` · tabela de ${v.fipeReferencia}` : ""}`
+          : "Escolha a versão para a Fipe entrar sozinha."}
+      >
+        <button className="btn-sec" onClick={() => p.aoAtualizarFipe(v)}>
+          {v.fipeVersao ? "Trocar versão" : "Escolher versão"}
+        </button>
       </TituloComAcao>
       <div className="fipe-grid">
         <div><span>Fipe na compra</span><b>{v.fipeCompra ? brl(v.fipeCompra) : "—"}</b></div>
@@ -334,8 +341,15 @@ export function Ficha(p: Props) {
     <div className="card">
       <div className="entre base">
         <h3>Referência Fipe</h3>
-        <button className="acao-linha" onClick={() => p.aoAtualizarFipe(v)}>Atualizar</button>
+        <button className="acao-linha" onClick={() => p.aoAtualizarFipe(v)}>
+          {v.fipeVersao ? "Trocar versão" : "Escolher versão"}
+        </button>
       </div>
+      {v.fipeVersao && (
+        <p className="hint" style={{ marginBottom: 6 }}>
+          {v.fipeVersao}{v.fipeReferencia ? ` · tabela de ${v.fipeReferencia}` : ""}
+        </p>
+      )}
       <ul className="rows" style={{ marginTop: 8 }}>
         <li><span>Fipe na compra</span><b>{v.fipeCompra ? brl(v.fipeCompra) : "—"}</b></li>
         <li><span>Fipe hoje</span><b>{v.fipeHoje ? brl(v.fipeHoje) : "—"}</b></li>

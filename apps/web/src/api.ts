@@ -78,6 +78,8 @@ export interface Veiculo {
   anuncioAbaixoDoCusto: boolean;
 
   depreciacao: Centavos | null; depreciacaoPct: number | null; anuncioVsFipe: number | null;
+  /** A versão da Fipe escolhida, e o mês da tabela que gerou `fipeHoje`. */
+  fipeVersao: string | null; fipeCodigo: string | null; fipeReferencia: string | null;
   garantia: Garantia | null;
 }
 
@@ -210,6 +212,39 @@ export interface PreviaDesfazerVenda {
   impedimento: string | null;
 }
 
+export interface ItemFipe { codigo: string; nome: string }
+
+export interface VersoesFipe {
+  marcaCodigo: string;
+  versoes: ItemFipe[];
+  /** Verdadeiro quando o filtro não achou nada e a lista veio inteira. */
+  listaInteira: boolean;
+  /** Tipo sem tabela Fipe (`outro`). */
+  semTabela?: boolean;
+  /** A Fipe não respondeu. */
+  indisponivel?: boolean;
+}
+
+export interface AnosFipe {
+  anos: ItemFipe[];
+  /** O ano do veículo, quando existe nesta versão. */
+  sugerido: string | null;
+  indisponivel?: boolean;
+}
+
+export interface EscolhaFipe {
+  marcaCodigo: string;
+  modeloCodigo: string;
+  anoCodigo: string;
+}
+
+export interface ValorFipe {
+  valor: Centavos;
+  referencia: string;
+  versao: string;
+  codigo: string;
+}
+
 export interface PreviaExclusaoTransferencia {
   id: string;
   data: string;
@@ -285,6 +320,13 @@ export const api = {
   desfazerVenda: (id: string) =>
     pedir<{ desfeita: PreviaDesfazerVenda; veiculo: Ficha }>(
       "DELETE", `/api/veiculos/${id}/venda`),
+
+  versoesFipe: (tipo: string, marca: string, modelo: string) =>
+    pedir<VersoesFipe>("GET", "/api/fipe/versoes?" + new URLSearchParams({ tipo, marca, modelo })),
+  anosFipe: (p: { tipo: string; marca: string; modelo: string; ano: string }) =>
+    pedir<AnosFipe>("GET", "/api/fipe/anos?" + new URLSearchParams(p)),
+  definirFipe: (veiculoId: string, fipe: EscolhaFipe) =>
+    pedir<{ fipe: ValorFipe; veiculo: Ficha }>("PUT", `/api/veiculos/${veiculoId}/fipe`, { fipe }),
 
   painel: (recorte = "") => pedir<Painel>("GET", `/api/painel?${recorte.slice(1)}`),
   vendas: (recorte = "") => pedir<Vendas>("GET", `/api/vendas?${recorte.slice(1)}`),
