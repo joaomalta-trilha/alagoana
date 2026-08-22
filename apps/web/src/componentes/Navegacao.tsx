@@ -40,7 +40,7 @@ export function Topo({ tela, aoSair }: { tela: string; aoSair: () => void }) {
   return (
     <div className="top">
       <div className="marca">
-        <span className="selo">A</span>
+        <span className="selo" role="img" aria-label="Alagoana Veículos" />
         <span className="nome">Alagoana</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>

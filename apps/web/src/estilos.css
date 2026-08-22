@@ -39,9 +39,19 @@ button,input,select{font-family:inherit}
   display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
 .marca{display:flex; align-items:center; gap:9px}
+/* O selo era a letra "A" em Archivo. Desde 22/08/2026 é a logomarca da loja,
+   recortada em `marca.png` — o monograma sem fundo. Ela entra como máscara e
+   a cor vem daqui, então o mesmo arquivo serve o azul sobre o quadrado branco
+   da barra e o branco sobre o quadrado azul do login. Dois PNGs de cores
+   diferentes sairiam do ar um do outro no dia em que a marca mudasse. */
 .marca .selo{
-  width:24px; height:24px; border-radius:6px; background:#FFF; color:var(--azul-marca);
-  display:grid; place-items:center; font-family:"Archivo",sans-serif; font-weight:600; font-size:14px;
+  width:24px; height:24px; border-radius:6px; background:#FFF;
+  display:grid; place-items:center;
+}
+.marca .selo::before{
+  content:""; width:70%; height:70%; background:var(--azul-marca);
+  -webkit-mask:url(/marca.png) center/contain no-repeat;
+  mask:url(/marca.png) center/contain no-repeat;
 }
 .marca .nome{font-family:"Archivo",sans-serif; font-weight:600; font-size:15px; letter-spacing:-.01em}
 .top .tela{font-family:"Archivo",sans-serif; font-size:13px; font-weight:500; color:rgba(255,255,255,.78)}
@@ -316,7 +326,8 @@ button,input,select{font-family:inherit}
 /* ---------- login ---------- */
 .login{min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px 16px}
 .login .card{width:100%; max-width:400px; padding:32px; margin:0}
-.login .marca .selo{background:var(--azul-marca); color:#FFF; width:28px; height:28px; border-radius:7px}
+.login .marca .selo{background:var(--azul-marca); width:28px; height:28px; border-radius:7px}
+.login .marca .selo::before{background:#FFF}
 .login .marca .nome{font-size:19px; color:var(--ink)}
 .login .sub{color:var(--ink2); font-size:13.5px; margin:4px 0 24px}
 .login .rodape{margin-top:24px; padding-top:16px; border-top:1px solid var(--line); color:var(--ink3); font-size:12.5px; line-height:1.6}

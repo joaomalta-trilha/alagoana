@@ -37,7 +37,7 @@ export function TopoDesktop(
   return (
     <div className="topbar">
       <div className="marca">
-        <span className="selo">A</span>
+        <span className="selo" role="img" aria-label="Alagoana Veículos" />
         <span className="nome">Alagoana Veículos</span>
       </div>
       <span className="lema">gestão de seminovos</span>

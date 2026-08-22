@@ -28,7 +28,7 @@ export function Login({ aoEntrar }: { aoEntrar: (u: Usuario) => void }) {
     <main className="login">
       <div className="card">
         <div className="marca">
-          <span className="selo">A</span>
+          <span className="selo" role="img" aria-label="Alagoana Veículos" />
           <span className="nome">Alagoana Veículos</span>
         </div>
         <p className="sub">Sistema de gestão · acesso interno</p>

@@ -11,7 +11,13 @@
  */
 
 const CASCO = "alagoana-casco-v1";
-const ESSENCIAIS = ["/", "/manifest.webmanifest", "/icone-192.png", "/icone-512.png"];
+const ESSENCIAIS = [
+  "/", "/manifest.webmanifest",
+  "/icone-32.png", "/icone-192.png", "/icone-512.png",
+  // O monograma da barra superior: sem ele no cache, o app offline abre
+  // com um quadrado vazio no lugar da marca.
+  "/marca.png",
+];
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
