@@ -39,6 +39,15 @@ button,input,select{font-family:inherit}
   display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
 .marca{display:flex; align-items:center; gap:9px}
+/* A logo por extenso no cabeçalho, no lugar do selo mais o nome escrito.
+   Entra como máscara, igual ao selo: a cor sai daqui, e hoje é o branco da
+   barra azul. A largura é `auto` com proporção fixa — o arquivo é 3,68:1, e
+   travar só a altura deixa o desenho respirar sem eu repetir o número. */
+.marca .logo{
+  height:22px; aspect-ratio:442 / 120; background:#FFF;
+  -webkit-mask:url(/logo.png) left center/contain no-repeat;
+  mask:url(/logo.png) left center/contain no-repeat;
+}
 /* O selo era a letra "A" em Archivo. Desde 22/08/2026 é a logomarca da loja,
    recortada em `marca.png` — o monograma sem fundo. Ela entra como máscara e
    a cor vem daqui, então o mesmo arquivo serve o azul sobre o quadrado branco

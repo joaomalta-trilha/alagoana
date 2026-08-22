@@ -11,7 +11,10 @@ decisões sem depender de arquivo solto em pasta de downloads.
 | [patio-mobile.html](patio-mobile.html) | Referência visual e comportamental do mobile. |
 | [PROMPTS-AJUSTES.md](PROMPTS-AJUSTES.md) | Ajustes pedidos depois do primeiro deploy. Aplicados em 16/08/2026. |
 | [planilha-2026.xlsx](planilha-2026.xlsx) | A planilha que a loja mantém. É a fonte da frota — compra, venda, estoque e custo por carro. |
-| [logo-alagoana.png](logo-alagoana.png) | A logomarca, como a loja mandou. É a fonte dos ícones — `npm run icones` deriva todos dela. |
+| [logo-alagoana.png](logo-alagoana.png) | A logomarca em quadrado, como a loja mandou. É a fonte dos ícones e do selo. |
+| [logo-alagoana-horizontal.png](logo-alagoana-horizontal.png) | A logo por extenso, branca sobre transparente. É a fonte do cabeçalho. |
+
+`npm run icones` deriva todos os arquivos de `apps/web/public` destas duas.
 
 Os protótipos são HTML de uma página, com os dados embutidos. Abrem no
 navegador com dois cliques e não precisam de servidor nem de banco — é assim

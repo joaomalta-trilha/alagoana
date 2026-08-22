@@ -75,9 +75,11 @@ function png(largura, altura, pixels, canais) {
 }
 
 /**
- * Decodifica um PNG simples: 8 bits, RGB ou RGBA, sem entrelace.
+ * Decodifica PNG de 8 bits sem entrelace: RGB, RGBA ou paleta.
  *
- * É o que a fonte é. Recusa o resto em vez de devolver imagem errada — um
+ * São os formatos das duas fontes. A paleta entrou porque a logo horizontal
+ * veio assim — com `tRNS`, que é onde mora a transparência nesse formato.
+ * Qualquer outra combinação é recusada em vez de virar imagem errada: um
  * ícone torto passaria despercebido até alguém abrir o celular.
  */
 function lerPng(caminho) {
@@ -93,21 +95,25 @@ function lerPng(caminho) {
   const tipoDeCor = b[25];
   const entrelace = b[28];
 
-  if (profundidade !== 8 || ![2, 6].includes(tipoDeCor) || entrelace !== 0) {
+  if (profundidade !== 8 || ![2, 3, 6].includes(tipoDeCor) || entrelace !== 0) {
     throw new Error(
-      `${caminho}: esperava PNG de 8 bits RGB ou RGBA sem entrelace — ` +
+      `${caminho}: esperava PNG de 8 bits RGB, RGBA ou paleta sem entrelace — ` +
       `veio profundidade ${profundidade}, tipo ${tipoDeCor}, entrelace ${entrelace}.`);
   }
 
-  const canais = tipoDeCor === 6 ? 4 : 3;
+  // Em paleta há 1 byte por pixel no fluxo; a cor vem da PLTE e o alfa da tRNS.
+  const canais = tipoDeCor === 6 ? 4 : tipoDeCor === 3 ? 1 : 3;
   const partes = [];
+  let plte = null, trns = null;
   for (let i = 8; i < b.length;) {
     const n = b.readUInt32BE(i);
-    if (b.subarray(i + 4, i + 8).toString("ascii") === "IDAT") {
-      partes.push(b.subarray(i + 8, i + 8 + n));
-    }
+    const tipo = b.subarray(i + 4, i + 8).toString("ascii");
+    if (tipo === "IDAT") partes.push(b.subarray(i + 8, i + 8 + n));
+    else if (tipo === "PLTE") plte = b.subarray(i + 8, i + 8 + n);
+    else if (tipo === "tRNS") trns = b.subarray(i + 8, i + 8 + n);
     i += 12 + n;
   }
+  if (tipoDeCor === 3 && !plte) throw new Error(`${caminho}: paleta sem PLTE.`);
 
   const cru = inflateSync(Buffer.concat(partes));
   const passo = largura * canais;
@@ -134,7 +140,19 @@ function lerPng(caminho) {
     }
   }
 
-  return { largura, altura, canais, px };
+  if (tipoDeCor !== 3) return { largura, altura, canais, px };
+
+  // Expande a paleta para RGBA, para o resto do arquivo lidar com um formato
+  // só. Índice sem entrada na tRNS é opaco, como manda a especificação.
+  const rgba = Buffer.alloc(largura * altura * 4);
+  for (let p = 0, q = 0; p < px.length; p++, q += 4) {
+    const indice = px[p];
+    rgba[q] = plte[indice * 3];
+    rgba[q + 1] = plte[indice * 3 + 1];
+    rgba[q + 2] = plte[indice * 3 + 2];
+    rgba[q + 3] = trns && indice < trns.length ? trns[indice] : 255;
+  }
+  return { largura, altura, canais: 4, px: rgba };
 }
 
 // ------------------------------------------------------------ reamostra
@@ -146,17 +164,17 @@ function lerPng(caminho) {
  * quase toda a marca. A média de 1000px para 32px olha ~1000 pixels por
  * destino e chega numa borda suave sem biblioteca nenhuma.
  */
-function reduzir(img, lado, canais) {
-  const saida = Buffer.alloc(lado * (1 + lado * canais));
-  const escalaX = img.largura / lado;
-  const escalaY = img.altura / lado;
+function reduzir(img, largura, altura, canais) {
+  const saida = Buffer.alloc(altura * (1 + largura * canais));
+  const escalaX = img.largura / largura;
+  const escalaY = img.altura / altura;
 
-  for (let y = 0; y < lado; y++) {
-    const inicio = y * (1 + lado * canais);
+  for (let y = 0; y < altura; y++) {
+    const inicio = y * (1 + largura * canais);
     saida[inicio] = 0;                                   // filtro "none"
     const y0 = Math.floor(y * escalaY), y1 = Math.ceil((y + 1) * escalaY);
 
-    for (let x = 0; x < lado; x++) {
+    for (let x = 0; x < largura; x++) {
       const x0 = Math.floor(x * escalaX), x1 = Math.ceil((x + 1) * escalaX);
       const soma = [0, 0, 0, 0];
       let n = 0;
@@ -217,10 +235,11 @@ function recortar(img) {
  * caixa, acabaria exibindo 70% de 65%. A marca saía pequena demais, e foi
  * assim que ela apareceu na primeira tentativa.
  *
- * Sai quadrado, centrado no maior lado, para o `contain` da máscara não
- * espremer o desenho quando a caixa do selo for quadrada.
+ * Com `quadrado`, sai centrado no maior lado — é o que o selo precisa, para o
+ * `contain` da máscara não espremer o desenho numa caixa quadrada. Sem ele,
+ * sai na caixa justa do desenho, que é o que a logo horizontal precisa.
  */
-function aparar(img) {
+function aparar(img, { quadrado = true } = {}) {
   let x0 = img.largura, y0 = img.altura, x1 = -1, y1 = -1;
   for (let y = 0; y < img.altura; y++) {
     for (let x = 0; x < img.largura; x++) {
@@ -234,17 +253,22 @@ function aparar(img) {
   }
   if (x1 < 0) throw new Error("a marca saiu vazia — confira as cores de FUNDO e MARCA.");
 
-  const lado = Math.max(x1 - x0 + 1, y1 - y0 + 1);
-  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-  const inicioX = Math.round(cx - lado / 2), inicioY = Math.round(cy - lado / 2);
+  let largura = x1 - x0 + 1, altura = y1 - y0 + 1;
+  let inicioX = x0, inicioY = y0;
+  if (quadrado) {
+    const lado = Math.max(largura, altura);
+    inicioX = Math.round((x0 + x1) / 2 - lado / 2);
+    inicioY = Math.round((y0 + y1) / 2 - lado / 2);
+    largura = altura = lado;
+  }
 
-  const saida = { largura: lado, altura: lado, canais: 4, px: Buffer.alloc(lado * lado * 4) };
-  for (let y = 0; y < lado; y++) {
-    for (let x = 0; x < lado; x++) {
+  const saida = { largura, altura, canais: 4, px: Buffer.alloc(largura * altura * 4) };
+  for (let y = 0; y < altura; y++) {
+    for (let x = 0; x < largura; x++) {
       const sx = inicioX + x, sy = inicioY + y;
-      const destino = (y * lado + x) * 4;
       if (sx < 0 || sy < 0 || sx >= img.largura || sy >= img.altura) continue;
-      img.px.copy(saida.px, destino, (sy * img.largura + sx) * 4, (sy * img.largura + sx) * 4 + 4);
+      img.px.copy(saida.px, (y * largura + x) * 4,
+                  (sy * img.largura + sx) * 4, (sy * img.largura + sx) * 4 + 4);
     }
   }
   return saida;
@@ -259,11 +283,37 @@ mkdirSync(DESTINO, { recursive: true });
 
 for (const lado of [32, 192, 512]) {
   const arquivo = join(DESTINO, `icone-${lado}.png`);
-  writeFileSync(arquivo, png(lado, lado, reduzir(logo, lado, 3), 3));
+  writeFileSync(arquivo, png(lado, lado, reduzir(logo, lado, lado, 3), 3));
   console.log(`  ${arquivo.replace(RAIZ + "/", "")}`);
 }
 
 const marca = aparar(recortar(logo));
 const arquivoMarca = join(DESTINO, "marca.png");
-writeFileSync(arquivoMarca, png(128, 128, reduzir(marca, 128, 4), 4));
+writeFileSync(arquivoMarca, png(128, 128, reduzir(marca, 128, 128, 4), 4));
 console.log(`  ${arquivoMarca.replace(RAIZ + "/", "")}  (${marca.largura}×${marca.altura} recortado)`);
+
+// ------------------------------------------------------ logo horizontal
+
+/**
+ * A logo por extenso, para o cabeçalho.
+ *
+ * A fonte já vem branca sobre transparente, então o alfa dela **é** o
+ * desenho — não há o que recortar por cor, só a moldura vazia a aparar.
+ *
+ * Sai como máscara, igual à `marca.png`: a cor vem da folha de estilo. Hoje
+ * ela só aparece branca sobre a barra azul, mas no dia em que precisar
+ * aparecer escura sobre fundo claro é uma linha de CSS, não um arquivo novo.
+ *
+ * 120px de altura é três vezes o que o cabeçalho mostra — o suficiente para
+ * tela retina sem carregar um arquivo grande à toa.
+ */
+const ALTURA_DA_LOGO = 120;
+
+const horizontal = aparar(lerPng(join(RAIZ, "referencia/logo-alagoana-horizontal.png")),
+                          { quadrado: false });
+const larguraDaLogo = Math.round(horizontal.largura / horizontal.altura * ALTURA_DA_LOGO);
+const arquivoLogo = join(DESTINO, "logo.png");
+writeFileSync(arquivoLogo, png(larguraDaLogo, ALTURA_DA_LOGO,
+  reduzir(horizontal, larguraDaLogo, ALTURA_DA_LOGO, 4), 4));
+console.log(`  ${arquivoLogo.replace(RAIZ + "/", "")}  (${larguraDaLogo}×${ALTURA_DA_LOGO}, ` +
+            `proporção ${(horizontal.largura / horizontal.altura).toFixed(2)}:1)`);

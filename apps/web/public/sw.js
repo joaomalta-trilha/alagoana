@@ -16,7 +16,7 @@ const ESSENCIAIS = [
   "/icone-32.png", "/icone-192.png", "/icone-512.png",
   // O monograma da barra superior: sem ele no cache, o app offline abre
   // com um quadrado vazio no lugar da marca.
-  "/marca.png",
+  "/marca.png", "/logo.png",
 ];
 
 self.addEventListener("install", (evento) => {

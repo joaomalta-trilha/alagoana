@@ -21,7 +21,7 @@
     display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
     position: sticky; top: 0; z-index: 20;
   }
-  .topbar .marca .selo { width: 30px; height: 30px; font-size: 17px; border-radius: 8px; }
+  .topbar .marca .logo { height: 26px; }
   .topbar .marca .nome { font-size: 17px; }
   .topbar .lema {
     font-family: "Archivo", sans-serif; font-weight: 500; font-size: 13.5px;
