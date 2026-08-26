@@ -82,6 +82,26 @@ npm run usuario -- email victor@alagoana.local victor@alagoana.com.br
 npm run usuario -- ativar victor@alagoana.com.br
 ```
 
+## Corrigir o ponto de partida de uma conta
+
+O saldo de uma conta é `saldo_inicial + soma dos movimentos`, e não existe
+coluna de saldo. Para subir o saldo de uma conta **sem** mexer em outra e
+**sem** lançar aporte, o único caminho honesto é corrigir o ponto de partida:
+
+```bash
+npm run conta                                       # lista as contas
+npm run conta -- Victor --somar 1500,00             # ensaio
+npm run conta -- Victor --somar 1500,00 --confirmo  # grava
+```
+
+Também aceita `--definir 4108,54` quando o número final é o que se sabe.
+
+Isto **não aparece no extrato**: quem olhar vai ver o saldo diferente e nenhuma
+linha explicando. É conserto de carga, não operação do dia — por isso mora no
+terminal e não na tela. Dinheiro que entra ou sai no dia a dia é aporte, venda,
+custo ou transferência, e cada um tem a sua tela e deixa rastro. O que foi
+mudado aqui fica em `evento`, com o antes e o depois.
+
 Criar não define senha: isso continua sendo o `npm run senha`. E `desativar`
 se recusa a derrubar o último acesso ativo com senha — sem essa trava, um
 comando distraído trancaria todo mundo para fora do próprio sistema.

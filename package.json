@@ -18,6 +18,7 @@
     "db:migrar": "npm run -w @alagoana/api migrar",
     "db:semear": "npm run -w @alagoana/api semear",
     "db:conferir": "npm run -w @alagoana/api conferir",
+    "conta": "npm run -w @alagoana/api conta --",
     "db:recarregar": "npm run -w @alagoana/api recarregar --",
     "db:zerar": "npm run -w @alagoana/api zerar",
     "teste": "npm run -w @alagoana/api teste"
