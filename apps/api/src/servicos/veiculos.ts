@@ -533,20 +533,42 @@ export async function venderVeiculo(
   //
   // Sem conta na venda ("Não descontar do caixa"), a comissão também não sai
   // de lugar nenhum: vira a provisão da §3.4, paga depois pela tela de custo.
-  const { rows: jaTem } = await c.query<{ n: string }>(
-    "select count(*) n from custo where veiculo_id = $1 and categoria = $2",
-    [id, CATEGORIA_COMISSAO]);
-  const padrao = marcarComissoesPorPadrao(Number(jaTem[0]!.n) > 0);
+  // Provisão pendente é o caso normal desde que todo carro nasce com uma:
+  // pagar é datá-la e tirar o dinheiro, não criar outra. Criar uma segunda
+  // cobraria o mesmo carro duas vezes.
+  const { rows: provisionadas } = await c.query<{ id: string; descricao: string; valor: string }>(
+    `select id, descricao, valor from custo
+      where veiculo_id = $1 and categoria = $2 and data is null
+      order by descricao`, [id, CATEGORIA_COMISSAO]);
+
+  const { rows: pagas } = await c.query<{ n: string }>(
+    `select count(*) n from custo
+      where veiculo_id = $1 and categoria = $2 and data is not null`, [id, CATEGORIA_COMISSAO]);
+
+  const padrao = marcarComissoesPorPadrao(Number(pagas[0]!.n) > 0);
   const lancar = e.lancarComissoes ?? padrao;
 
   const comissoesLancadas: Comissao[] = [];
   let comissaoNoCaixa = 0;
+
   if (lancar) {
-    for (const comissao of await comissoesConfiguradas(c)) {
-      const { rows: criado } = await c.query<{ id: string }>(
-        `insert into custo (veiculo_id, descricao, categoria, data, valor)
-         values ($1, $2, $3, $4, $5) returning id`,
-        [id, comissao.beneficiario, CATEGORIA_COMISSAO, e.dataVenda, paraNumeric(comissao.valor)]);
+    // Quando há provisão, ela é que é paga. Só sem provisão nenhuma é que a
+    // venda cria a comissão do zero — carro anterior à provisão automática,
+    // ou aquele em que alguém apagou a provisão de propósito.
+    const aPagar = provisionadas.length > 0
+      ? provisionadas.map((p) => ({
+          id: p.id, beneficiario: p.descricao, valor: deNumeric(p.valor)!,
+        }))
+      : await Promise.all((await comissoesConfiguradas(c)).map(async (comissao) => {
+          const { rows } = await c.query<{ id: string }>(
+            `insert into custo (veiculo_id, descricao, categoria, data, valor)
+             values ($1, $2, $3, null, $4) returning id`,
+            [id, comissao.beneficiario, CATEGORIA_COMISSAO, paraNumeric(comissao.valor)]);
+          return { id: rows[0]!.id, beneficiario: comissao.beneficiario, valor: comissao.valor };
+        }));
+
+    for (const comissao of aPagar) {
+      await c.query("update custo set data = $2 where id = $1", [comissao.id, e.dataVenda]);
 
       await registrarMovimentoOpcional(c, e.contaId ?? null, {
         data: e.dataVenda,
@@ -554,10 +576,10 @@ export async function venderVeiculo(
         tipo: "custo",
         valor: -comissao.valor,
         veiculoId: id,
-        custoId: criado[0]!.id,
+        custoId: comissao.id,
       });
 
-      comissoesLancadas.push(comissao);
+      comissoesLancadas.push({ beneficiario: comissao.beneficiario, valor: comissao.valor });
       if (e.contaId) comissaoNoCaixa += comissao.valor;
     }
   }
@@ -592,7 +614,7 @@ export interface PreviaDesfazerVenda {
    * desaparecem juntas.
    */
   caixa: { conta: string; valor: Centavos; saldoAtual: Centavos; cabe: boolean }[];
-  /** Comissões lançadas no dia da venda — foram criadas por ela. */
+  /** Comissões pagas no dia da venda. Voltam a ser provisão, não somem. */
   comissoes: { quantidade: number; soma: Centavos };
   /** O ágio da troca, quando o modo "pelo mercado" o lançou como custo. */
   agioTroca: { quantidade: number; soma: Centavos };
@@ -699,11 +721,22 @@ export async function desfazerVenda(
     "delete from movimento_caixa where veiculo_id = $1 and tipo = 'venda' and custo_id is null",
     [id]);
 
-  // O `on delete cascade` de `custo` leva junto o movimento de caixa de uma
-  // comissão que já tenha sido paga — e isso devolve o dinheiro à conta, que
-  // é o certo: se a comissão não existe mais, o pagamento também não.
+  // A comissão **volta a ser provisão**, não some: desde 22/08/2026 ela nasce
+  // com o carro, e a venda apenas a paga. Apagá-la devolveria o carro ao pátio
+  // sem a provisão que todo carro em pátio tem — e, se a venda a tivesse
+  // criado do zero, deixá-la provisionada é o mesmo estado de qualquer outro
+  // carro parado. Nos dois caminhos, provisionada é o certo.
+  //
+  // O movimento sai primeiro e explicitamente: sem `delete from custo`, o
+  // `on delete cascade` não tem o que levar junto, e o dinheiro precisa
+  // voltar à conta.
   await c.query(
-    "delete from custo where veiculo_id = $1 and categoria = $2 and data = $3",
+    `delete from movimento_caixa
+      where custo_id in (select id from custo
+                          where veiculo_id = $1 and categoria = $2 and data = $3)`,
+    [id, CATEGORIA_COMISSAO, previa.venda.data]);
+  await c.query(
+    "update custo set data = null where veiculo_id = $1 and categoria = $2 and data = $3",
     [id, CATEGORIA_COMISSAO, previa.venda.data]);
   await c.query(
     "delete from custo where veiculo_id = $1 and categoria = 'Troca' and data = $2",

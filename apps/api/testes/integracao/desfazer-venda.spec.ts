@@ -71,14 +71,18 @@ describe("desfazer venda", () => {
     expect(await saldo(b.alagoana)).toBe(antes - 3_000_000);
   });
 
-  it("apaga as comissões que a venda lançou", async () => {
+  it("devolve a comissão à provisão em vez de apagá-la", async () => {
     const v = await carroVendido();
     const vendido = await comLeitura((c) => ficha(c, v.id, HOJE));
-    expect(vendido.custos.filter((k) => k.categoria === "Comissão")).toHaveLength(1);
+    const paga = vendido.custos.filter((k) => k.categoria === "Comissão");
+    expect(paga).toHaveLength(1);
+    expect(paga[0]!.prevista).toBe(false);
 
     await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
-    expect(f.custos.filter((k) => k.categoria === "Comissão")).toHaveLength(0);
+    const depois = f.custos.filter((k) => k.categoria === "Comissão");
+    expect(depois).toHaveLength(1);
+    expect(depois[0]!.prevista).toBe(true);
   });
 
   it("preserva o custo anterior à venda: o carro volta preparado", async () => {
@@ -86,9 +90,12 @@ describe("desfazer venda", () => {
     await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
-    expect(f.custos.map((k) => k.descricao)).toEqual(["Pintura"]);
-    expect(f.custoPreparacao).toBe(60_000);
-    expect(f.custoTotal).toBe(3_060_000);
+    // A comissão fica, agora como provisão; a pintura, que é anterior à
+    // venda, nunca esteve em jogo.
+    expect(f.custos.map((k) => k.descricao).sort()).toEqual(["Comissão Alagoana", "Pintura"]);
+    expect(f.custos.find((k) => k.descricao === "Pintura")!.prevista).toBe(false);
+    expect(f.custoPreparacao).toBe(60_000 + 150_000);
+    expect(f.custoTotal).toBe(3_060_000 + 150_000);
   });
 
   it("a prévia mostra a conta antes de qualquer estrago", async () => {

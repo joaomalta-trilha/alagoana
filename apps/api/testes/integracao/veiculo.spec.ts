@@ -147,11 +147,30 @@ describe("comissões (§4.6)", () => {
     expect(f.custoTotal).toBe(9_385_320 + 150_000);
   });
 
-  it("vêm desmarcadas quando já foram provisionadas na entrada", async () => {
+  it("provisão pendente vem marcada — a venda paga a que existe", async () => {
     const v = await hondaCity();
     await comTransacao((c) => lancarCusto(c, {
       veiculoIds: [v.id], descricao: "Comissão Alagoana", categoria: "Comissão",
       data: null, previsto: true, valor: 100_000,
+    }, b.usuarioId));
+
+    const r = await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-03", valorVenda: 9_700_000,
+    }, b.usuarioId));
+
+    // Paga a provisão que existia, com o valor dela — não cria outra.
+    expect(r.comissoesLancadas).toEqual([{ beneficiario: "Comissão Alagoana", valor: 100_000 }]);
+    const f = await comLeitura((c) => ficha(c, v.id, HOJE));
+    const comissoes = f.custos.filter((k) => k.categoria === "Comissão");
+    expect(comissoes).toHaveLength(1);
+    expect(comissoes[0]!.prevista).toBe(false);
+  });
+
+  it("comissão já paga vem desmarcada — ninguém cobra o mesmo carro duas vezes", async () => {
+    const v = await hondaCity();
+    await comTransacao((c) => lancarCusto(c, {
+      veiculoIds: [v.id], descricao: "Comissão Alagoana", categoria: "Comissão",
+      data: "2026-08-01", valor: 100_000,
     }, b.usuarioId));
 
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {

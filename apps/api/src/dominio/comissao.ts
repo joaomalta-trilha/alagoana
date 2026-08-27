@@ -28,12 +28,17 @@ export const COMISSOES_PADRAO: readonly Comissao[] = [
 /**
  * O checkbox da tela de venda vem marcado?
  *
- * §4.6: "Vem marcado por padrão, exceto quando o veículo já possui algum custo
- * de categoria Comissão — caso em que vem desmarcado, porque já foram
- * provisionadas na entrada."
+ * A §4.6 dizia "desmarcado quando o veículo já possui algum custo de categoria
+ * Comissão, porque já foram provisionadas na entrada". Enquanto nada
+ * provisionava, "ter comissão" e "ter comissão paga" eram a mesma coisa.
+ *
+ * Desde 22/08/2026 todo carro nasce provisionado, e aí os dois se separam. O
+ * que importa é se ela já foi **paga**: provisão pendente vem marcada, para a
+ * venda pagá-la; comissão já paga vem desmarcada, para ninguém cobrar duas
+ * vezes o mesmo carro.
  */
-export function marcarComissoesPorPadrao(jaTemComissaoLancada: boolean): boolean {
-  return !jaTemComissaoLancada;
+export function marcarComissoesPorPadrao(jaTemComissaoPaga: boolean): boolean {
+  return !jaTemComissaoPaga;
 }
 
 /** Valida o que veio de `config`, caindo no padrão quando o conteúdo não serve. */

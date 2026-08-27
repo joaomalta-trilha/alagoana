@@ -74,6 +74,8 @@ vezes em 17/08/2026:
   da venda "vem desmarcado quando já foram provisionadas na entrada".
   `provisionarComissao: false` desliga: o repasse não paga comissão, e os
   testes dos exemplos da especificação precisam dos números do documento.
+  Na venda o checkbox **paga** essa provisão — data e saída do caixa — em vez
+  de criar outra; desfazer a venda devolve a comissão à provisão.
 - **A Fipe deixou de ser digitada.** A versão é escolhida uma vez, quando o
   carro entra, e o código fica gravado; daí a Fipe na compra fica fixa e a de
   hoje se atualiza sozinha quando a tabela vira o mês. A escolha é manual

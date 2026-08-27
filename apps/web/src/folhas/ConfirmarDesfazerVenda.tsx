@@ -75,9 +75,10 @@ export function ConfirmarDesfazerVenda(
             {previa.comissoes.quantidade > 0 && (
               <li>
                 {previa.comissoes.quantidade === 1
-                  ? "A comissão lançada na venda some"
-                  : `As ${previa.comissoes.quantidade} comissões lançadas na venda somem`}
-                , somando {brl(previa.comissoes.soma)}
+                  ? "A comissão volta a ser provisão"
+                  : `As ${previa.comissoes.quantidade} comissões voltam a ser provisão`}
+                {" "}— {brl(previa.comissoes.soma)} continuam no custo do carro,
+                mas voltam para o caixa
               </li>
             )}
             {previa.agioTroca.quantidade > 0 && (

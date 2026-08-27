@@ -47,7 +47,14 @@ interface Props {
 }
 
 export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props) {
-  const jaTemComissao = veiculo.custos.some((c) => c.categoria === "Comissão");
+  // Provisionada e paga são coisas diferentes desde 22/08/2026: todo carro
+  // nasce com a provisão, e a venda a paga. O que decide o checkbox é se ela
+  // já foi paga — senão a venda cobraria o mesmo carro duas vezes.
+  const comissoes = veiculo.custos.filter((c) => c.categoria === "Comissão");
+  const provisionada = comissoes.filter((c) => c.prevista);
+  const jaTemComissaoPaga = comissoes.some((c) => !c.prevista);
+  const totalDaComissao = (provisionada.length ? provisionada : comissoes)
+    .reduce((a, c) => a + c.valor, 0) || COMISSAO_PADRAO;
   const vazio = (): Recebido => ({
     escolha: ESCOLHA_VAZIA, cor: catalogos.cores[0] ?? "", placa: "",
     ano: "", avaliacao: "", mercado: "", modo: "mercado", fipe: null,
@@ -57,7 +64,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
   const [valor, setValor] = useState(paraCampo(veiculo.valorAnuncio));
   const [contaId, setContaId] = useState(sessao.ultimaConta);
   // §4.6: vem marcado, exceto quando o veículo já tem comissão provisionada.
-  const [comissoes, setComissoes] = useState(!jaTemComissao);
+  const [pagarComissoes, setPagarComissoes] = useState(!jaTemComissaoPaga);
   const [recebidos, setRecebidos] = useState<Recebido[]>([]);
 
   const [erro, setErro] = useState<string | null>(null);
@@ -69,7 +76,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
 
   const valorC = paraCentavos(valor);
   const avaliacaoTotal = recebidos.reduce((a, r) => a + (paraCentavos(r.avaliacao) ?? 0), 0);
-  const comissaoNoCaixa = comissoes && contaId ? COMISSAO_PADRAO : 0;
+  const comissaoNoCaixa = pagarComissoes && contaId ? totalDaComissao : 0;
   const cai = valorC === null ? null : valorC - avaliacaoTotal - comissaoNoCaixa;
 
   async function salvar() {
@@ -109,7 +116,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
         dataVenda: data,
         valorVenda: valorC,
         contaId: contaId || null,
-        lancarComissoes: comissoes,
+        lancarComissoes: pagarComissoes,
         trocas,
       });
       sessao.ultimaConta = contaId;
@@ -139,12 +146,14 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
       </CampoSelecao>
 
       <CampoMarcavel
-        rotulo="Lançar comissões padrão (R$ 1.500)"
-        marcado={comissoes} aoMudar={setComissoes}
+        rotulo={provisionada.length
+          ? `Pagar a comissão provisionada (${brl(totalDaComissao)})`
+          : `Lançar comissões padrão (${brl(totalDaComissao)})`}
+        marcado={pagarComissoes} aoMudar={setPagarComissoes}
       />
-      {jaTemComissao && (
+      {jaTemComissaoPaga && (
         <p className="hint">
-          Este carro já tem comissão lançada, provavelmente provisionada na entrada.
+          Este carro já tem comissão paga. Marcar de novo cobraria duas vezes.
         </p>
       )}
 

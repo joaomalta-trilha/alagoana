@@ -8,7 +8,9 @@
 
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { pool, comTransacao, comLeitura } from "../../src/db/conexao.js";
-import { criarVeiculo, venderVeiculo } from "../../src/servicos/veiculos.js";
+import {
+  criarVeiculo, venderVeiculo, desfazerVenda,
+} from "../../src/servicos/veiculos.js";
 import { lancarCusto } from "../../src/servicos/custos.js";
 import { ficha } from "../../src/servicos/consultas.js";
 import { base, limpar, saldo, type Base } from "./fixtura.js";
@@ -77,27 +79,129 @@ describe("comissão provisionada quando o carro entra", () => {
     expect(comissao.valor).toBe(150_000);
   });
 
-  it("na venda, o checkbox vem desmarcado — a §4.6 sempre previu isto", async () => {
+  it("a venda PAGA a provisão em vez de criar outra", async () => {
     const v = await carro();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
     }, b.usuarioId));
 
-    // Nada de comissão nova: a que existe é a provisionada na entrada.
-    expect(r.comissoesLancadas).toEqual([]);
+    expect(r.comissoesLancadas).toEqual([{ beneficiario: "Comissão Alagoana", valor: 150_000 }]);
+
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
-    expect(f.custos.filter((k) => k.categoria === "Comissão")).toHaveLength(1);
+    const comissoes = f.custos.filter((k) => k.categoria === "Comissão");
+    expect(comissoes).toHaveLength(1);          // continua sendo UMA
+    expect(comissoes[0]!.prevista).toBe(false); // agora paga
+    expect(comissoes[0]!.data).toBe("2026-08-20");
   });
 
-  it("quem insiste em lançar na venda leva as duas, e é escolha explícita", async () => {
+  it("o dinheiro sai da conta que recebeu a venda", async () => {
+    const antes = await saldo(b.alagoana);
     const v = await carro();
     await comTransacao((c) => venderVeiculo(c, v.id, {
-      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: null,
-      lancarComissoes: true,
+      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
+    }, b.usuarioId));
+
+    // 40.000 entram, 1.500 da comissão saem: 38.500 líquidos.
+    expect(await saldo(b.alagoana)).toBe(antes + 3_850_000);
+  });
+
+  it("o custo total não muda ao pagar: a provisão já estava lá", async () => {
+    const v = await carro();
+    const antes = (await comLeitura((c) => ficha(c, v.id, HOJE))).custoTotal;
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
-    expect(f.custos.filter((k) => k.categoria === "Comissão")).toHaveLength(2);
+    expect(f.custoTotal).toBe(antes);
+    expect(f.lucro).toBe(4_000_000 - antes);
+  });
+
+  it("carro que já tem comissão paga não é cobrado de novo", async () => {
+    const v = await carro();
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
+    }, b.usuarioId));
+    await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
+
+    // Paga à mão, fora da venda.
+    await comTransacao((c) => lancarCusto(c, {
+      veiculoIds: [v.id], descricao: "Comissão Alagoana", categoria: "Comissão",
+      data: "2026-08-21", valor: 150_000, modoRateio: "mesmo",
+      previsto: false, contaId: null,
+    }, b.usuarioId));
+
+    const antes = await saldo(b.alagoana);
+    const r = await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-22", valorVenda: 4_000_000, contaId: b.alagoana,
+    }, b.usuarioId));
+
+    expect(r.comissoesLancadas).toEqual([]);        // veio desmarcado
+    expect(await saldo(b.alagoana)).toBe(antes + 4_000_000);
+  });
+
+  it("sem provisão nenhuma, a venda ainda sabe criar a comissão do zero", async () => {
+    const v = await comTransacao((c) => criarVeiculo(c, {
+      marca: "Ford", modelo: "Ka", cor: "Preto", placa: "SEM1P00",
+      dataCompra: "2026-08-01", valorCompra: 3_000_000, contaId: null,
+      provisionarComissao: false,
+    }, b.usuarioId));
+
+    const r = await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
+    }, b.usuarioId));
+
+    expect(r.comissoesLancadas).toHaveLength(1);
+    const f = await comLeitura((c) => ficha(c, v.id, HOJE));
+    const comissao = f.custos.find((k) => k.categoria === "Comissão")!;
+    expect(comissao.prevista).toBe(false);
+    expect(f.custoTotal).toBe(3_150_000);
+  });
+});
+
+describe("desfazer a venda devolve a comissão à provisão", () => {
+  it("a comissão não some — volta a ser prevista", async () => {
+    const v = await carro();
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
+    }, b.usuarioId));
+    await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
+
+    const f = await comLeitura((c) => ficha(c, v.id, HOJE));
+    const comissoes = f.custos.filter((k) => k.categoria === "Comissão");
+    expect(comissoes).toHaveLength(1);
+    expect(comissoes[0]!.prevista).toBe(true);
+    expect(comissoes[0]!.data).toBeNull();
+    // O carro volta ao pátio com o custo que tinha antes de vender.
+    expect(f.custoTotal).toBe(3_150_000);
+  });
+
+  it("o dinheiro da comissão volta para a conta", async () => {
+    const antes = await saldo(b.alagoana);
+    const v = await carro(b.alagoana);
+    await comTransacao((c) => venderVeiculo(c, v.id, {
+      dataVenda: "2026-08-20", valorVenda: 4_000_000, contaId: b.alagoana,
+    }, b.usuarioId));
+    await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
+
+    // Sobra só a compra do carro: a venda e a comissão foram desfeitas.
+    expect(await saldo(b.alagoana)).toBe(antes - 3_000_000);
+  });
+
+  it("vender de novo paga a provisão outra vez, e uma vez só", async () => {
+    const v = await carro();
+    for (const data of ["2026-08-20", "2026-08-22"]) {
+      await comTransacao((c) => venderVeiculo(c, v.id, {
+        dataVenda: data, valorVenda: 4_000_000, contaId: b.alagoana,
+      }, b.usuarioId));
+      if (data === "2026-08-20") {
+        await comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId));
+      }
+    }
+
+    const f = await comLeitura((c) => ficha(c, v.id, HOJE));
+    expect(f.custos.filter((k) => k.categoria === "Comissão")).toHaveLength(1);
+    expect(f.custoTotal).toBe(3_150_000);
   });
 });
 
