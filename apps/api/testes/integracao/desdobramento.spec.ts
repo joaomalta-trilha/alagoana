@@ -23,13 +23,13 @@ let b: Base;
 
 const KA = {
   marca: "Ford", modelo: "Ka", cor: "Preto", placa: "KAA1A11",
-  avaliacao: 2_000_000, modo: "avaliacao" as const,
+  avaliacao: 2_000_000, modo: "avaliacao" as const, provisionarComissao: false as const,
 };
 
 async function trackerVendidaComKaNaTroca() {
   const tracker = await comTransacao((c) => criarVeiculo(c, {
     marca: "Chevrolet", modelo: "Tracker", cor: "Branco", placa: "TRK1A11",
-    dataCompra: "2026-06-01", valorCompra: 6_700_000, contaId: null,
+    dataCompra: "2026-06-01", valorCompra: 6_700_000, contaId: null, provisionarComissao: false,
   }, b.usuarioId));
 
   const r = await comTransacao((c) => venderVeiculo(c, tracker.id, {
@@ -116,7 +116,7 @@ describe("desdobramento da troca (§6.5)", () => {
       dataVenda: "2026-08-01", valorVenda: 3_000_000, contaId: null, lancarComissoes: false,
       trocas: [{
         tipo: "moto", marca: "Yamaha", modelo: "Fazer 250", cor: "Azul",
-        placa: "MOT9Z99", avaliacao: 800_000, modo: "avaliacao",
+        placa: "MOT9Z99", avaliacao: 800_000, modo: "avaliacao" as const, provisionarComissao: false,
       }],
     }, b.usuarioId));
     const moto = r2.veiculosQueEntraram[0]!;
@@ -147,7 +147,7 @@ describe("desdobramento da troca (§6.5)", () => {
   it("carro sem troca nenhuma tem desdobramento vazio", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "MOB1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
@@ -159,14 +159,14 @@ describe("desdobramento da troca (§6.5)", () => {
   it("os dois recebidos de uma venda aparecem juntos", async () => {
     const tracker = await comTransacao((c) => criarVeiculo(c, {
       marca: "Chevrolet", modelo: "Tracker", cor: "Branco", placa: "TRK1A11",
-      dataCompra: "2026-06-01", valorCompra: 6_700_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 6_700_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
 
     await comTransacao((c) => venderVeiculo(c, tracker.id, {
       dataVenda: "2026-07-01", valorVenda: 8_000_000, contaId: null, lancarComissoes: false,
       trocas: [KA, {
         tipo: "moto", marca: "Yamaha", modelo: "Fazer 250", cor: "Azul",
-        placa: "MOT9Z99", avaliacao: 600_000, modo: "avaliacao",
+        placa: "MOT9Z99", avaliacao: 600_000, modo: "avaliacao" as const, provisionarComissao: false,
       }],
     }, b.usuarioId));
 

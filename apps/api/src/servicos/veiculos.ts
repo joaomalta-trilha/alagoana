@@ -39,6 +39,15 @@ export interface EntradaVeiculo {
   fipeCompra?: Centavos | null;
   fipeHoje?: Centavos | null;
   observacao?: string | null;
+  /**
+   * Provisiona a comissão da §4.6 como custo previsto, ligado por padrão.
+   *
+   * Existe para poder ser desligado: o repasse — carro comprado e passado
+   * adiante pelo mesmo valor no dia seguinte, que a frota tem — não paga
+   * comissão, e os testes dos exemplos da especificação precisam dos números
+   * do documento, sem ela.
+   */
+  provisionarComissao?: boolean;
   /** Nulo = "Não descontar do caixa" (§4.7). */
   contaId?: string | null;
 }
@@ -57,6 +66,8 @@ export interface EntradaTroca {
   mercado?: Centavos | null;
   modo: ModoTroca;
   valorAnuncio?: Centavos | null;
+  /** Como no lançamento de carro: ligado por padrão, desligável. */
+  provisionarComissao?: boolean;
 }
 
 export interface EntradaVenda {
@@ -165,8 +176,34 @@ export async function criarVeiculo(
     veiculoId: id,
   });
 
+  if (e.provisionarComissao !== false) await provisionarComissao(c, id);
+
   await registrarEvento(c, usuarioId, "veiculo", id, "criou", null, { codigo, placa });
   return { id, codigo };
+}
+
+/**
+ * Lança a comissão como custo previsto, no momento em que o carro entra.
+ *
+ * A §3.4 chama isso de provisão: custo sem data, que ainda não aconteceu mas
+ * já entra no custo total. E a §4.6 sempre previu esse caminho — o checkbox
+ * da venda "vem desmarcado quando o veículo já possui algum custo de
+ * categoria Comissão, porque já foram provisionadas na entrada". Até
+ * 22/08/2026 nada provisionava; agora todo carro que entra já nasce com ela.
+ *
+ * O efeito prático é o lucro projetado dizer a verdade desde o primeiro dia:
+ * antes ele ignorava R$ 1.500 que sempre iam sair na venda.
+ *
+ * Sem movimento de caixa, que é o que "previsto" quer dizer: o dinheiro sai
+ * quando for pago, pela tela de custo, com a conta escolhida ali.
+ */
+async function provisionarComissao(c: PoolClient, veiculoId: string): Promise<void> {
+  for (const comissao of await comissoesConfiguradas(c)) {
+    await c.query(
+      `insert into custo (veiculo_id, descricao, categoria, data, valor)
+       values ($1, $2, $3, null, $4)`,
+      [veiculoId, comissao.beneficiario, CATEGORIA_COMISSAO, paraNumeric(comissao.valor)]);
+  }
 }
 
 // ------------------------------------------------------------------ editar
@@ -453,6 +490,9 @@ export async function venderVeiculo(
        t.mercado == null ? null : paraNumeric(t.mercado), tipoQueEntrou],
     );
     veiculosQueEntraram.push({ id: rows[0]!.id, codigo });
+    // Carro recebido na troca também é carro entrando no pátio, e também vai
+    // ser vendido um dia — provisiona igual ao que entra por compra.
+    if (t.provisionarComissao !== false) await provisionarComissao(c, rows[0]!.id);
 
     // Modo "pelo mercado": o ágio vira custo desta venda, porque
     // supervalorizar a troca é desconto disfarçado (§4.5). Um custo por

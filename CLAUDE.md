@@ -68,6 +68,12 @@ vezes em 17/08/2026:
 - **O rastro da troca** na ficha do carro vendido: o que entrou, o que
   aconteceu com ele e quanto deu. Consulta recursiva, com guarda de ciclo e
   limite de profundidade. Fica **fora** das contas do veículo de propósito.
+- **Comissão provisionada na entrada.** Todo carro que entra nasce com a
+  comissão como custo previsto da §3.4 — sem data, sem sair do caixa, mas já
+  no custo total. É o caminho que a §4.6 sempre previu ao dizer que o checkbox
+  da venda "vem desmarcado quando já foram provisionadas na entrada".
+  `provisionarComissao: false` desliga: o repasse não paga comissão, e os
+  testes dos exemplos da especificação precisam dos números do documento.
 - **A Fipe deixou de ser digitada.** A versão é escolhida uma vez, quando o
   carro entra, e o código fica gravado; daí a Fipe na compra fica fixa e a de
   hoje se atualiza sozinha quando a tabela vira o mês. A escolha é manual

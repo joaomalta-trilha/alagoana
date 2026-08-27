@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { api, ErroApi, type Atalho, type Catalogos, type Veiculo } from "../api.js";
 import { identificacao } from "../tipos.js";
 import {
-  Acoes, CampoData, CampoSelecao, CampoTexto, CampoValor, Erro, Folha,
+  Acoes, CampoData, CampoMarcavel, CampoSelecao, CampoTexto, CampoValor, Erro, Folha,
 } from "../componentes/Folha.js";
 import { brl, paraCentavos } from "../formato.js";
 import { sessao } from "../preferencias.js";
@@ -40,6 +40,9 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
   const [descricao, setDescricao] = useState("");
   const [categoria, setCategoria] = useState(catalogos.categorias[0]?.nome ?? "");
   const [data, setData] = useState(sessao.ultimaData);
+  // §3.4: custo previsto é custo sem data — já entra no custo total, mas
+  // ainda não saiu do caixa.
+  const [previsto, setPrevisto] = useState(false);
   const [valor, setValor] = useState("");
   const [contaId, setContaId] = useState(sessao.ultimaConta);
   const [atalhos, setAtalhos] = useState<Atalho[]>([]);
@@ -91,8 +94,10 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
       setErro("Selecione pelo menos um carro para o rateio.");
       return;
     }
-    if (!descricao.trim() || !data || centavos === null || centavos <= 0) {
-      setErro("Preencha descrição, data e um valor maior que zero.");
+    if (!descricao.trim() || centavos === null || centavos <= 0 || (!previsto && !data)) {
+      setErro(previsto
+        ? "Preencha descrição e um valor maior que zero."
+        : "Preencha descrição, data e um valor maior que zero.");
       return;
     }
 
@@ -100,11 +105,14 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
     try {
       await api.lancarCusto({
         veiculoIds: alvos,
-        descricao, categoria, data, valor: centavos,
+        descricao, categoria, valor: centavos,
+        // Previsto vai sem data e sem conta: não aconteceu, não saiu dinheiro.
+        data: previsto ? null : data,
+        previsto,
         modoRateio: varios ? modoRateio : "mesmo",
-        contaId: contaId || null,
+        contaId: previsto ? null : contaId || null,
       });
-      sessao.ultimaData = data;
+      if (!previsto) sessao.ultimaData = data;
       sessao.ultimaConta = contaId;
       aoGravar();
       if (continuar) {
@@ -194,13 +202,25 @@ export function LancarCusto({ catalogos, veiculos, veiculoInicial, aoFechar, aoG
         <CampoValor rotulo="Valor" valor={valor} aoMudar={setValor} />
       </div>
 
-      <div className="dupla">
-        <CampoData rotulo="Data" valor={data} aoMudar={setData} />
-        <CampoSelecao rotulo="Pagar com" valor={contaId} aoMudar={setContaId}>
-          <option value="">Não descontar do caixa</option>
-          {catalogos.contas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-        </CampoSelecao>
-      </div>
+      <CampoMarcavel
+        rotulo="Custo previsto — ainda não foi pago"
+        marcado={previsto} aoMudar={setPrevisto}
+      />
+
+      {previsto ? (
+        <p className="hint">
+          Entra no custo total do carro desde já, sem data e sem sair do caixa.
+          Quando pagar, lance de novo com a data e a conta.
+        </p>
+      ) : (
+        <div className="dupla">
+          <CampoData rotulo="Data" valor={data} aoMudar={setData} />
+          <CampoSelecao rotulo="Pagar com" valor={contaId} aoMudar={setContaId}>
+            <option value="">Não descontar do caixa</option>
+            {catalogos.contas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </CampoSelecao>
+        </div>
+      )}
 
       <Erro mensagem={erro} />
 

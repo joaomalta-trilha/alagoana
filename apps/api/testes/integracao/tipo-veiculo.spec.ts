@@ -37,7 +37,7 @@ describe("o veículo tem tipo", () => {
   it("sem informar, é carro — a carga inicial inteira é carro", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
@@ -48,7 +48,7 @@ describe("o veículo tem tipo", () => {
   it("moto entra como moto e ganha etiqueta na listagem", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       tipo: "moto", marca: "Honda", modelo: "CG 160", cor: "Vermelho",
-      placa: "MOT1A11", dataCompra: "2026-07-01", valorCompra: 1_200_000,
+      placa: "MOT1A11", dataCompra: "2026-07-01", valorCompra: 1_200_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
@@ -62,14 +62,14 @@ describe("o veículo tem tipo", () => {
   it("tipo inventado é recusado", async () => {
     await expect(comTransacao((c) => criarVeiculo(c, {
       tipo: "caminhao" as never, marca: "Volvo", modelo: "FH", cor: "Branco",
-      placa: "CAM1A11", dataCompra: "2026-07-01", valorCompra: 30_000_000,
+      placa: "CAM1A11", dataCompra: "2026-07-01", valorCompra: 30_000_000, provisionarComissao: false,
     }, b.usuarioId))).rejects.toThrow(/inválido/);
   });
 
   it("editar troca o tipo", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Honda", modelo: "CG 160", cor: "Vermelho", placa: "MOT1A11",
-      dataCompra: "2026-07-01", valorCompra: 1_200_000,
+      dataCompra: "2026-07-01", valorCompra: 1_200_000, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => editarVeiculo(c, v.id, { tipo: "moto" }, b.usuarioId));
 
@@ -95,7 +95,7 @@ describe("dois catálogos que não se misturam", () => {
   it("gravar moto com marca nova ensina o catálogo de moto, não o de carro", async () => {
     await comTransacao((c) => criarVeiculo(c, {
       tipo: "moto", marca: "Haojue", modelo: "DK 150", cor: "Preto",
-      placa: "HAO1A11", dataCompra: "2026-07-01", valorCompra: 900_000,
+      placa: "HAO1A11", dataCompra: "2026-07-01", valorCompra: 900_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const catalogos = await comLeitura(listarCatalogos);
@@ -108,7 +108,7 @@ describe("`outro` não tem catálogo", () => {
   it("reboque entra sem sujar a lista de marcas", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       tipo: "outro", marca: "Randon", modelo: "Reboque 2 eixos", cor: "Cinza",
-      placa: "REB1A11", dataCompra: "2026-07-01", valorCompra: 1_500_000,
+      placa: "REB1A11", dataCompra: "2026-07-01", valorCompra: 1_500_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
@@ -128,7 +128,7 @@ describe("moto na troca de um carro — o caso principal", () => {
   it("entra como moto, com o vínculo e o ágio de sempre", async () => {
     const carro = await comTransacao((c) => criarVeiculo(c, {
       marca: "Chevrolet", modelo: "Tracker", cor: "Preto", placa: "TRK1A23",
-      dataCompra: "2026-04-01", valorCompra: 6_700_000,
+      dataCompra: "2026-04-01", valorCompra: 6_700_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const r = await comTransacao((c) => venderVeiculo(c, carro.id, {
@@ -136,7 +136,7 @@ describe("moto na troca de um carro — o caso principal", () => {
       contaId: b.alagoana,
       trocas: [{
         tipo: "moto", marca: "Yamaha", modelo: "Factor 150", cor: "Azul",
-        placa: "MOT9Z99", avaliacao: 1_400_000, mercado: 1_200_000, modo: "mercado",
+        placa: "MOT9Z99", avaliacao: 1_400_000, mercado: 1_200_000, modo: "mercado", provisionarComissao: false,
       }],
     }, b.usuarioId));
 

@@ -24,7 +24,7 @@ describe("saldo é calculado, nunca armazenado (§3.2)", () => {
 
     await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana, provisionarComissao: false,
     }, b.usuarioId));
 
     expect(await saldo(b.alagoana)).toBe(5_907_476 - 3_000_000);
@@ -89,7 +89,7 @@ describe("totais somados no backend, nunca na tela", () => {
   it("o consolidado de vendas fecha em si mesmo", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Honda", modelo: "City", cor: "Prata", placa: "CIT1A11",
-      dataCompra: "2026-02-14", valorCompra: 8_400_000,
+      dataCompra: "2026-02-14", valorCompra: 8_400_000, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => lancarCusto(c, {
       veiculoIds: [v.id], descricao: "Preparação", categoria: "Peças",
@@ -111,8 +111,8 @@ describe("totais somados no backend, nunca na tela", () => {
     for (const [placa, valor] of [["AAA1A11", 3_000_000], ["BBB2B22", 5_000_000]] as const) {
       await comTransacao((c) => criarVeiculo(c, {
         marca: "Fiat", modelo: "Mobi", cor: "Branco", placa,
-        dataCompra: "2026-06-01", valorCompra: valor, valorAnuncio: valor + 1_000_000,
-      }, b.usuarioId));
+        dataCompra: "2026-06-01", valorCompra: valor, valorAnuncio: valor + 1_000_000, provisionarComissao: false,
+    }, b.usuarioId));
     }
 
     const estoque = await comLeitura((c) => listarVeiculos(c, "estoque", HOJE));
@@ -125,7 +125,7 @@ describe("totais somados no backend, nunca na tela", () => {
   it("veículo sem anúncio entra no total pelo próprio custo", async () => {
     await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const totais = totalizar(await comLeitura((c) => listarVeiculos(c, "estoque", HOJE)));
@@ -137,7 +137,7 @@ describe("painel (§6.2 e §4.7)", () => {
   it("patrimônio é caixa mais estoque ao custo, e a projeção é separada", async () => {
     const emEstoque = await comTransacao((c) => criarVeiculo(c, {
       marca: "Ford", modelo: "EcoSport", cor: "Prata", placa: "ECO1A11",
-      dataCompra: "2026-05-01", valorCompra: 5_200_000, valorAnuncio: 6_800_000,
+      dataCompra: "2026-05-01", valorCompra: 5_200_000, valorAnuncio: 6_800_000, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => lancarCusto(c, {
       veiculoIds: [emEstoque.id], descricao: "Preparação", categoria: "Peças",
@@ -158,7 +158,7 @@ describe("painel (§6.2 e §4.7)", () => {
   it("os indicadores separam o que é fato do que é estoque", async () => {
     const vendido = await comTransacao((c) => criarVeiculo(c, {
       marca: "Honda", modelo: "City", cor: "Prata", placa: "CIT1A11",
-      dataCompra: "2026-02-14", valorCompra: 8_400_000,
+      dataCompra: "2026-02-14", valorCompra: 8_400_000, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => lancarCusto(c, {
       veiculoIds: [vendido.id], descricao: "Preparação", categoria: "Peças",
@@ -171,7 +171,7 @@ describe("painel (§6.2 e §4.7)", () => {
     // Um parado há mais de 90 dias.
     await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "MOB1A11",
-      dataCompra: "2026-01-05", valorCompra: 3_000_000,
+      dataCompra: "2026-01-05", valorCompra: 3_000_000, provisionarComissao: false,
     }, b.usuarioId));
 
     const p = await comLeitura((c) => painel(c, HOJE));

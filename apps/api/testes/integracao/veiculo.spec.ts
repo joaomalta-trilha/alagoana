@@ -29,8 +29,8 @@ afterAll(async () => { await pool.end(); });
 async function hondaCity(contaId: string | null = null) {
   const v = await comTransacao((c) => criarVeiculo(c, {
     marca: "Honda", modelo: "City", cor: "Prata", placa: "abc1d23",
-    dataCompra: "2026-02-14", valorCompra: 8_400_000, contaId,
-  }, b.usuarioId));
+    dataCompra: "2026-02-14", valorCompra: 8_400_000, contaId, provisionarComissao: false,
+    }, b.usuarioId));
 
   await comTransacao((c) => lancarCusto(c, {
     veiculoIds: [v.id], descricao: "Preparação", categoria: "Peças",
@@ -47,7 +47,7 @@ describe("cadastro", () => {
 
     const segundo = await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "xyz9k88",
-      dataCompra: "2026-05-01", valorCompra: 3_000_000,
+      dataCompra: "2026-05-01", valorCompra: 3_000_000, provisionarComissao: false,
     }, b.usuarioId));
     expect(segundo.codigo).toBe("V-02");
 
@@ -58,12 +58,12 @@ describe("cadastro", () => {
   it("recusa cadastro incompleto com a mensagem da §8", async () => {
     await expect(comTransacao((c) => criarVeiculo(c, {
       marca: "Honda", modelo: "", cor: "Prata", placa: "ABC1D23",
-      dataCompra: "2026-02-14", valorCompra: 8_400_000,
+      dataCompra: "2026-02-14", valorCompra: 8_400_000, provisionarComissao: false,
     }, b.usuarioId))).rejects.toThrow(MSG.veiculoIncompleto);
 
     await expect(comTransacao((c) => criarVeiculo(c, {
       marca: "Honda", modelo: "City", cor: "Prata", placa: "ABC1D23",
-      dataCompra: "2026-02-14", valorCompra: 0,
+      dataCompra: "2026-02-14", valorCompra: 0, provisionarComissao: false,
     }, b.usuarioId))).rejects.toThrow(MSG.veiculoIncompleto);
   });
 
@@ -91,7 +91,7 @@ describe("cadastro", () => {
 
     await expect(comTransacao((c) => criarVeiculo(c, {
       marca: "Honda", modelo: "City", cor: "Prata", placa: "ABC1D23",
-      dataCompra: "2026-02-14", valorCompra: 8_400_000, contaId: b.alagoana,
+      dataCompra: "2026-02-14", valorCompra: 8_400_000, contaId: b.alagoana, provisionarComissao: false,
     }, b.usuarioId))).rejects.toThrow("Saldo insuficiente em Alagoana: R$ 100,00.");
 
     // A transação inteira voltou atrás: nem veículo, nem movimento.
@@ -166,7 +166,7 @@ describe("venda com troca (§4.5) — o Tracker da especificação", () => {
   async function tracker() {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Chevrolet", modelo: "Tracker", cor: "Preto", placa: "TRK1A23",
-      dataCompra: "2026-04-01", valorCompra: 6_700_000,
+      dataCompra: "2026-04-01", valorCompra: 6_700_000, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => lancarCusto(c, {
       veiculoIds: [v.id], descricao: "Preparação", categoria: "Peças",
@@ -184,7 +184,7 @@ describe("venda com troca (§4.5) — o Tracker da especificação", () => {
     const v = await tracker();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-03", valorVenda: 8_900_000, lancarComissoes: false,
-      contaId: b.alagoana, trocas: [{ ...argo, modo: "avaliacao" }],
+      contaId: b.alagoana, trocas: [{ ...argo, modo: "avaliacao", provisionarComissao: false }],
     }, b.usuarioId));
 
     const f = await comLeitura((c) => ficha(c, v.id, HOJE));
@@ -201,7 +201,7 @@ describe("venda com troca (§4.5) — o Tracker da especificação", () => {
     const v = await tracker();
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-03", valorVenda: 8_900_000, lancarComissoes: false,
-      contaId: b.alagoana, trocas: [{ ...argo, modo: "mercado" }],
+      contaId: b.alagoana, trocas: [{ ...argo, modo: "mercado", provisionarComissao: false }],
     }, b.usuarioId));
 
     expect(r.agio).toBe(400_000);
@@ -287,7 +287,7 @@ describe("exclusão (§4.8)", () => {
       dataVenda: "2026-08-03", valorVenda: 9_700_000, lancarComissoes: false,
       trocas: [{
         marca: "Fiat", modelo: "Argo", cor: "Branco", placa: "ARG2B34",
-        avaliacao: 4_400_000, modo: "avaliacao",
+        avaliacao: 4_400_000, modo: "avaliacao", provisionarComissao: false,
       }],
     }, b.usuarioId));
 

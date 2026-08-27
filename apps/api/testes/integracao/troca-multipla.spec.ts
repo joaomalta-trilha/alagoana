@@ -21,17 +21,18 @@ let b: Base;
 
 const CARRO = {
   marca: "Fiat", modelo: "Argo", cor: "Branco", placa: "ARG2B34",
-  avaliacao: 4_400_000, modo: "avaliacao" as const,
+  avaliacao: 4_400_000, modo: "avaliacao" as const, provisionarComissao: false,
 };
 const MOTO = {
   tipo: "moto" as const, marca: "Yamaha", modelo: "Fazer 250", cor: "Azul",
   placa: "MOT9Z99", avaliacao: 1_600_000, modo: "avaliacao" as const,
+  provisionarComissao: false,
 };
 
 async function tracker() {
   return comTransacao((c) => criarVeiculo(c, {
     marca: "Chevrolet", modelo: "Tracker", cor: "Branco", placa: "TRK1A11",
-    dataCompra: "2026-06-01", valorCompra: 6_700_000, contaId: null,
+    dataCompra: "2026-06-01", valorCompra: 6_700_000, contaId: null, provisionarComissao: false,
   }, b.usuarioId));
 }
 
@@ -134,8 +135,8 @@ describe("venda recebendo dois veículos", () => {
     await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-10", valorVenda: 8_900_000, contaId: null, lancarComissoes: false,
       trocas: [
-        { ...CARRO, mercado: 4_000_000, modo: "mercado" },
-        { ...MOTO, mercado: 1_500_000, modo: "mercado" },
+        { ...CARRO, mercado: 4_000_000, modo: "mercado", provisionarComissao: false },
+        { ...MOTO, mercado: 1_500_000, modo: "mercado", provisionarComissao: false },
       ],
     }, b.usuarioId));
 

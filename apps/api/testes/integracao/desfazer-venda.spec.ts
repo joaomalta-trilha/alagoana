@@ -23,7 +23,7 @@ let b: Base;
 async function carroVendido(comCusto = 0) {
   const v = await comTransacao((c) => criarVeiculo(c, {
     marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-    dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana,
+    dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana, provisionarComissao: false,
   }, b.usuarioId));
 
   if (comCusto) {
@@ -111,14 +111,14 @@ describe("desfazer venda", () => {
   it("recusa quando entrou um carro na troca", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana, provisionarComissao: false,
     }, b.usuarioId));
 
     await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
       trocas: [{
         marca: "Ford", modelo: "Ka", cor: "Preto", placa: "BBB2B22",
-        avaliacao: 1_000_000, mercado: 1_000_000, modo: "avaliacao",
+        avaliacao: 1_000_000, mercado: 1_000_000, modo: "avaliacao", provisionarComissao: false,
       }],
     }, b.usuarioId));
 
@@ -133,7 +133,7 @@ describe("desfazer venda", () => {
     b = await limpar().then(() => base(0, 0));
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
@@ -142,7 +142,7 @@ describe("desfazer venda", () => {
     // Gasta o dinheiro em outro carro.
     await comTransacao((c) => criarVeiculo(c, {
       marca: "Ford", modelo: "Ka", cor: "Preto", placa: "BBB2B22",
-      dataCompra: "2026-08-11", valorCompra: 3_500_000, contaId: b.alagoana,
+      dataCompra: "2026-08-11", valorCompra: 3_500_000, contaId: b.alagoana, provisionarComissao: false,
     }, b.usuarioId));
 
     expect(await saldo(b.alagoana)).toBe(350_000);
@@ -153,7 +153,7 @@ describe("desfazer venda", () => {
   it("recusa desfazer o que não está vendido", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana, provisionarComissao: false,
     }, b.usuarioId));
 
     await expect(comTransacao((c) => desfazerVenda(c, v.id, b.usuarioId)))
@@ -189,7 +189,7 @@ describe("comissão sai do caixa na hora da venda", () => {
     const antes = await saldo(b.alagoana);
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
 
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
@@ -205,7 +205,7 @@ describe("comissão sai do caixa na hora da venda", () => {
   it("o extrato conta as duas coisas: a venda cheia e a comissão", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,
@@ -224,7 +224,7 @@ describe("comissão sai do caixa na hora da venda", () => {
     const antes = await saldo(b.alagoana);
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
 
     const r = await comTransacao((c) => venderVeiculo(c, v.id, {
@@ -245,7 +245,7 @@ describe("comissão sai do caixa na hora da venda", () => {
   it("apagar a comissão à mão devolve o dinheiro", async () => {
     const v = await comTransacao((c) => criarVeiculo(c, {
       marca: "Ford", modelo: "Ka", cor: "Preto", placa: "AAA1A11",
-      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null,
+      dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: null, provisionarComissao: false,
     }, b.usuarioId));
     await comTransacao((c) => venderVeiculo(c, v.id, {
       dataVenda: "2026-08-10", valorVenda: 4_000_000, contaId: b.alagoana,

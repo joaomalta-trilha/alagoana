@@ -20,7 +20,7 @@ afterAll(async () => { await pool.end(); });
 async function carro(placa: string, marca = "Fiat", modelo = "Mobi") {
   return comTransacao((c) => criarVeiculo(c, {
     marca, modelo, cor: "Branco", placa,
-    dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana,
+    dataCompra: "2026-06-01", valorCompra: 3_000_000, contaId: b.alagoana, provisionarComissao: false,
   }, b.usuarioId));
 }
 

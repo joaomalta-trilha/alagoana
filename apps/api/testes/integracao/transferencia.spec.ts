@@ -166,7 +166,7 @@ describe("apagar uma transferência", () => {
     // O João compra um carro com o que recebeu.
     await comTransacao((c) => criarVeiculo(c, {
       marca: "Fiat", modelo: "Mobi", cor: "Branco", placa: "AAA1A11",
-      dataCompra: "2026-08-17", valorCompra: 1_500_000, contaId: b.joao,
+      dataCompra: "2026-08-17", valorCompra: 1_500_000, contaId: b.joao, provisionarComissao: false,
     }, b.usuarioId));
 
     expect(await saldo(b.joao)).toBe(250_000);

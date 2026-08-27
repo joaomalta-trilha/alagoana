@@ -271,6 +271,8 @@ Padrão da casa: **Comissão Alagoana R$ 1.500**, lançada como `custo` de categ
 
 Na tela de venda, um checkbox oferece lançá-las. Vem **marcado** por padrão, exceto quando o veículo já possui algum custo de categoria `Comissão` — caso em que vem desmarcado, porque já foram provisionadas na entrada. Os valores devem ser configuráveis, não fixos no código.
 
+*(A partir de 22/08/2026, por decisão da loja, **todo carro que entra já nasce com a comissão provisionada** — custo de categoria `Comissão` sem data, como manda a §3.4. Na prática o checkbox da venda passa a vir sempre desmarcado, que é o caminho que esta seção sempre previu. O efeito é o lucro projetado dizer a verdade desde o primeiro dia: antes ele ignorava R$ 1.500 que sempre iam sair na venda. Provisionado não é pago — o dinheiro sai quando a comissão for lançada com data e conta.)*
+
 Quando a venda cai numa conta, a comissão **sai dessa mesma conta na hora**: vender por 40.000 com 1.500 de comissão deixa 38.500. São duas linhas no extrato, a venda cheia e a comissão, e o movimento fica preso ao custo — apagar a comissão devolve o dinheiro. Sem conta na venda ("Não descontar do caixa"), a comissão não sai de lugar nenhum e fica como a provisão da §3.4, paga depois pela tela de custo. *(Acrescentado em 17/08/2026, por decisão da loja.)*
 
 ### 4.7 Caixa e patrimônio
