@@ -87,9 +87,36 @@ instâncias, cada uma teria o seu, e o limite na prática dobraria. Para três
 usuários isso não é gargalo; se um dia precisar escalar, o freio precisa sair
 para o banco antes.
 
-**Backup.** O Render faz backup do Postgres pago, mas confira a retenção no
-painel e faça um teste de restauração antes de confiar. Backup que nunca foi
-restaurado é uma suposição, não um backup.
+**Backup.** São duas camadas, e cada uma cobre um estrago diferente.
+
+O Render faz backup diário do Postgres pago — o plano aqui é `basic-256mb`.
+Confira a retenção no painel, em **alagoana-db › Backups**. Isso cobre o disco
+morrer.
+
+A cópia própria cobre o resto: conta encerrada, banco apagado, `--confirmo` no
+comando errado. E sai do Render, ficando com a loja.
+
+```bash
+DATABASE_URL="$ALAGOANA_DB" npm run backup
+```
+
+Grava em `backups/`, que o git ignora — um dump tem todo o financeiro e os
+hashes de senha, e commitá-lo seria publicá-lo. São ~60 KB; guarde fora do
+computador.
+
+Para voltar:
+
+```bash
+npm run restaurar -- backups/alagoana-....dump --confirmo
+```
+
+Contra banco que não seja `localhost` ele exige também `--producao`, e mostra
+o endereço do destino e o que será apagado antes de perguntar.
+
+**O ciclo foi testado**: em 29/08/2026 o banco local foi destruído com
+`drop schema public cascade` e trazido de volta do dump; `npm run db:conferir`
+respondeu TUDO CONFERE. Backup que nunca foi restaurado é uma suposição, não
+um backup — este deixou de ser.
 
 **As datas de negócio não dependem do fuso da máquina.** `FUSO_DO_NEGOCIO` em
 [env.ts](apps/api/src/env.ts) é fixo em `America/Maceio`, de propósito: a

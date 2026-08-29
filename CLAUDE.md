@@ -172,7 +172,9 @@ Em aberto, por ordem de importância:
 
 - Duas pessoas editando o mesmo veículo: a última ganha em silêncio. Há
   `for update`, então não corrompe, mas falta carimbo de versão.
-- Backup do banco nunca foi restaurado. O Render faz; testar é outra coisa.
+- Backup: o Render faz o dele, e `npm run backup` faz uma cópia que sai de
+  lá. O ciclo foi testado em 29/08/2026 — banco destruído e restaurado, com
+  `db:conferir` fechando. Falta a loja pegar o hábito de rodar.
 - O freio de tentativas existe só no login, e vive em memória — o que obriga a
   manter **uma instância só** no Render.
 

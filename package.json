@@ -19,6 +19,8 @@
     "db:semear": "npm run -w @alagoana/api semear",
     "db:conferir": "npm run -w @alagoana/api conferir",
     "conta": "npm run -w @alagoana/api conta --",
+    "backup": "node ferramentas/backup.mjs",
+    "restaurar": "node ferramentas/restaurar.mjs",
     "db:recarregar": "npm run -w @alagoana/api recarregar --",
     "db:zerar": "npm run -w @alagoana/api zerar",
     "teste": "npm run -w @alagoana/api teste"

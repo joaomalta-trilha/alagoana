@@ -5,3 +5,7 @@ dist/
 *.log
 .DS_Store
 .vite/
+
+# Um dump tem todo o financeiro da loja e os hashes de senha. É o arquivo
+# mais sensível do projeto; commitá-lo seria publicá-lo.
+backups/
