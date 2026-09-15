@@ -74,6 +74,13 @@ button,input,select{font-family:inherit}
 .wrap{padding:16px 16px 8px}
 .sec-t{font-family:"Archivo",sans-serif; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3); font-weight:600; margin:22px 0 9px}
 .sec-t:first-child{margin-top:0}
+/* Filtro do extrato do Caixa: precisa desfazer o texto de rótulo do .sec-t
+   (maiúsculas, espaçado, ink3) para não sair ilegível dentro do select. */
+.sel-conta{
+  font-size:13px; font-weight:500; text-transform:none; letter-spacing:normal;
+  color:var(--ink2); background:#FFF; border:1px solid var(--line2); border-radius:8px;
+  padding:7px 9px; max-width:58%;
+}
 
 /* ---------- cartoes ---------- */
 .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:11px}

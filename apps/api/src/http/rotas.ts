@@ -388,7 +388,10 @@ const ROTAS: Rota[] = [
   },
 
   // --------------------------------------------------------------- caixa
-  { metodo: "GET", padrao: "/api/caixa", fn: () => comLeitura((c) => visaoCaixa(c)) },
+  {
+    metodo: "GET", padrao: "/api/caixa",
+    fn: (ctx) => comLeitura((c) => visaoCaixa(c, 200, ctx.consulta.get("conta"))),
+  },
   {
     metodo: "POST", padrao: "/api/aportes", status: 201,
     fn: async (ctx) => {

@@ -306,7 +306,8 @@ export const api = {
   excluirCusto: (id: string) =>
     pedir<{ valor: Centavos; devolvidoAoCaixa: Centavos }>("DELETE", `/api/custos/${id}`),
 
-  caixa: () => pedir<Caixa>("GET", "/api/caixa"),
+  caixa: (contaId?: string) =>
+    pedir<Caixa>("GET", contaId ? `/api/caixa?${new URLSearchParams({ conta: contaId })}` : "/api/caixa"),
   aporte: (dados: unknown) => pedir<{ id: string }>("POST", "/api/aportes", dados),
   transferir: (dados: unknown) =>
     pedir<ResultadoTransferencia>("POST", "/api/transferencias", dados),

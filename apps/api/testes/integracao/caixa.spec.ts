@@ -56,6 +56,28 @@ describe("aporte de sócio (§3.6)", () => {
     expect(visao.extrato.filter((m) => m.tipo === "aporte")).toHaveLength(1);
   });
 
+  it("o extrato pode ser filtrado por conta, sem mexer em saldos nem capital", async () => {
+    await comTransacao((c) => registrarAporte(c, {
+      socioId: b.usuarioId, contaId: b.joao, data: "2026-08-01",
+      tipo: "aporte", valor: 12_000_000,
+    }, b.usuarioId));
+    await comTransacao((c) => registrarAporte(c, {
+      socioId: b.usuarioId, contaId: b.alagoana, data: "2026-08-02",
+      tipo: "aporte", valor: 5_000_000,
+    }, b.usuarioId));
+
+    const doJoao = await comLeitura((c) => visaoCaixa(c, 200, b.joao));
+    expect(doJoao.extrato).toHaveLength(1);
+    expect(doJoao.extrato[0]!.conta).toBe("João");
+    // As duas contas e o capital do sócio continuam de pé fora do extrato: o
+    // filtro é só do histórico, e capital_socio soma por sócio, não por conta.
+    expect(doJoao.contas).toHaveLength(2);
+    expect(doJoao.capitalPorSocio.find((s) => s.nome === "João")!.aportes).toBe(17_000_000);
+
+    const todas = await comLeitura((c) => visaoCaixa(c));
+    expect(todas.extrato).toHaveLength(2);
+  });
+
   it("saldo em mãos e capital acumulado são números diferentes", async () => {
     await comTransacao((c) => registrarAporte(c, {
       socioId: b.usuarioId, contaId: b.joao, data: "2026-08-01",

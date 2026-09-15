@@ -10,6 +10,7 @@
  * e ambos importam (§3.6).
  */
 
+import { useState } from "react";
 import { api } from "../api.js";
 import { Carregando, Vazio } from "../componentes/basicos.js";
 import { useDados } from "../dados.js";
@@ -23,7 +24,11 @@ export function Caixa(
     aoApagarTransferencia: (transferenciaId: string) => void;
   },
 ) {
-  const { dados, erro, carregando } = useDados(() => api.caixa(), versao);
+  // Filtro só do extrato — os saldos e o capital por sócio continuam
+  // mostrando todas as contas, porque só o histórico foi pedido aqui.
+  const [contaFiltro, setContaFiltro] = useState("");
+  const { dados, erro, carregando } = useDados(
+    () => api.caixa(contaFiltro || undefined), `${versao}|${contaFiltro}`);
 
   if (erro) return <Vazio>{erro}</Vazio>;
   if (carregando && !dados) return <Carregando />;
@@ -82,13 +87,30 @@ export function Caixa(
         </>
       )}
 
-      <div className="sec-t">Extrato</div>
+      <div className="sec-t entre">
+        <span>Extrato</span>
+        <select
+          className="sel-conta"
+          aria-label="Filtrar extrato por conta"
+          value={contaFiltro}
+          onChange={(e) => setContaFiltro(e.target.value)}
+        >
+          <option value="">Todas as contas</option>
+          {dados.contas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+        </select>
+      </div>
       <div className="card">
         {dados.extrato.length === 0
           ? (
             <Vazio>
-              Nenhuma movimentação ainda.<br />
-              Os saldos acima são a posição de hoje.
+              {contaFiltro
+                ? "Nenhuma movimentação nessa conta."
+                : (
+                  <>
+                    Nenhuma movimentação ainda.<br />
+                    Os saldos acima são a posição de hoje.
+                  </>
+                )}
             </Vazio>
           )
           : dados.extrato.map((m) => (

@@ -619,7 +619,9 @@ export interface VisaoCaixa {
   }[];
 }
 
-export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<VisaoCaixa> {
+export async function visaoCaixa(
+  c: PoolClient, limiteExtrato = 200, contaId: string | null = null,
+): Promise<VisaoCaixa> {
   const contas = await c.query<{ conta_id: string; nome: string; tipo: string; saldo: string }>(
     "select conta_id, nome, tipo, saldo from saldo_conta order by tipo desc, nome");
 
@@ -627,6 +629,9 @@ export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<Vi
     { socio_id: string; nome: string; aportes: string; retiradas: string; capital: string }
   >("select socio_id, nome, aportes, retiradas, capital from capital_socio order by nome");
 
+  // `contaId` nulo é "todas as contas" — o mesmo filtro que já existe para
+  // usuário em `db/usuarios.ts`, comparando contra o próprio parâmetro em vez
+  // de uma segunda ida ao banco só para decidir se filtra.
   const extrato = await c.query<{
     id: string; data: DataISO; descricao: string; tipo: string;
     conta: string; valor: string; transferencia_id: string | null;
@@ -638,8 +643,9 @@ export async function visaoCaixa(c: PoolClient, limiteExtrato = 200): Promise<Vi
        from movimento_caixa m
        join conta ct on ct.id = m.conta_id
        left join veiculo v on v.id = m.veiculo_id
+      where ($2::uuid is null or m.conta_id = $2)
       order by m.data desc, m.criado_em desc, m.id
-      limit $1`, [limiteExtrato]);
+      limit $1`, [limiteExtrato, contaId]);
 
   const linhas = contas.rows.map((k) => ({
     id: k.conta_id, nome: k.nome, tipo: k.tipo, saldo: deNumeric(k.saldo)!,
