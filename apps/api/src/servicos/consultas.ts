@@ -33,7 +33,7 @@ export interface VeiculoCalculado {
   cor: string;
   placa: string;
   km: number | null;
-  origem: "compra" | "troca";
+  origem: "compra" | "troca" | "repasse";
   observacao: string | null;
 
   dataCompra: DataISO;
@@ -81,7 +81,7 @@ interface Linha {
   id: string; codigo: string; tipo: TipoVeiculo;
   marca: string; modelo: string; versao: string | null;
   ano: number | null; cor: string; placa: string; km: number | null;
-  origem: "compra" | "troca"; observacao: string | null;
+  origem: "compra" | "troca" | "repasse"; observacao: string | null;
   data_compra: DataISO; valor_compra: string; valor_anuncio: string | null;
   fipe_compra: string | null; fipe_hoje: string | null;
   fipe_versao: string | null; fipe_codigo: string | null; fipe_referencia: string | null;
@@ -231,9 +231,11 @@ export interface EloDaTroca {
   codigo: string;
   descricao: string;
   nivel: number;
+  /** `troca` ou `repasse` — o repasse é o que não conta no painel nem nos totais de venda. */
+  origem: "troca" | "repasse";
   /** O código do veículo de cuja venda este saiu. */
   veioDe: string;
-  /** Quanto foi dado por ele na troca. */
+  /** Quanto foi dado por ele na troca ou no repasse. */
   avaliacao: Centavos | null;
   custoTotal: Centavos;
   vendido: boolean;
@@ -333,6 +335,7 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
   // um travamento esperando um dado errado.
   const cadeia = await c.query<{
     id: string; codigo: string; marca: string; modelo: string; nivel: number;
+    origem: "troca" | "repasse";
     veio_de: string; avaliacao_troca: string | null; custo_total: string;
     data_compra: DataISO; data_venda: DataISO | null; valor_venda: string | null;
   }>(
@@ -347,7 +350,7 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
         where not f.id = any(c.caminho)
           and c.nivel < $2
      )
-     select v.id, v.codigo, v.marca, v.modelo, c.nivel,
+     select v.id, v.codigo, v.marca, v.modelo, c.nivel, v.origem,
             pai.codigo as veio_de, v.avaliacao_troca, cv.custo_total,
             v.data_compra, v.data_venda, v.valor_venda
        from cadeia c
@@ -362,6 +365,7 @@ export async function ficha(c: PoolClient, id: string, hoje: DataISO): Promise<F
     const venda = deNumeric(x.valor_venda);
     return {
       id: x.id, codigo: x.codigo, descricao: nome(x), nivel: Number(x.nivel),
+      origem: x.origem,
       veioDe: x.veio_de,
       avaliacao: deNumeric(x.avaliacao_troca),
       custoTotal: total,
@@ -449,8 +453,13 @@ export async function consolidadoVendas(
 ): Promise<{ consolidado: ConsolidadoVendas; veiculos: VeiculoCalculado[] }> {
   const veiculos = await listarVeiculos(c, "vendido", hoje, filtros);
 
-  const investido = veiculos.reduce((a, v) => a + v.custoTotal, 0);
-  const faturado = veiculos.reduce((a, v) => a + (v.valorVenda ?? 0), 0);
+  // O repasse continua na lista — a tabela mostra a linha, com a etiqueta —
+  // mas fica fora de toda soma: o lucro dele é zero por definição, e contá-lo
+  // maquiaria o retorno médio da loja com um negócio que não teve margem.
+  const contabilizados = veiculos.filter((v) => v.origem !== "repasse");
+
+  const investido = contabilizados.reduce((a, v) => a + v.custoTotal, 0);
+  const faturado = contabilizados.reduce((a, v) => a + (v.valorVenda ?? 0), 0);
   const resultado = faturado - investido;
 
   // O custo de garantia acompanha o recorte: são os `Retorno` dos carros que
@@ -458,22 +467,22 @@ export async function consolidadoVendas(
   const { rows: garantias } = await c.query<{ soma: string }>(
     `select coalesce(sum(valor), 0) soma from custo
       where categoria = 'Retorno' and veiculo_id = any($1::uuid[])`,
-    [veiculos.map((v) => v.id)]);
+    [contabilizados.map((v) => v.id)]);
 
   return {
     consolidado: {
-      vendidos: veiculos.length,
-      compra: veiculos.reduce((a, v) => a + v.valorCompra, 0),
-      preparacao: veiculos.reduce((a, v) => a + v.custoPreparacao, 0),
+      vendidos: contabilizados.length,
+      compra: contabilizados.reduce((a, v) => a + v.valorCompra, 0),
+      preparacao: contabilizados.reduce((a, v) => a + v.custoPreparacao, 0),
       investido,
       faturado,
       lucro: resultado,
       retornoPct: retornoPct(resultado, investido),
-      cicloMedio: veiculos.length
-        ? Math.round(veiculos.reduce((a, v) => a + v.cicloDias, 0) / veiculos.length) : 0,
-      lucroMedio: veiculos.length ? Math.round(resultado / veiculos.length) : 0,
+      cicloMedio: contabilizados.length
+        ? Math.round(contabilizados.reduce((a, v) => a + v.cicloDias, 0) / contabilizados.length) : 0,
+      lucroMedio: contabilizados.length ? Math.round(resultado / contabilizados.length) : 0,
       custoGarantia: deNumeric(garantias[0]!.soma)!,
-      emGarantia: veiculos.filter((v) => v.garantia?.ativa).length,
+      emGarantia: contabilizados.filter((v) => v.garantia?.ativa).length,
     },
     veiculos,
   };
@@ -520,18 +529,24 @@ export async function painel(
   const estoque = todos.filter((v) => !v.vendido);
   const vendidos = todos.filter((v) => v.vendido);
 
+  // O repasse conta como estoque normal enquanto está no pátio — é um carro de
+  // verdade, parado, custando de verdade. Mas a venda dele é desenhada para dar
+  // lucro zero, e somá-la aqui inflaria "quantos carros vendemos" e diluiria o
+  // retorno médio com um negócio que não teve retorno nenhum.
+  const vendidosContabilizados = vendidos.filter((v) => v.origem !== "repasse");
+
   const { rows: contas } = await c.query<{ saldo: string }>("select saldo from saldo_conta");
   const caixaTotal = contas.reduce((a, k) => a + deNumeric(k.saldo)!, 0);
 
   const pat = patrimonio(caixaTotal,
     estoque.map((v) => ({ custoTotal: v.custoTotal, valorAnuncio: v.valorAnuncio })));
 
-  const lucroRealizado = vendidos.reduce((a, v) => a + (v.lucro ?? 0), 0);
-  const investidoVendidos = vendidos.reduce((a, v) => a + v.custoTotal, 0);
+  const lucroRealizado = vendidosContabilizados.reduce((a, v) => a + (v.lucro ?? 0), 0);
+  const investidoVendidos = vendidosContabilizados.reduce((a, v) => a + v.custoTotal, 0);
 
   // Resultado por mês, pela data da venda.
   const porMes = new Map<string, { lucro: Centavos; quantidade: number }>();
-  for (const v of vendidos) {
+  for (const v of vendidosContabilizados) {
     const mes = v.dataVenda!.slice(0, 7);
     const atual = porMes.get(mes) ?? { lucro: 0, quantidade: 0 };
     porMes.set(mes, { lucro: atual.lucro + (v.lucro ?? 0), quantidade: atual.quantidade + 1 });
@@ -544,7 +559,7 @@ export async function painel(
     [todos.map((v) => v.id)]);
 
   const porMarca = new Map<string, { lucro: Centavos; custo: Centavos; n: number }>();
-  for (const v of vendidos) {
+  for (const v of vendidosContabilizados) {
     const atual = porMarca.get(v.marca) ?? { lucro: 0, custo: 0, n: 0 };
     porMarca.set(v.marca, {
       lucro: atual.lucro + (v.lucro ?? 0),
@@ -561,12 +576,13 @@ export async function painel(
     indicadores: {
       emEstoque: estoque.length,
       capitalImobilizado: pat.estoqueCusto,
-      giroMedio: vendidos.length
-        ? Math.round(vendidos.reduce((a, v) => a + v.cicloDias, 0) / vendidos.length) : 0,
+      giroMedio: vendidosContabilizados.length
+        ? Math.round(vendidosContabilizados.reduce((a, v) => a + v.cicloDias, 0)
+            / vendidosContabilizados.length) : 0,
       retornoMedio: retornoPct(lucroRealizado, investidoVendidos),
       lucroRealizado,
       parados90: estoque.filter((v) => v.cicloDias > 90).length,
-      emGarantia: vendidos.filter((v) => v.garantia?.ativa).length,
+      emGarantia: vendidosContabilizados.filter((v) => v.garantia?.ativa).length,
     },
     graficos: {
       envelhecimento: faixas.map((faixa) => ({
@@ -576,7 +592,7 @@ export async function painel(
       resultadoPorMes: [...porMes.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([mes, d]) => ({ mes, ...d })),
-      retornoPorCiclo: vendidos.map((v) => ({
+      retornoPorCiclo: vendidosContabilizados.map((v) => ({
         codigo: v.codigo, descricao: `${v.marca} ${v.modelo}`,
         ciclo: v.cicloDias, retorno: v.retornoPct ?? 0,
       })),

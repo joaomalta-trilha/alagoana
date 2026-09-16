@@ -30,14 +30,22 @@ export function saldoInsuficiente(conta: string, saldo: Centavos): string {
   return `Saldo insuficiente em ${conta}: ${brl(saldo)}.`;
 }
 
-/** Desfazer a venda com os carros da troca ainda no pátio os deixaria órfãos. */
+/**
+ * Desfazer a venda com os carros da troca ou do repasse ainda no pátio os
+ * deixaria órfãos.
+ *
+ * O rótulo só diz "repasse" quando TODOS os que entraram são repasse — numa
+ * venda mista, "na troca" continua descrevendo a maioria dos casos reais e
+ * evita a gramática de listar dois rótulos diferentes para uma coisa só.
+ */
 export function trocaImpedeDesfazer(
-  entraram: ReadonlyArray<{ codigo: string; descricao: string }>,
+  entraram: ReadonlyArray<{ codigo: string; descricao: string; origem: "troca" | "repasse" }>,
 ): string {
   const lista = entraram.map((v) => `${v.codigo} · ${v.descricao}`).join(", ");
+  const rotulo = entraram.every((v) => v.origem === "repasse") ? "como repasse" : "na troca";
   return entraram.length === 1
-    ? `Nesta venda entrou o ${lista} na troca. Exclua esse carro antes de desfazer a venda.`
-    : `Nesta venda entraram ${entraram.length} veículos na troca: ${lista}. ` +
+    ? `Nesta venda entrou o ${lista} ${rotulo}. Exclua esse carro antes de desfazer a venda.`
+    : `Nesta venda entraram ${entraram.length} veículos ${rotulo}: ${lista}. ` +
       "Exclua esses carros antes de desfazer a venda.";
 }
 

@@ -28,10 +28,17 @@ import { sessao } from "../preferencias.js";
 const COMISSAO_PADRAO = 150_000;
 
 interface Recebido {
+  /**
+   * `repasse` é o carro recebido só para viabilizar esta venda e repassado
+   * pelo mesmo valor — não é troca, não paga comissão e fica fora do painel
+   * e dos totais de venda (decisão de 14/09/2026).
+   */
+  origem: "troca" | "repasse";
   escolha: EscolhaDeVeiculo;
   cor: string;
   placa: string;
   ano: string;
+  /** Avaliação, na troca; o valor recebido, no repasse — o mesmo campo. */
   avaliacao: string;
   mercado: string;
   modo: "mercado" | "avaliacao";
@@ -56,6 +63,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
   const totalDaComissao = (provisionada.length ? provisionada : comissoes)
     .reduce((a, c) => a + c.valor, 0) || COMISSAO_PADRAO;
   const vazio = (): Recebido => ({
+    origem: "troca",
     escolha: ESCOLHA_VAZIA, cor: catalogos.cores[0] ?? "", placa: "",
     ano: "", avaliacao: "", mercado: "", modo: "mercado", fipe: null,
   });
@@ -92,10 +100,20 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
 
     const trocas = recebidos.map((r) => {
       const { marca, modelo } = resolver(r.escolha);
+      const repasse = r.origem === "repasse";
       return {
         tipo: r.escolha.tipo, marca, modelo, cor: r.cor, placa: r.placa,
         ano: r.ano ? Number(r.ano.replace(/\D/g, "")) : null,
-        avaliacao: paraCentavos(r.avaliacao), mercado: paraCentavos(r.mercado), modo: r.modo,
+        avaliacao: paraCentavos(r.avaliacao),
+        // Repasse não tem mercado nem modo — entra pelo valor recebido, sem
+        // ágio possível, porque a ideia é sair pelo mesmo valor que entrou.
+        mercado: repasse ? null : paraCentavos(r.mercado),
+        modo: repasse ? "avaliacao" as const : r.modo,
+        origem: r.origem,
+        // Comissão sobre um repasse comeria uma margem que não existe por
+        // desenho: o servidor recusa provisionar mesmo se isto não for
+        // enviado, mas ser explícito aqui evita depender só de lá.
+        ...(repasse ? { provisionarComissao: false } : {}),
         // O carro que entra na troca também é um carro entrando: se a versão
         // foi escolhida, o servidor grava a Fipe na compra dele.
         ...(r.fipe ? { fipe: r.fipe } : {}),
@@ -105,8 +123,8 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
       (t) => !t.marca || !t.modelo || !t.placa.trim() || !t.avaliacao);
     if (incompleto >= 0) {
       setErro(trocas.length === 1
-        ? "Preencha marca, modelo, placa e a avaliação do carro recebido."
-        : `No ${incompleto + 1}º veículo recebido, preencha marca, modelo, placa e a avaliação.`);
+        ? "Preencha marca, modelo, placa e o valor do carro recebido."
+        : `No ${incompleto + 1}º veículo recebido, preencha marca, modelo, placa e o valor.`);
       return;
     }
 
@@ -158,15 +176,16 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
       )}
 
       <CampoMarcavel
-        rotulo="Entrou veículo na troca"
+        rotulo="Entrou veículo nesta venda"
         marcado={recebidos.length > 0}
         aoMudar={(marcado) => setRecebidos(marcado ? [vazio()] : [])}
       />
 
       {recebidos.map((r, i) => {
+        const repasse = r.origem === "repasse";
         const avaliacaoC = paraCentavos(r.avaliacao);
         const mercadoC = paraCentavos(r.mercado);
-        const agio = avaliacaoC !== null && mercadoC !== null
+        const agio = !repasse && avaliacaoC !== null && mercadoC !== null
           ? Math.max(0, avaliacaoC - mercadoC) : 0;
 
         return (
@@ -185,6 +204,14 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
               )}
             </div>
 
+            <CampoSelecao
+              rotulo="Natureza" valor={r.origem}
+              aoMudar={(o) => mudar(i, "origem", o as "troca" | "repasse")}
+            >
+              <option value="troca">Troca</option>
+              <option value="repasse">Repasse</option>
+            </CampoSelecao>
+
             <CamposDeVeiculo
               catalogos={catalogos} escolha={r.escolha}
               aoMudar={(e) => mudar(i, "escolha", e)}
@@ -197,24 +224,33 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
               {catalogos.cores.map((c) => <option key={c} value={c}>{c}</option>)}
             </CampoSelecao>
 
-            <div className="dupla">
+            {repasse ? (
               <CampoValor
-                rotulo="Avaliação dada" valor={r.avaliacao}
+                rotulo="Valor do repasse" valor={r.avaliacao}
                 aoMudar={(v) => mudar(i, "avaliacao", v)}
               />
-              <CampoValor
-                rotulo="Vale de verdade" valor={r.mercado}
-                aoMudar={(v) => mudar(i, "mercado", v)}
-              />
-            </div>
+            ) : (
+              <>
+                <div className="dupla">
+                  <CampoValor
+                    rotulo="Avaliação dada" valor={r.avaliacao}
+                    aoMudar={(v) => mudar(i, "avaliacao", v)}
+                  />
+                  <CampoValor
+                    rotulo="Vale de verdade" valor={r.mercado}
+                    aoMudar={(v) => mudar(i, "mercado", v)}
+                  />
+                </div>
 
-            <CampoSelecao
-              rotulo="Entra por" valor={r.modo}
-              aoMudar={(m) => mudar(i, "modo", m as "mercado" | "avaliacao")}
-            >
-              <option value="mercado">Pelo mercado (recomendado)</option>
-              <option value="avaliacao">Pela avaliação</option>
-            </CampoSelecao>
+                <CampoSelecao
+                  rotulo="Entra por" valor={r.modo}
+                  aoMudar={(m) => mudar(i, "modo", m as "mercado" | "avaliacao")}
+                >
+                  <option value="mercado">Pelo mercado (recomendado)</option>
+                  <option value="avaliacao">Pela avaliação</option>
+                </CampoSelecao>
+              </>
+            )}
 
             {(() => {
               const { marca, modelo } = resolver(r.escolha);
@@ -226,6 +262,13 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
                 />
               ) : null;
             })()}
+
+            {repasse && (
+              <p className="hint" style={{ marginTop: 8 }}>
+                Repasse: entra e sai pelo mesmo valor, só para viabilizar esta venda. Não paga
+                comissão e fica fora do painel e dos totais de venda.
+              </p>
+            )}
 
             {agio > 0 && (
               <p className="hint" style={{ marginTop: 8 }}>
@@ -259,7 +302,7 @@ export function RegistrarVenda({ veiculo, catalogos, aoFechar, aoGravar }: Props
           {avaliacaoTotal > 0 && (
             <li className="fraco">
               <span>
-                {recebidos.length === 1 ? "Avaliação do recebido" : `Avaliações · ${recebidos.length}`}
+                {recebidos.length === 1 ? "Recebido na venda" : `Recebidos na venda · ${recebidos.length}`}
               </span>
               <b>− {brl(avaliacaoTotal)}</b>
             </li>

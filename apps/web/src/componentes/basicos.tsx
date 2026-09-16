@@ -54,7 +54,7 @@ export function BarraGarantia({ garantia }: { garantia: Garantia }) {
 }
 
 export function Pilula(
-  { tipo, children }: { tipo: "ok" | "gar" | "troca" | "estoque"; children: ReactNode },
+  { tipo, children }: { tipo: "ok" | "gar" | "troca" | "estoque" | "repasse"; children: ReactNode },
 ) {
   return <span className={`pill p-${tipo}`}>{children}</span>;
 }

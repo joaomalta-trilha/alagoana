@@ -105,9 +105,12 @@ export function Ficha(p: Props) {
   // pedem cores diferentes, e no desktop o âmbar competiria com a pílula de
   // garantia logo abaixo, que é a mesma cor e quer dizer outra coisa.
   const situacao = (
-    <Pilula tipo={v.vendido ? "ok" : desktop ? "estoque" : "gar"}>
-      {v.vendido ? "Vendido" : "Disponível"}
-    </Pilula>
+    <span style={{ display: "inline-flex", gap: 6, flexWrap: "wrap" }}>
+      <Pilula tipo={v.vendido ? "ok" : desktop ? "estoque" : "gar"}>
+        {v.vendido ? "Vendido" : "Disponível"}
+      </Pilula>
+      {v.origem === "repasse" && <Pilula tipo="repasse">Repasse</Pilula>}
+    </span>
   );
   const acoes = (
     <div className="acoes-ficha">
@@ -381,7 +384,7 @@ export function Ficha(p: Props) {
   const desdobramento = d.elos.length === 0 ? null : (
     <div className="card">
       <TituloComAcao
-        titulo={d.elos.length === 1 ? "O que entrou nesta troca" : "O que entrou nestas trocas"}
+        titulo={d.elos.length === 1 ? "O que entrou neste negócio" : "O que entrou nestes negócios"}
         hint="Fora das contas acima: o resultado destes carros é deles, não desta venda."
       />
 
@@ -393,6 +396,7 @@ export function Ficha(p: Props) {
               <button className="acao-linha" onClick={() => p.aoAbrirOutro(e.id)}>
                 {e.codigo} · {e.descricao}
               </button>
+              {e.origem === "repasse" && <Pilula tipo="repasse">repasse</Pilula>}
               <div className="cm">
                 {e.avaliacao !== null && <>Entrou por {brl(e.avaliacao)} · </>}
                 {e.nivel > 1 && <>veio da venda do {e.veioDe} · </>}
@@ -564,12 +568,21 @@ export function Ficha(p: Props) {
         </div>
       )}
 
-      {/* 3. vínculo de troca, nos dois sentidos */}
+      {/* 3. vínculo de troca ou repasse, nos dois sentidos */}
       {v.troca.saiu && (
         <div className="link-troca">
-          Entrou na troca da venda do <b>{v.troca.saiu.descricao}</b>
-          {v.troca.avaliacao !== null && <>, avaliado em <b>{brl(v.troca.avaliacao)}</b></>}
-          {v.troca.agio !== null && v.troca.agio > 0 && <> · ágio de <b>{brl(v.troca.agio)}</b></>}.
+          {v.origem === "repasse" ? (
+            <>
+              Entrou como repasse na venda do <b>{v.troca.saiu.descricao}</b>
+              {v.troca.avaliacao !== null && <>, por <b>{brl(v.troca.avaliacao)}</b></>}.
+            </>
+          ) : (
+            <>
+              Entrou na troca da venda do <b>{v.troca.saiu.descricao}</b>
+              {v.troca.avaliacao !== null && <>, avaliado em <b>{brl(v.troca.avaliacao)}</b></>}
+              {v.troca.agio !== null && v.troca.agio > 0 && <> · ágio de <b>{brl(v.troca.agio)}</b></>}.
+            </>
+          )}
           <button onClick={() => p.aoAbrirOutro(v.troca.saiu!.id)}>Ver a venda</button>
         </div>
       )}

@@ -60,7 +60,7 @@ export interface Veiculo {
   etiqueta: string | null;
   marca: string; modelo: string; versao: string | null;
   ano: number | null; cor: string; placa: string; km: number | null;
-  origem: "compra" | "troca"; observacao: string | null;
+  origem: "compra" | "troca" | "repasse"; observacao: string | null;
 
   dataCompra: string; valorCompra: Centavos; valorAnuncio: Centavos | null;
   fipeCompra: Centavos | null; fipeHoje: Centavos | null;
@@ -94,6 +94,8 @@ export interface EloDaTroca {
   id: string; codigo: string; descricao: string;
   /** 1 = entrou direto nesta venda; 2 = entrou na venda desse; e assim por diante. */
   nivel: number;
+  /** `repasse` é o que não conta no painel nem nos totais de venda. */
+  origem: "troca" | "repasse";
   veioDe: string;
   avaliacao: Centavos | null;
   custoTotal: Centavos;

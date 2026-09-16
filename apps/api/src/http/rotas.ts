@@ -136,6 +136,9 @@ function lerTroca(t: Corpo): EntradaTroca {
   if (modo !== "avaliacao" && modo !== "mercado") {
     throw new ErroDeValidacao("O modo da troca é 'avaliacao' ou 'mercado'.", 400);
   }
+  // "repasse" é a única outra origem que um recebido pode ter; qualquer outra
+  // coisa (ausente, digitada errado) vira "troca", o caso comum.
+  const origem = texto(t, "origem") === "repasse" ? "repasse" : "troca";
   return {
     tipo: lerTipo(texto(t, "tipo")),
     marca: texto(t, "marca") ?? "",
@@ -148,6 +151,7 @@ function lerTroca(t: Corpo): EntradaTroca {
     avaliacao: centavos(t, "avaliacao") ?? 0,
     mercado: centavos(t, "mercado"),
     modo,
+    origem,
     valorAnuncio: centavos(t, "valorAnuncio"),
   };
 }

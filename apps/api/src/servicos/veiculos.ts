@@ -66,6 +66,12 @@ export interface EntradaTroca {
   mercado?: Centavos | null;
   modo: ModoTroca;
   valorAnuncio?: Centavos | null;
+  /**
+   * `troca`, o padrão, ou `repasse` — recebido só para viabilizar esta venda
+   * e repassado pelo mesmo valor, que a interface identifica e os totais de
+   * venda deixam de fora (§4.5 e a decisão de 14/09/2026).
+   */
+  origem?: "troca" | "repasse";
   /** Como no lançamento de carro: ligado por padrão, desligável. */
   provisionarComissao?: boolean;
 }
@@ -402,8 +408,8 @@ export async function excluirVeiculo(
   const previa = await previaExclusao(c, id);
 
   // "O veículo vinculado por troca permanece no sistema, apenas com o vínculo
-  // desfeito nos dois sentidos" (§4.8). A origem continua sendo `troca`:
-  // desfazer o vínculo não apaga o fato de o carro ter entrado numa troca.
+  // desfeito nos dois sentidos" (§4.8). A origem continua a mesma — `troca` ou
+  // `repasse` —: desfazer o vínculo não apaga o fato de como o carro entrou.
   await c.query("update veiculo set troca_de_id = null where troca_de_id = $1", [id]);
 
   // Custos e movimentações vão junto por `on delete cascade`.
@@ -456,7 +462,9 @@ export async function venderVeiculo(
   const recebidos = e.trocas ?? [];
   for (const t of recebidos) {
     if (!t.avaliacao || t.avaliacao <= 0) {
-      throw new ErroDeValidacao("Informe a avaliação de cada veículo recebido na troca.");
+      throw new ErroDeValidacao(t.origem === "repasse"
+        ? "Informe o valor de cada repasse recebido."
+        : "Informe a avaliação de cada veículo recebido na troca.");
     }
   }
 
@@ -467,6 +475,7 @@ export async function venderVeiculo(
 
   for (const [i, t] of recebidos.entries()) {
     const entrada = calculo.entradas[i]!;
+    const origemDoRecebido = t.origem === "repasse" ? "repasse" : "troca";
 
     validarObrigatorios({
       marca: t.marca, modelo: t.modelo, placa: t.placa,
@@ -480,19 +489,23 @@ export async function venderVeiculo(
       `insert into veiculo (codigo, tipo, marca, modelo, versao, ano, cor, placa, km,
                             data_compra, valor_compra, valor_anuncio,
                             origem, troca_de_id, avaliacao_troca, mercado_troca)
-       values ($1,$15,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'troca',$12,$13,$14)
+       values ($1,$15,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$16,$12,$13,$14)
        returning id`,
       [codigo, texto(t.marca), texto(t.modelo), t.versao ?? null, t.ano ?? null,
        texto(t.cor), texto(t.placa).toUpperCase(), t.km ?? null,
        e.dataVenda, paraNumeric(entrada.valorCompraEntrada),
        t.valorAnuncio == null ? null : paraNumeric(t.valorAnuncio),
        id, paraNumeric(t.avaliacao),
-       t.mercado == null ? null : paraNumeric(t.mercado), tipoQueEntrou],
+       t.mercado == null ? null : paraNumeric(t.mercado), tipoQueEntrou, origemDoRecebido],
     );
     veiculosQueEntraram.push({ id: rows[0]!.id, codigo });
     // Carro recebido na troca também é carro entrando no pátio, e também vai
-    // ser vendido um dia — provisiona igual ao que entra por compra.
-    if (t.provisionarComissao !== false) await provisionarComissao(c, rows[0]!.id);
+    // ser vendido um dia — provisiona igual ao que entra por compra. O repasse
+    // é a exceção que já vale desde a carga inicial: não há margem real para
+    // tirar uma comissão de um carro repassado pelo mesmo valor que entrou.
+    if (origemDoRecebido !== "repasse" && t.provisionarComissao !== false) {
+      await provisionarComissao(c, rows[0]!.id);
+    }
 
     // Modo "pelo mercado": o ágio vira custo desta venda, porque
     // supervalorizar a troca é desconto disfarçado (§4.5). Um custo por
@@ -671,8 +684,9 @@ export async function previaDesfazerVenda(
       where veiculo_id = $1 and categoria = 'Troca' and data = $2`,
     [id, v.data_venda]);
 
-  const { rows: entrou } = await c.query<{ codigo: string; marca: string; modelo: string }>(
-    "select codigo, marca, modelo from veiculo where troca_de_id = $1 order by codigo", [id]);
+  const { rows: entrou } = await c.query<
+    { codigo: string; marca: string; modelo: string; origem: "troca" | "repasse" }
+  >("select codigo, marca, modelo, origem from veiculo where troca_de_id = $1 order by codigo", [id]);
 
   const caixa = movimentos.map((m) => {
     const valor = deNumeric(m.sai)!;
@@ -683,7 +697,7 @@ export async function previaDesfazerVenda(
   const semSaldo = caixa.find((k) => !k.cabe);
   const impedimento = entrou.length
     ? trocaImpedeDesfazer(
-        entrou.map((x) => ({ codigo: x.codigo, descricao: `${x.marca} ${x.modelo}` })))
+        entrou.map((x) => ({ codigo: x.codigo, descricao: `${x.marca} ${x.modelo}`, origem: x.origem })))
     : semSaldo
       ? saldoNaoDevolveVenda(semSaldo.conta, semSaldo.saldoAtual, semSaldo.valor)
       : null;

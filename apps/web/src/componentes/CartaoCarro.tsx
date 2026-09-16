@@ -30,6 +30,7 @@ export function CartaoCarro({ veiculo: v, aoTocar }: { veiculo: Veiculo; aoTocar
               : <>{v.ano ?? "—"} · {v.cor}</>}
             {v.etiqueta && <> · <Pilula tipo="troca">{v.etiqueta}</Pilula></>}
             {v.origem === "troca" && <> · <Pilula tipo="troca">troca</Pilula></>}
+            {v.origem === "repasse" && <> · <Pilula tipo="repasse">repasse</Pilula></>}
           </div>
         </div>
         <Placa numero={v.placa} />

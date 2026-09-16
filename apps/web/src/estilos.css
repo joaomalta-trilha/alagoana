@@ -162,6 +162,9 @@ button,input,select{font-family:inherit}
 .p-ok{background:var(--verde-bg); color:var(--verde)}
 .p-gar{background:var(--ambar-bg); color:var(--ambar)}
 .p-troca{background:#EAEFFC; color:var(--azul-marca)}
+/* Vermelho é "exclusão" na §7.1 — e é exatamente isso: repasse não conta no
+   painel nem nos totais de venda, então precisa parecer diferente de troca. */
+.p-repasse{background:var(--vermelho-bg); color:var(--vermelho)}
 /* Só no desktop, onde o protótipo pinta "Disponível" de azul; no celular
    ele é âmbar, junto com "Em garantia". Os dois protótipos discordam. */
 .p-estoque{background:var(--azul-bg); color:var(--azul)}

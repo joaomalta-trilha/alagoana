@@ -10,7 +10,7 @@
 import type { Veiculo, Vendas } from "../api.js";
 import { brl, dataBr, pct } from "../formato.js";
 import { veiculos as contar } from "../tipos.js";
-import { BarraGarantia, BarraIdade, Placa } from "./basicos.js";
+import { BarraGarantia, BarraIdade, Pilula, Placa } from "./basicos.js";
 
 function Identificacao({ veiculo: v }: { veiculo: Veiculo }) {
   return (
@@ -21,6 +21,7 @@ function Identificacao({ veiculo: v }: { veiculo: Veiculo }) {
         {v.km ? ` · ${v.km.toLocaleString("pt-BR")} km` : ""}
         {v.etiqueta ? ` · ${v.etiqueta}` : ""}
         {v.origem === "troca" ? " · troca" : ""}
+        {v.origem === "repasse" && <> · <Pilula tipo="repasse">repasse</Pilula></>}
       </div>
     </td>
   );
