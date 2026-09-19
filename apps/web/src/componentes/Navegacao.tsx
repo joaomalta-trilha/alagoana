@@ -1,14 +1,18 @@
 /**
- * Barra superior azul e navegação inferior fixa de quatro ícones — §6.1.
+ * Barra superior azul e navegação inferior fixa — §6.1.
  *
- * Os ícones são os mesmos traçados do protótipo. A barra inferior é fixa e
- * respeita `safe-area-inset-bottom`, para não ficar embaixo do indicador de
- * gesto do iPhone.
+ * A barra inferior nasceu com quatro ícones fixos; Despesas entrou como
+ * quinto em 16/09/2026, mais estreitos. A ordem do mobile não é a do
+ * desktop: no celular o Estoque fica no centro, o ponto que o polegar
+ * alcança sem esforço — é a aba mais usada, com um destaque sutil para
+ * ancorar o olho ali. No desktop essa lógica de alcance não existe, e a
+ * ordem antiga (Painel, Estoque, Vendas, Caixa) se mantém, só com Despesas
+ * no fim.
  */
 
 import type { ReactElement } from "react";
 
-export type Aba = "painel" | "estoque" | "vendas" | "caixa";
+export type Aba = "painel" | "estoque" | "vendas" | "caixa" | "despesas";
 
 const ICONES: Record<Aba, ReactElement> = {
   painel: <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />,
@@ -30,11 +34,26 @@ const ICONES: Record<Aba, ReactElement> = {
       <path d="M2 10h20M16 15h3" />
     </>
   ),
+  despesas: (
+    <>
+      <path d="M6 2h9l3 3v17H6z" />
+      <path d="M9 8h6M9 12h6M9 16h4" />
+    </>
+  ),
 };
 
-export const ABAS: [Aba, string][] = [
-  ["painel", "Painel"], ["estoque", "Estoque"], ["vendas", "Vendas"], ["caixa", "Caixa"],
-];
+const ROTULOS: Record<Aba, string> = {
+  painel: "Painel", estoque: "Estoque", vendas: "Vendas", caixa: "Caixa", despesas: "Despesas",
+};
+
+/** Ordem das abas no topo do desktop — a de sempre, com Despesas no fim. */
+export const ORDEM_DESKTOP: Aba[] = ["painel", "estoque", "vendas", "caixa", "despesas"];
+
+/** Ordem na barra inferior do mobile — Estoque no centro, de propósito. */
+export const ORDEM_MOBILE: Aba[] = ["painel", "vendas", "estoque", "caixa", "despesas"];
+
+/** Compat: código antigo que só conhecia a ordem do desktop. */
+export const ABAS: [Aba, string][] = ORDEM_DESKTOP.map((id) => [id, ROTULOS[id]]);
 
 export function Topo({ tela, aoSair }: { tela: string; aoSair: () => void }) {
   return (
@@ -52,16 +71,16 @@ export function Topo({ tela, aoSair }: { tela: string; aoSair: () => void }) {
 
 export function Navegacao({ aba, aoTrocar }: { aba: Aba; aoTrocar: (a: Aba) => void }) {
   return (
-    <nav className="nav">
-      {ABAS.map(([id, rotulo]) => (
+    <nav className="nav nav-5">
+      {ORDEM_MOBILE.map((id) => (
         <button
           key={id}
-          className={id === aba ? "on" : ""}
+          className={`${id === aba ? "on" : ""}${id === "estoque" ? " nav-centro" : ""}`}
           onClick={() => aoTrocar(id)}
           aria-current={id === aba ? "page" : undefined}
         >
           <svg viewBox="0 0 24 24">{ICONES[id]}</svg>
-          {rotulo}
+          {ROTULOS[id]}
         </button>
       ))}
     </nav>

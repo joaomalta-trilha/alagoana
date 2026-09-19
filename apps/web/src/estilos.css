@@ -82,6 +82,32 @@ button,input,select{font-family:inherit}
   padding:7px 9px; max-width:58%;
 }
 
+/* Cabeçalho da tela de Despesas. O .btn do app é largura total, feito para um
+   botão sozinho no celular; dois lado a lado ficavam esticados e pesados. Aqui
+   são pílulas compactas — o primário azul, o secundário só com contorno —,
+   com 44px de altura para o toque (§7.4) e quebra de linha se faltar espaço. */
+.cab-despesas{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px}
+.cab-despesas h2{font-size:18px}
+.cab-acoes{display:flex; gap:8px; flex-wrap:wrap}
+.btn-mini{
+  min-height:44px; padding:0 16px; border-radius:99px; width:auto; white-space:nowrap;
+  background:#FFF; color:var(--ink2); border:1px solid var(--line2);
+  font-size:13.5px; font-weight:600; cursor:pointer;
+}
+.btn-mini:active{border-color:var(--ink2); color:var(--ink)}
+.btn-mini.pri{background:var(--azul-marca); border-color:var(--azul-marca); color:#FFF}
+.btn-mini.pri:active{background:var(--azul-marca-esc); border-color:var(--azul-marca-esc)}
+
+/* Filtros da tela de Despesas — mês, grupo e status juntos, mesma receita
+   visual do .sel-conta, mas em fileira, sem a limitação de largura pensada
+   para um select ao lado de um título só. */
+.filtros-despesas{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+.filtros-despesas input, .filtros-despesas select{
+  font-family:inherit; font-size:13px; font-weight:500; color:var(--ink2);
+  background:#FFF; border:1px solid var(--line2); border-radius:8px; padding:8px 9px;
+  min-height:38px;
+}
+
 /* ---------- cartoes ---------- */
 .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:11px}
 .card h3{font-size:15px}
@@ -255,6 +281,28 @@ button,input,select{font-family:inherit}
 }
 .nav button svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 .nav button.on{color:var(--azul-marca)}
+
+/* Cinco ícones (Despesas entrou em 16/09/2026): mais estreitos, com o
+   Estoque no centro — o ponto que o polegar alcança sem esforço, e a aba
+   mais usada. O círculo atrás dele é o destaque sutil, sem disputar com o
+   azul de "on": a mesma cor de fundo que a pílula "Disponível" já usa para
+   estoque no resto do app. */
+.nav-5{grid-template-columns:repeat(5,1fr)}
+.nav-5 button{padding:8px 2px 7px; font-size:9.5px}
+.nav-5 button svg{width:20px; height:20px}
+/* O círculo do Estoque fica ATRÁS do ícone: elemento posicionado pinta por
+   cima do conteúdo comum, então sem `isolation` + `z-index:-1` ele cobria o
+   SVG e sobrava só uma bola. Sobe 13px acima da barra, como um botão de
+   destaque; ativo, vira azul cheio com o ícone branco. */
+.nav-5 .nav-centro{position:relative; isolation:isolate}
+.nav-5 .nav-centro::before{
+  content:""; position:absolute; z-index:-1; top:-13px; left:50%; transform:translateX(-50%);
+  width:52px; height:52px; border-radius:50%; background:var(--azul-bg);
+  border:3px solid #FFF; box-shadow:0 2px 8px rgba(0,50,211,.18);
+}
+.nav-5 .nav-centro.on::before{background:var(--azul-marca); box-shadow:0 3px 10px rgba(0,50,211,.38)}
+.nav-5 .nav-centro svg{width:26px; height:26px; color:var(--azul); transform:translateY(-10px)}
+.nav-5 .nav-centro.on svg{color:#FFF}
 
 /* ---------- folha inferior ---------- */
 .sheet-bg{position:fixed; inset:0; background:rgba(20,24,26,.5); z-index:50; display:flex; align-items:flex-end}

@@ -9,7 +9,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  api, type Catalogos, type Custo, type Ficha as DadosFicha, type Usuario, type Veiculo,
+  api, type Catalogos, type ContaDoPlano, type Custo, type Despesa,
+  type Ficha as DadosFicha, type Usuario, type Veiculo,
 } from "./api.js";
 import { Navegacao, Topo, type Aba } from "./componentes/Navegacao.js";
 import {
@@ -22,6 +23,7 @@ import { Painel } from "./telas/Painel.js";
 import { Estoque } from "./telas/Estoque.js";
 import { Vendas } from "./telas/Vendas.js";
 import { Caixa } from "./telas/Caixa.js";
+import { Despesas } from "./telas/Despesas.js";
 import { Ficha } from "./telas/Ficha.js";
 import { LancarCusto } from "./folhas/LancarCusto.js";
 import { RegistrarVenda } from "./folhas/RegistrarVenda.js";
@@ -29,10 +31,12 @@ import { FormVeiculo } from "./folhas/FormVeiculo.js";
 import { AtualizarFipe } from "./folhas/Fipe.js";
 import { Aporte } from "./folhas/Aporte.js";
 import { Transferencia } from "./folhas/Transferencia.js";
+import { NovaDespesa } from "./folhas/NovaDespesa.js";
 import { ConfirmarExclusao } from "./folhas/ConfirmarExclusao.js";
 import { ConfirmarExclusaoCusto } from "./folhas/ConfirmarExclusaoCusto.js";
 import { ConfirmarDesfazerVenda } from "./folhas/ConfirmarDesfazerVenda.js";
 import { ConfirmarExclusaoTransferencia } from "./folhas/ConfirmarExclusaoTransferencia.js";
+import { ConfirmarExclusaoDespesa } from "./folhas/ConfirmarExclusaoDespesa.js";
 
 type Folha =
   | { tipo: "custo"; veiculoId?: string }
@@ -45,10 +49,12 @@ type Folha =
   | { tipo: "exclusaoTransferencia"; transferenciaId: string }
   | { tipo: "exclusao"; veiculoId: string }
   | { tipo: "exclusaoCusto"; custo: Custo }
+  | { tipo: "novaDespesa" }
+  | { tipo: "exclusaoDespesa"; despesa: Despesa }
   | null;
 
 const NOMES: Record<Aba, string> = {
-  painel: "Painel", estoque: "Estoque", vendas: "Vendas", caixa: "Caixa",
+  painel: "Painel", estoque: "Estoque", vendas: "Vendas", caixa: "Caixa", despesas: "Despesas",
 };
 
 export function App() {
@@ -62,6 +68,7 @@ export function App() {
 
   const [catalogos, setCatalogos] = useState<Catalogos | null>(null);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+  const [plano, setPlano] = useState<ContaDoPlano[]>([]);
 
   // Os filtros da §6.1 são de desktop e valem em todas as telas ao mesmo tempo.
   const desktop = useDesktop();
@@ -78,11 +85,12 @@ export function App() {
       .finally(() => setConferindo(false));
   }, []);
 
-  // O que as folhas precisam saber: catálogos e a frota inteira.
+  // O que as folhas precisam saber: catálogos, a frota inteira e o plano de contas.
   useEffect(() => {
     if (!usuario) return;
     void api.catalogos().then(setCatalogos).catch(() => setCatalogos(null));
     void api.veiculos("todos").then((r) => setVeiculos(r.veiculos)).catch(() => setVeiculos([]));
+    void api.planoContas().then(setPlano).catch(() => setPlano([]));
   }, [usuario, versao]);
 
   useEffect(() => {
@@ -155,7 +163,7 @@ export function App() {
           />
         ) : aba === "vendas" ? (
           <Vendas versao={versao} recorte={recorte} aoAbrirFicha={abrirFicha} />
-        ) : (
+        ) : aba === "caixa" ? (
           <Caixa
             versao={versao}
             aoAportar={() => setFolha({ tipo: "aporte" })}
@@ -163,11 +171,20 @@ export function App() {
             aoApagarTransferencia={(transferenciaId) =>
               setFolha({ tipo: "exclusaoTransferencia", transferenciaId })}
           />
+        ) : (
+          <Despesas
+            versao={versao}
+            plano={plano}
+            aoNovaDespesa={() => setFolha({ tipo: "novaDespesa" })}
+            aoExcluir={(despesa) => setFolha({ tipo: "exclusaoDespesa", despesa })}
+            aoAtualizar={atualizar}
+          />
         )}
       </div>
 
-      {/* §6.1: o flutuante existe em todas as telas exceto Caixa. */}
-      {aba !== "caixa" && (
+      {/* §6.1: o flutuante existe em todas as telas exceto Caixa e Despesas —
+          as duas têm o próprio botão de lançamento na tela. */}
+      {aba !== "caixa" && aba !== "despesas" && (
         <button className="fab" onClick={() => setFolha({ tipo: "custo" })}>+ Custo</button>
       )}
 
@@ -208,6 +225,19 @@ export function App() {
         <Transferencia
           catalogos={catalogos} saldos={folha.contas}
           aoFechar={() => setFolha(null)} aoGravar={atualizar}
+        />
+      )}
+      {catalogos && folha?.tipo === "novaDespesa" && (
+        <NovaDespesa
+          catalogos={catalogos} plano={plano}
+          aoFechar={() => setFolha(null)} aoGravar={atualizar}
+        />
+      )}
+      {folha?.tipo === "exclusaoDespesa" && (
+        <ConfirmarExclusaoDespesa
+          despesa={folha.despesa}
+          aoFechar={() => setFolha(null)}
+          aoExcluir={atualizar}
         />
       )}
       {folha?.tipo === "exclusaoTransferencia" && (

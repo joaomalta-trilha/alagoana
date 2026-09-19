@@ -263,6 +263,22 @@ export interface ResultadoTransferencia {
   valor: Centavos;
 }
 
+export interface ContaDoPlano {
+  id: string; codigo: string; grupoCodigo: number; grupoNome: string; nome: string;
+  natureza: "fixa" | "variavel"; tipo: "operacional" | "retirada" | "nao_operacional";
+  ativa: boolean;
+}
+
+export interface Despesa {
+  id: string; descricao: string; valor: Centavos; dataPagamento: string;
+  status: "pago" | "previsto";
+  contaSaida: { id: string; nome: string };
+  planoConta: {
+    id: string; codigo: string; nome: string; grupoCodigo: number; grupoNome: string;
+    natureza: "fixa" | "variavel"; tipo: "operacional" | "retirada" | "nao_operacional";
+  };
+}
+
 export interface ResultadoVenda {
   lucro: Centavos; entradaEmCaixa: Centavos;
   /** `entradaEmCaixa` menos as comissões pagas na hora. */
@@ -333,4 +349,21 @@ export const api = {
 
   painel: (recorte = "") => pedir<Painel>("GET", `/api/painel?${recorte.slice(1)}`),
   vendas: (recorte = "") => pedir<Vendas>("GET", `/api/vendas?${recorte.slice(1)}`),
+
+  planoContas: () => pedir<ContaDoPlano[]>("GET", "/api/plano-contas"),
+  alternarConta: (id: string, ativa: boolean) =>
+    pedir<{ id: string; ativa: boolean }>("PATCH", `/api/plano-contas/${id}`, { ativa }),
+  despesas: (filtro: { mes?: string; grupo?: number; status?: "pago" | "previsto" } = {}) => {
+    const p = new URLSearchParams();
+    if (filtro.mes) p.set("mes", filtro.mes);
+    if (filtro.grupo != null) p.set("grupo", String(filtro.grupo));
+    if (filtro.status) p.set("status", filtro.status);
+    const q = p.toString();
+    return pedir<Despesa[]>("GET", `/api/despesas${q ? `?${q}` : ""}`);
+  },
+  lancarDespesa: (dados: unknown) =>
+    pedir<{ id: string; status: "pago" | "previsto"; movimentoId: string | null }>(
+      "POST", "/api/despesas", dados),
+  excluirDespesa: (id: string) =>
+    pedir<{ valor: Centavos; devolvidoAoCaixa: Centavos }>("DELETE", `/api/despesas/${id}`),
 };
