@@ -20,7 +20,7 @@ import type { DataISO } from "../dominio/veiculo.js";
 import { registrarEvento } from "./eventos.js";
 
 export type TipoMovimento =
-  | "aporte" | "retirada" | "compra" | "custo" | "venda" | "transferencia";
+  | "aporte" | "retirada" | "compra" | "custo" | "venda" | "transferencia" | "despesa";
 
 export interface Conta {
   id: string;
@@ -59,6 +59,7 @@ export interface Movimento {
   valor: Centavos;
   veiculoId?: string | null;
   custoId?: string | null;
+  despesaId?: string | null;
   /** Une as duas pernas de uma transferência. Nulo em todo o resto. */
   transferenciaId?: string | null;
 }
@@ -84,10 +85,10 @@ export async function registrarMovimento(c: PoolClient, m: Movimento): Promise<s
 
   const { rows } = await c.query<{ id: string }>(
     `insert into movimento_caixa
-       (conta_id, data, descricao, tipo, valor, veiculo_id, custo_id, transferencia_id)
-     values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+       (conta_id, data, descricao, tipo, valor, veiculo_id, custo_id, transferencia_id, despesa_id)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id`,
     [m.contaId, m.data, m.descricao, m.tipo, paraNumeric(m.valor),
-     m.veiculoId ?? null, m.custoId ?? null, m.transferenciaId ?? null],
+     m.veiculoId ?? null, m.custoId ?? null, m.transferenciaId ?? null, m.despesaId ?? null],
   );
   return rows[0]!.id;
 }

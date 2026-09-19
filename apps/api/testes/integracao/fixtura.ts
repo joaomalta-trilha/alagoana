@@ -16,10 +16,13 @@ export interface Base {
   joao: string;
 }
 
-/** `categoria_custo` e `migracao` ficam: são estrutura, não dado de teste. */
+/**
+ * `categoria_custo`, `plano_conta` e `migracao` ficam: são estrutura (o plano
+ * de contas semeado pela migração 0009), não dado de teste.
+ */
 export async function limpar(): Promise<void> {
   await pool.query(`
-    truncate evento, aporte_socio, movimento_caixa, custo, veiculo,
+    truncate evento, aporte_socio, movimento_caixa, despesa, custo, veiculo,
              conta, usuario, sessao, marca, modelo, cor, config
     restart identity cascade`);
 }

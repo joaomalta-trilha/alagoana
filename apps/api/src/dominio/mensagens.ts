@@ -23,6 +23,8 @@ export const MSG = {
   transferenciaSemValor: "Informe um valor de transferência maior que zero.",
   vendaJaDesfeita: "Este carro não está vendido.",
   transferenciaNaoEncontrada: "Transferência não encontrada.",
+  despesaIncompleta:
+    "Preencha conta, descrição, data e um valor maior que zero.",
 } as const;
 
 /** `Saldo insuficiente em {conta}: {saldo}.` — §8 */

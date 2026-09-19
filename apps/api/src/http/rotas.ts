@@ -32,6 +32,10 @@ import {
 } from "../servicos/veiculos.js";
 import { atalhos, excluirCusto, lancarCusto, type ModoRateio } from "../servicos/custos.js";
 import {
+  alternarContaAtiva, excluirDespesa, lancarDespesa, listarDespesas, listarPlanoContas,
+  type FiltroDespesas,
+} from "../servicos/despesas.js";
+import {
   registrarAporte, transferir, previaExclusaoTransferencia, excluirTransferencia,
 } from "../servicos/caixa.js";
 import {
@@ -389,6 +393,48 @@ const ROTAS: Rota[] = [
   {
     metodo: "DELETE", padrao: "/api/custos/:id",
     fn: (ctx) => comTransacao((c) => excluirCusto(c, ctx.parametros["id"]!, ctx.usuario.id)),
+  },
+
+  // ------------------------------------------------------------ despesas
+  { metodo: "GET", padrao: "/api/plano-contas", fn: () => comLeitura((c) => listarPlanoContas(c)) },
+  {
+    metodo: "PATCH", padrao: "/api/plano-contas/:id",
+    fn: (ctx) => {
+      const ativa = booleano(ctx.corpo, "ativa");
+      if (ativa === null) throw new ErroDeValidacao("Informe se a conta fica ativa ou não.", 400);
+      return comTransacao((c) =>
+        alternarContaAtiva(c, ctx.parametros["id"]!, ativa, ctx.usuario.id));
+    },
+  },
+  {
+    metodo: "GET", padrao: "/api/despesas",
+    fn: (ctx) => {
+      const status = ctx.consulta.get("status");
+      if (status !== null && status !== "pago" && status !== "previsto") {
+        throw new ErroDeValidacao("O status é 'pago' ou 'previsto'.", 400);
+      }
+      const grupoBruto = ctx.consulta.get("grupo");
+      const grupoCodigo = grupoBruto === null ? null : Number(grupoBruto);
+      if (grupoCodigo !== null && !Number.isInteger(grupoCodigo)) {
+        throw new ErroDeValidacao("O grupo precisa ser um código inteiro.", 400);
+      }
+      const filtro: FiltroDespesas = { mes: ctx.consulta.get("mes"), grupoCodigo, status };
+      return comLeitura((c) => listarDespesas(c, filtro));
+    },
+  },
+  {
+    metodo: "POST", padrao: "/api/despesas", status: 201,
+    fn: (ctx) => comTransacao((c) => lancarDespesa(c, {
+      planoContaId: uuidDoCorpo(ctx.corpo, "planoContaId") ?? "",
+      descricao: texto(ctx.corpo, "descricao") ?? "",
+      valor: centavos(ctx.corpo, "valor") ?? 0,
+      data: data(ctx.corpo, "data") ?? hoje(),
+      contaSaidaId: uuidDoCorpo(ctx.corpo, "contaSaidaId") ?? "",
+    }, hoje(), ctx.usuario.id)),
+  },
+  {
+    metodo: "DELETE", padrao: "/api/despesas/:id",
+    fn: (ctx) => comTransacao((c) => excluirDespesa(c, ctx.parametros["id"]!, ctx.usuario.id)),
   },
 
   // --------------------------------------------------------------- caixa
